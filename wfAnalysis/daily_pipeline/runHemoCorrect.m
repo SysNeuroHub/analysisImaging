@@ -2,10 +2,9 @@
 % also compute dF/F, save Us and Vs to the server
 % 1/6/20 created from pipelineGCaMP.m for elife paper
 
-addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis');
-addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\widefield'));
 addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\Matteobox');%mergefigs
-addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\dsbox');%screen2png
+addpath(genpath('C:\Users\dshi0006\git\dsbox'));
+addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 addpath(genpath('C:\npy-matlab'));
 
 close all;
