@@ -1,9 +1,9 @@
-function [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimes(Timeline, rigName)
+function [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimesOE(Timeline, rigName)
 % [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimes(Timeline, rigName)
 % Returns the times in Timeline coordinates of every camera exposure 
 %
 % Inputs:
-%   Timeline: timeline data
+%   Timeline: OpenEphys data
 %   rigName: is a special parameter that identifies which Timeline data object should be used for this, and what threshold to apply to detect events. See the switch/case block below. 
 %
 % Outputs:

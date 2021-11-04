@@ -1,4 +1,4 @@
-function saveSVD(ops, U, V, dataSummary)
+function saveSVDns(ops, U, V, dataSummary)
 % saveSVD(ops, U, V, dataSummary)
 % matches timestamps with Timeline, splits V into each exp, and upload to
 % dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master')
@@ -14,6 +14,7 @@ function saveSVD(ops, U, V, dataSummary)
 %        meanImage
 %        frameRecIndex, 1xN integers where N is the number of frames in V and the entries identify which recording (sequentially) that frame was part
 
+%TODO: save result to syncitium not market
 
 % [numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineTimelineAlignments(ops, size(V,2));
 [numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineOEphysAlignments(ops, size(V,2));
@@ -22,11 +23,9 @@ if ops.verbose
     fprintf(1, 'saving SVD results to server... \n');
 end
 
-%expNums = dat.parseExpRef(ops.expRefs);%14/5/20
-
 % upload results to server
-thisDateStr = ops.thisDate(1:10); %8/5/20
-thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
+thisDateStr = ops.thisDate; %3/11/21
+thisSeriesNum = 1;
 filePath = dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master');
 Upath = fileparts(filePath); % root for the date - we'll put U (etc) and data summary here
 if ~exist(Upath)
