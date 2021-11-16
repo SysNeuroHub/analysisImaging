@@ -14,31 +14,43 @@ batchSize = 1e3; %imaging loading
 
 
 %% parameters for each exp
-subject = 'rat1gou';
-expDate = '20211026';
-expName = '9'; %currently used only for imaging
+subject = 'rat2gou';%'rat1gou';
+expDate = '20211104';%'20211026';
+expName = '8';%'9'; %currently used only for imaging
+ephysDirBase = fullfile(rootDir,subject,'oephys','experiment2/recording4');
+stimName = [subject '.kalatsky.132143.mat'];
 
-ephysDirBase = fullfile(rootDir,subject,'oephys','experiment1/recording24');
-stimName = [subject '.kalatsky.193725.mat'];
+% ephysDirBase = fullfile(rootDir,subject,'oephys','experiment3/recording3');
+% stimName = [subject '.kalatsky.180705.mat'];
 
 %% parameter for image analysis
 rescaleFac = 0.25; %resize factor in x and y
 polarity = -1; %whether to detect upward or downward deflection. -1 for IOS
+
+%for exp8
+roi1=[42.3229166666667 84.6284722222222 10.6145833333333 11.0486111111111];
+roi2=[63.3229166666667 84.4236111111111 11.0486111111111 11.4826388888889];
+roi=cat(1,roi1,roi2);
+
 %ephys digital only ... analog channel is NOT analyzed
 trCh = 1;
 camStrobeCh = 7;
 %imaging preprocessing
-cutoffFreq = 0.001; %[Hz] 0.02 is too high?
+cutoffFreq = 0.01; %[Hz] 0.02 is too high?
 lpFreq = 2; %{hz] to reduce heart beat
+
 %kalatsky analysis
-filterFourierMaps = 0;
+filterFourierMaps = 1;
 filtRF = 3;
-delayPhase = 0;%-pi/2;%-3*pi/4;%pi; %added delay in radian
+%delayPhase = 0;%-pi/2;%-3*pi/4;%pi; %added delay in radian
 %0 for intrinsic imaging
 %pi for calcium imaging
 n_boot = 10;
 xposRange = [30 120];%deg. to be obtained from cic record
 
+%TODO
+%fix FourierMaps
+%weigh angleMaps with trials of higher Amplitude
 
 imagingDirBase = fullfile(rootDir_OI,subject,'imaging');
 saveDirBase = fullfile(rootDir,subject,'processed');
@@ -133,34 +145,61 @@ if ~isempty(lpFreq)
     V = V + meanV;
 end
 
+
+%% dF/F
+V = (V - mean(V,2)) ./ mean(V,2);
+
 %% trim data of each trial
-[~, winSamps, periEventV, sortedLabels] ...
+[avgPeriEventV, winSamps, periEventV, sortedLabels, uniqueLabels] ...
     = eventLockedAvg(V, camOnTimes, stimOnTimes, stimLabels, calcWin);
-    
-    
+AvgTensor = reshape(avgPeriEventV, size(avgPeriEventV,1), imageSize_r(1), ...
+    imageSize_r(2),[]);
+AvgTensor = AvgTensor - mean(AvgTensor,4);
+mAngleMaps = [];
+for iStim = 1:length(uniqueLabels)
+    [~, ~, mAngleMaps(:,:,iStim)] = FourierMaps(squeeze(AvgTensor(iStim,:,:,:)), Fcam, tgtFreq);
+end
+delayPhase = mean(mAngleMaps,3);
+delayPhase = 0.5*delayPhase;
+
 %% get AngleMaps of single trials
 %< something wrong with ANGLEMAPS ... too much variability across trials
 ANGLEMAPS = zeros(imageSize_r(1),imageSize_r(2),nrRepeats, 2);
 ABSMAPS = ANGLEMAPS;
-for iStim = 1:2
+for iStim = 1:length(uniqueLabels)
     
-    theseEvents = find(stimLabels == stimLabels(iStim));
+    theseEvents = find(stimLabels == uniqueLabels(iStim));
     
     for iTr = 1:nrRepeats
         thisEventV = squeeze(periEventV(theseEvents(iTr),:,:));%omit the 1st dimension
         
+        %thisEventV = polarity * thisEventV; %for intrinsic imaging data
+        %... NG due to bug? in FourirMaps
+               
         Tensor = reshape(thisEventV,imageSize_r(1),imageSize_r(2),[]);
-
-        %Tensor =  svdFrameReconstruct(U, thisEventV);
-        %should subtract by mimg or else?
-        %do detrend?
         
-        Tensor(isnan(Tensor))=0;
-        %Tensor = Tensor - mean(Tensor,3); %SHOULD NOT USE THIS - causing
+        mTensor = mean(mean(Tensor));
+        nanFrames = find(isnan(mTensor));
+        Tensor(:,:,nanFrames) = repmat(nanmean(Tensor,3),1,1,length(nanFrames));
+        Tensor = Tensor - mean(Tensor,3); %SHOULD NOT USE THIS - causing
         %more variability across trials
         %Tensor = Tensor - mean(mean(Tensor,1),2); %mean across pixels
         
+        %tmp
+        S = StackSet;
+        S.Values = Tensor;
+        S.TimeVec = winSamps;
+        S = S.FillDims;
+        eventTimes = 0:1/tgtFreq:max(winSamps);
+        tLims = [0 1/tgtFreq];
+        Sm = S.MeanEvent(eventTimes, tLims);
+        Sm.PlayCondition(1,prctile(Sm.Values(:),[1 99]),[],[],roi);
+        
         [ComplexMaps, AbsMaps, AngleMaps] = FourierMaps(Tensor, Fcam, tgtFreq);
+        %TODO: behvior of this function is weird:
+        %         angle+ = fouriermaps(tesnsor)
+        %         angle- = fouriermaps(-tensor)
+        %         angle+ ~ -angle- + pi??
         
         if filterFourierMaps
             realMaps_filt = wiener2(real(ComplexMaps), [filtRF filtRF]);
@@ -171,29 +210,36 @@ for iStim = 1:2
         end
         %correction of angle produced by stackset.fouriermaps so that it
         %ranges between [-pi pi] (-pi = earliest, pi = latest)
-        AngleMaps = -1*polarity*AngleMaps;
+       
         
-        %shift phase
-        %use unwrap?
-        %AngleMaps(AngleMaps < minPhase) = AngleMaps(AngleMaps < minPhase) + 2*pi;
-        %AngleMaps = AngleMaps - 2*pi;
+        AngleMaps = polarity * AngleMaps;
         
-        AngleMaps = AngleMaps + delayPhase;
+        %% shift phase
+        AngleMaps = AngleMaps - delayPhase; %+?
         AngleMaps(AngleMaps > pi) = AngleMaps(AngleMaps > pi) - 2*pi;
         AngleMaps(AngleMaps < -pi) = AngleMaps(AngleMaps < -pi) + 2*pi;
         
         ANGLEMAPS(:, :, iTr, iStim) = AngleMaps;
         ABSMAPS(:,:,iTr, iStim) = AbsMaps;
+        
     end
+    
+    images(ABSMAPS(:,:,:,iStim));
+    screen2png(['singleAmp_cond' num2str(iStim)]);
+    close(gcf);
+
+    images(ANGLEMAPS(:,:,:,iStim));
+    screen2png(['singleAngle_cond' num2str(iStim)]);
+    close(gcf);
 end
 
 %% combine opposite directions
 randidx = randi(nrRepeats,2,n_boot);
-xMap = (ANGLEMAPS(:,:,randidx(1,:),1) - ANGLEMAPS(:,:,randidx(2,:),2));
+xMap = (ANGLEMAPS(:,:,randidx(1,:),2) - ANGLEMAPS(:,:,randidx(2,:),1));
 xMapm = nanmedian(xMap,3);
 %xMapm(~mask)=nan;
 
-mdelay_phase = squeeze(mean(mean(ANGLEMAPS+pi,4),3));
+mdelay_phase = squeeze(mean(mean(ANGLEMAPS+pi+delayPhase,4),3));
 mdelay_sec = 1/tgtFreq/2/pi*mdelay_phase;
 
 %% convert phase to visual angle

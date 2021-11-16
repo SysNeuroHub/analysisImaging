@@ -250,8 +250,8 @@ mvname = 'test.avi';
 handles.mvobj = VideoWriter(mvname,'motion jpeg avi');
 
 % Set parameters for the video.
-handles.mvobj.FrameRate = 5;%10;
-handles.mvobj.Quality = 50;%100;
+handles.mvobj.FrameRate = 10;%5;%10;
+handles.mvobj.Quality = 100;%50;%100;
 
 % Update handles structure
 guidata(hObject, handles);

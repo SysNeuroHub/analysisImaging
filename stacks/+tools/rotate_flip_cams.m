@@ -5,8 +5,9 @@ function [t_concord, input_points, base_points, fliplrCam1, fliplrCam2, ...
 
 %% make information for rotating inputImage image by visual inspection
 % t_concord: rotation info, used for imtransform
-% method: transform type (cp2form). default = 'nonreflective similarity'.
-%           use 'projective' when 2 exps from 1 animal
+% method: transform type (cp2tform). 
+%       default = 'nonreflective similarity' (minimum #ctrl points:2)
+%           use 'projective' when 2 exps from 1 animal (minimum #ctrl points:4)
 %
 % input: inputImage, baseImage: 2D or 3D stack of images for registration.
 % If 3D, apply the same transformation for each slice in the stack

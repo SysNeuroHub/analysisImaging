@@ -1,4 +1,4 @@
-function [avgPeriEventV, winSamps, periEventV, sortedLabels] ...
+function [avgPeriEventV, winSamps, periEventV, sortedLabels, uniqueLabels] ...
     = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin)
 % [avgPeriEventV, winSamps, periEventV, sortedLabels] ...
 % = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin)
@@ -33,8 +33,8 @@ sortedLabels = eventLabels(ii);
 
 nCells = size(V,1);
 
-eLabels = unique(eventLabels);
-nConditions = length(eLabels);
+uniqueLabels = unique(eventLabels);
+nConditions = length(uniqueLabels);
 
 Fs = 1/median(diff(t));
 winSamps = calcWin(1):1/Fs:calcWin(2);
@@ -49,9 +49,9 @@ end
 avgPeriEventV = zeros(nConditions, nCells, length(winSamps));
 for c = 1:nConditions
     if iscell(eventLabels)
-        thisCondEvents = cellfun(@(x)strcmp(x,eLabels(c)),sortedLabels);
+        thisCondEvents = cellfun(@(x)strcmp(x,uniqueLabels(c)),sortedLabels);
     else
-        thisCondEvents = sortedLabels==eLabels(c);
+        thisCondEvents = sortedLabels==uniqueLabels(c);
     end
     avgPeriEventV(c,:,:) = squeeze(nanmedian(periEventV(:,thisCondEvents,:),2));%15/12/20
 end
