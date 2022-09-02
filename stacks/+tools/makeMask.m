@@ -4,6 +4,7 @@ function mask = makeMask( image, shape )
 
 %   walther May 2010
 % 2013-10-09 DS return mask = 0 when roi not specified
+% createMask in imuitools seems better than this function
 
 switch nargin
     case 0

@@ -219,6 +219,7 @@ classdef StackSet
             
         end
         
+            
         function PlayCondition( S, iCond, clim, overlayImage, cmap, roi, TitleString)
             % view and record one of the conditions as a movie.
             % Left click on the movie specifies ROI for time traces above the movie.
@@ -246,10 +247,10 @@ classdef StackSet
             
             % close all
             
-            if iCond<0 || iCond>S.nConds
-                disp('This condition does not exist');
-                return
-            end
+%             if iCond<0 || iCond>S.nConds
+%                 disp('This condition does not exist');
+%                 return
+%             end
             if nargin < 7
                 TitleString = sprintf('Condition %d',iCond);
             end
@@ -264,19 +265,28 @@ classdef StackSet
                 overlayImage = [];
             end
             
+            Stmp = S;
+            Stmp.nConds = numel(iCond);
+            Stmp.nCols = Stmp.nCols*Stmp.nConds;
+            Stmp.Values = permute(Stmp.Values(:,:,:,iCond), [1 2 4 3]);
+            Stmp.Values = reshape(Stmp.Values,Stmp.nRows, ...
+                Stmp.nCols, Stmp.nFrames);
+
+            roi_tmp = roi;
+            
             if nargin < 3
                 % establish a good range
-                MedianImg = squeeze(nanmedian(S.Values(:,:,:,iCond),3));
+                MedianImg = squeeze(nanmedian(Stmp.Values,3));
                 m = nanmedian(MedianImg(:));
-                StdImg = squeeze(nanstd(S.Values(:,:,2:end-1,iCond),[],3));
+                StdImg = squeeze(nanstd(Stmp.Values(:,:,2:end-1),[],3));
                 StdImg(isinf(StdImg)) = NaN;
                 s = nanmean(StdImg(:));
                 clim = [ m-2*s m+2*s ];
                 if diff(clim)<=0, error('Cannot establish a range'); end
             end
             
-            MovieInspector( S.Values(:,:,:,iCond),roi,S.FrameRate,clim,TitleString, ...
-                S.TimeVec, overlayImage, cmap);
+            MovieInspector( Stmp.Values, roi_tmp, Stmp.FrameRate,...
+                clim, TitleString, Stmp.TimeVec, overlayImage, cmap);
         end
         
         function S2 = Resize( S, scale )

@@ -1,4 +1,4 @@
-function [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimesOE(Timeline, rigName)
+function [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimes(Timeline, rigName)
 % [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimes(Timeline, rigName)
 % Returns the times in Timeline coordinates of every camera exposure 
 %

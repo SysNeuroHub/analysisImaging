@@ -1,5 +1,5 @@
 function [avgPeriEventV, winSamps, periEventV, sortedLabels, uniqueLabels] ...
-    = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin)
+    = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin, doMedian)
 % [avgPeriEventV, winSamps, periEventV, sortedLabels] ...
 % = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin)
 
@@ -22,8 +22,9 @@ function [avgPeriEventV, winSamps, periEventV, sortedLabels, uniqueLabels] ...
 %       each event
 %   sortedLabels: the labels of the rows of periEventV
 
-
-
+if nargin < 6
+    doMedian = false;
+end
 
 t = t(:)'; % make row
 eventTimes = eventTimes(:)';
@@ -53,7 +54,11 @@ for c = 1:nConditions
     else
         thisCondEvents = sortedLabels==uniqueLabels(c);
     end
-    avgPeriEventV(c,:,:) = squeeze(nanmedian(periEventV(:,thisCondEvents,:),2));%15/12/20
+    if doMedian
+        avgPeriEventV(c,:,:) = squeeze(nanmedian(periEventV(:,thisCondEvents,:),2));
+    else
+        avgPeriEventV(c,:,:) = squeeze(nanmean(periEventV(:,thisCondEvents,:),2));
+    end
 end
 
 

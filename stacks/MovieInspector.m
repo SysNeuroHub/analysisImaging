@@ -513,10 +513,15 @@ function figMovieInspector_CloseRequestFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-delete(handles.Timer);
+set(groot,'defaultFigureVisible','on');
 
-if handles.saveMov
-    close(handles.mvobj);
+try
+    delete(handles.Timer);
+    
+    if handles.saveMov
+        close(handles.mvobj);
+    end
+catch err
 end
 
 % Hint: delete(hObject) closes the figure

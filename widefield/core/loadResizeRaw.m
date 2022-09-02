@@ -1,4 +1,4 @@
-function dataSummary = loadResizeRaw(ops, rescaleFac)
+function dataSummary = loadResizeRaw(imagingDir_full, rescaleFac)
 % dataSummary = loadResizeRaw(ops)
 % converts a set of tif files in a directory (specified by ops.fileBase) to a
 % flat binary (dat) file in datPath. While doing so, extract the data from
@@ -33,7 +33,31 @@ function dataSummary = loadResizeRaw(ops, rescaleFac)
 %
 % 15/11/2021created from loadRawToDat_roi
 
+if nargin < 2
+    rescaleFac = 1;
+end
 
+load('intrinsicImagingOps.mat');
+ops.vids(1).fileBase = imagingDir_full;
+ops.theseFiles = generateFileList(ops);
+disp(ops.theseFiles');
+
+
+%     loadDatOps.datPath = fullfile(ops.localSavePath,[expName '_vid' num2str(1) 'raw.dat']);
+%     if exist(loadDatOps.datPath,'file')
+%         delete(loadDatOps.datPath);
+%     end
+loadDatOps.theseFiles = ops.theseFiles;
+loadDatOps.verbose = ops.verbose;
+loadDatOps.rawDataType = ops.rawDataType;
+
+loadDatOps.frameMod = ops.vids(1).frameMod;
+loadDatOps.hasASCIIstamp = ops.hasASCIIstamp;
+loadDatOps.hasBinaryStamp = ops.hasBinaryStamp;
+loadDatOps.binning = ops.binning;
+loadDatOps.flipudVid = ops.vids(1).flipudVid;
+
+ops = loadDatOps;
 
 extraVerbose = false;
 

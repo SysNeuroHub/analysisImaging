@@ -207,7 +207,7 @@ else
     
     for t = 1:nFrames
         %find the best registration translation
-        output = dftregistration(fttarget, ftMovie(:,:,t), precision);
+        output = tools.dftregistration(fttarget, ftMovie(:,:,t), precision);
         dx(t) = output(4);
         dy(t) = output(3);
         %translate the original (i.e. unfiltered) frame
