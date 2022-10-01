@@ -14,6 +14,7 @@ classdef StackSet
     % Differential( S, firstBaseTime, lastBaseTime)
     % FilterInTime( S, LoCutFreq, HiCutFreq )
     % FilterInSpace( S, LoCutFreq, HiCutFreq, DoGraphics )
+    % FilterInSpace_gauss(S,sigma)
     % ExtractEvent( S, EventTime, tlims, marginFrames)
     % MeanEvent( S, EventTimes, tlims)
     % SpaceAverages(S, Conditions, TimeFrom, TimeTo, roi)

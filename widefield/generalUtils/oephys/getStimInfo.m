@@ -41,13 +41,31 @@ switch c.paradigm
         %calcWin = [-0.2*duration duration*1.2];
         stimInfo.stimLabels = contDir;
         stimInfo.condLabels = unique(contDir);
-        stimInfo.labelDescripiton = 'stimulus direction';
-        blankDur = get(c.gabor.prms.bdur,'atTrialTime',inf,'trial',1);
+        orientation = unique(get(c.gabor.prms.orientation,'atTrialTime',inf));
+        if orientation==0
+            stimInfo.labelDescription = 'kalatsky Y (-1: downward, +1:upward)';
+            stimInfo.vfRange = sort(get(c.gabor.prms.Y,'atTrialTime',inf));
+        elseif orientation==90
+            stimInfo.labelDescription = 'kalatsky X (-1: leftward, +1:rightward)';
+            stimInfo.vfRange = sort(get(c.gabor.prms.X,'atTrialTime',inf));
+        end
+        stimInfo.blankDur = get(c.gabor.prms.bdur,'atTrialTime',inf,'trial',1);
         dur = get(c.gabor.prms.dur,'atTrialTime',inf,'trial',1);
         stimInfo.tgtFreq = 1/get(c.gabor.prms.dur); %[hz] for frequency analysis. Skip if empty
         %tgtFreq = 1/(dur + blankDur);
-        stimInfo.stimDur = dur - blankDur;
-        stimInfo.vfRange = [45 105];%TODO determine from cic
+        stimInfo.stimDur = dur - stimInfo.blankDur;
+
+    case 'kalatsky_rotation'
+        contDir = get(c.contour.prms.contDir, 'atTrialTime', inf);
+        duration = c.trialDuration; %get(c.contour.prms.duration,'atTrialTime',inf);
+        stimInfo.duration = duration(1)/1e3;
+        stimInfo.stimLabels = contDir;
+        stimInfo.condLabels = unique(contDir);
+        stimInfo.stimDur = get(c.contour.prms.dur,'atTrialTime',inf,'trial',1);
+        stimInfo.blankDur = 0;
+        stimInfo.tgtFreq = 1/stimInfo.stimDur;
+        stimInfo.labelDescription = '-1: xx, +1: xx';
+        stimInfo.vfRange = [0 360];%
     case 'runPassiveMovies'
         stimInfo.tgtFreq = [];
         stimInfo.stimLabels = [];

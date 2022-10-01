@@ -63,6 +63,7 @@ if ~clusterPermutation && bonferroni
     pTrace = numel(pTrace(:))*pTrace;
 end
 
+
 %% single trial analysis in space
 pImage = zeros(imageSize_r(1), imageSize_r(2), nConds);
 for icond = 1:nConds
@@ -97,7 +98,7 @@ for icond = 1:nConds
     vline(xp(icond),[],[],cp(icond,:));
     hline(yp(icond),[],[],cp(icond,:));
     if icond==1
-    title(sprintf('%s %d, delay %.1f', stimInfo.labelDescription, stimInfo.condLabels(icond),TimeVec(tp(icond))));
+    title(sprintf('%s\n%d, delay %.1f', stimInfo.labelDescription, stimInfo.condLabels(icond),TimeVec(tp(icond))));
     else
     title(sprintf('%d, delay %.1f',stimInfo.condLabels(icond),TimeVec(tp(icond))));
     end
@@ -110,16 +111,17 @@ for icond = 1:nConds
     ylim(clim);
     vline(TimeVec(tp(icond)));
     vbox(TimeVec(ss), TimeVec(ee),[],[cp(icond,:) .5])
+ 
     title([num2str(stimInfo.condLabels(icond)) ', x=' num2str(xp(icond)) ', y=' num2str(yp(icond))]);
 end
 
-subplot(313);
-% imagesc(imageData.meanImage);
-imagesc(zeros(imageSize_r));
-colormap(gray);
-hold on
-for icond = 1:nConds
-    imSuper(gca,pImage(:,:,icond)<pth,cp(icond,:),0.3);
-end
-scatter(xp,yp,20,cp,'filled','markeredgecolor','w');
-axis equal tight;
+% subplot(313);
+% % imagesc(imageData.meanImage);
+% imagesc(zeros(imageSize_r));
+% colormap(gray);
+% hold on
+% for icond = 1:nConds
+%     imSuper(gca,pImage(:,:,icond)<pth,cp(icond,:),0.3);
+% end
+% scatter(xp,yp,20,cp,'filled','markeredgecolor','w');
+% axis equal tight;

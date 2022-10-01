@@ -40,7 +40,13 @@ nConditions = length(uniqueLabels);
 Fs = 1/median(diff(t));
 winSamps = calcWin(1):1/Fs:calcWin(2);
 periEventTimes = bsxfun(@plus, eventTimes', winSamps); % rows of absolute time points around each event
-periEventV = zeros(nCells, length(eventTimes), length(winSamps));
+
+%% only use events whose time window is within the recording 
+okEvents = intersect(find(periEventTimes(:,end)<max(t)), find(periEventTimes(:,1)>min(t)));
+periEventTimes = periEventTimes(okEvents,:);
+sortedLabels = sortedLabels(okEvents);
+
+periEventV = zeros(nCells, length(okEvents), length(winSamps));
 for s = 1:nCells
     periEventV(s,:,:) = interp1(t, V(s,:), periEventTimes);
 end

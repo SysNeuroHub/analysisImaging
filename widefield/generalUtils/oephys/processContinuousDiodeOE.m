@@ -56,7 +56,8 @@ if isempty(guessThresh)
 end
 
 % downsample the continuous signal
-t_ds = decimate(t_ori, floor(frSamp/sampTo));
+%t_ds = decimate(t_ori, floor(frSamp/sampTo));
+t_ds = t_ori(1):1/sampTo:t_ori(end);
 pd2 = interp1(t_ori,pd, t_ds);
 
 % median filter over 1 frame time

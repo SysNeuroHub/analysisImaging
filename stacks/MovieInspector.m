@@ -246,8 +246,8 @@ handles.saveMov = 0; %2014-7-28 DS added
 handles.output = hObject;
 
 opengl('software')
-mvname = 'test.avi';
-handles.mvobj = VideoWriter(mvname,'motion jpeg avi');
+mvname = 'test.mp4';%avi';
+handles.mvobj = VideoWriter(mvname,'mpeg-4');%'motion jpeg avi');
 
 % Set parameters for the video.
 handles.mvobj.FrameRate = 10;%5;%10;
@@ -353,7 +353,7 @@ ShowFrame(hObject, handles, iFrame);
 function AddOneROI(hObject,handles, roi)
 
 lines = findall(roi,'type','line');%DS 2015/4/9
-set(lines,'linewidth',1);%DS 2015/4/9
+set(lines,'linewidth',2);%DS 2015/4/9
 set(lines,'marker','.');%DS 2015/4/9
 
 iRoi = length(handles.TimePlots)+1;

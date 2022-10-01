@@ -8,7 +8,9 @@ end
 if makeFig
     figure;
     ax(1)=subplot(211);
-    vbox(trOnTimes, trOffTimes)
+    %vbox(trOnTimes, trOffTimes)
+    vline(trOnTimes, ax(1), '-',[1 0 0]);hold on;
+    vline(trOffTimes, ax(1), '-',[0 0 1]);
     vline(expOnTimes);
     xlabel('time');
     ylabel('before adjustment');
@@ -31,13 +33,20 @@ else
 end
 
 %#trial onsets and offsets are equal?
-if numel(trOnTimes) > numel(trOffTimes)
-    disp(['trial on/off numbers test: # trial onsets detected (' num2str(numel(trOnTimes)) ') larger than # trial offsets detected (' num2str(numel(trOffTimes)) ')'])
-    disp('removed the last trial onset');
-    trOnTimes = trOnTimes(1:end-1);
-elseif numel(trOnTimes) < numel(trOffTimes)
-    disp(['trial on/off numbers test: # trial onsets detected (' num2str(numel(trOnTimes)) ') smaller than # trial offsets detected (' num2str(numel(trOffTimes)) ')'])
-    error('maybe initial trial onset NOT detected? dont know what to do');
+if numel(trOnTimes) ~= numel(trOffTimes)
+    [trOnTimes,trOffTimes] = adjustOnOffTimes(trOnTimes,trOffTimes);
+    disp('adjusted trial on/off numbers');
+%     disp(['trial on/off numbers test: # trial onsets detected (' num2str(numel(trOnTimes)) ') larger than # trial offsets detected (' num2str(numel(trOffTimes)) ')'])
+%     disp('removed the last trial onset');
+%     trOnTimes = trOnTimes(1:end-1);
+% elseif numel(trOnTimes) < numel(trOffTimes)
+%     disp(['trial on/off numbers test: # trial onsets detected (' num2str(numel(trOnTimes)) ') smaller than # trial offsets detected (' num2str(numel(trOffTimes)) ')'])
+%     if trOnTimes(1)>=trOffTimes(1)
+%         trOffTimes = trOffTimes(2:end);
+%         disp('removed the first trial offset');
+%     else
+%         error('maybe initial trial onset NOT detected? dont know what to do');
+%     end
 else
     disp(['PASSED trial on/off numbers test: '  num2str(numel(trOnTimes)) 'trial onsets detected']);
 end
@@ -58,4 +67,24 @@ if makeFig
     xlabel('time');
     ylabel('after adjustment');
     linkaxes(ax(:));
+end
+end
+
+function [xstart,xend] = adjustOnOffTimes(xstart, xend)
+%used when xstart and xend have unequal number of events
+%copied from vbox.m
+
+if numel(xstart)<numel(xend)
+    if xstart(1) > xend(1)
+        xend = xend(2:end);
+    else
+        xend = xend(1:end-1);
+    end
+elseif numel(xstart)>numel(xend)
+    if xstart(end) > xend(end)
+        xstart = xstart(1:end-1);
+    else
+        xstart = xstart(2:end);
+    end
+end
 end

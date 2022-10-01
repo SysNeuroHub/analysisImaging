@@ -30,16 +30,30 @@ nrRepeats = c.nrTrials;%    c.blocks.nrRepeats;
 [camOnTimes_c1, camOnTimes_c2] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.camStrobeCh);
 OETimes.camOnTimes = sort([camOnTimes_c1;camOnTimes_c2]);
 
+
+
+if isempty(OETimes.stimOffTimesPD)
+    OETimes.stimOffTimesPD = OETimes.camOnTimes(end); %HACK
+end
+if isempty(OETimes.stimOffTimesDigi)
+    OETimes.stimOffTimesDigi = OETimes.camOnTimes(end); %HACK
+end
+
+
 if makeFig
     ax(1)=subplot(411);
-    vbox(OETimes.stimOnTimesDigi, OETimes.stimOffTimesDigi);
+    try
+        vbox(OETimes.stimOnTimesDigi, OETimes.stimOffTimesDigi);
+    end
     vline([OETimes.expOnTimes OETimes.expOffTimes]);
     ylabel('stimOnTimes Digital');
     title('getOETimes');
     
     ax(2)=subplot(412);
     plot(t_ds,pd_ds./prctile(pd_ds,99))
-    vbox(OETimes.stimOnTimesPD, OETimes.stimOffTimesPD);
+    try
+        vbox(OETimes.stimOnTimesPD, OETimes.stimOffTimesPD);
+    end
     vline([OETimes.expOnTimes OETimes.expOffTimes]);
     ylabel('stimOnTimes PD');
     
