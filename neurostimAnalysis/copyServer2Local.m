@@ -33,8 +33,9 @@ if exist(nsPath_ori,'file')
     if exist(nsPath_dest,'file') && ~overwrite
         disp(['Skipped Copying Neurostim file']);
     else
+        disp(['Copying FROM ' nsPath_ori ' TO ' destinationDir]);
         copyfile(nsPath_ori, destinationDir);
-        disp(['Copied FROM ' nsPath_ori ' TO ' destinationDir]);
+        disp('DONE');
     end
 else
     disp(['NOT FOUND: ' nsPath_ori]);
@@ -48,8 +49,9 @@ if exist(oeDirPath_ori,'dir')
     if exist(oeDirPath_dest,'dir') && ~overwrite
         disp('Skipped copying OpenEphys directory');
     else
+        disp(['Copying FROM ' oeDirPath_ori ' TO ' oeDirPath_dest]);
         copyfile(oeDirPath_ori, oeDirPath_dest);
-        disp(['Copied FROM ' oeDirPath_ori ' TO ' oeDirPath_dest]);
+        disp('DONE');
     end
 else
     disp(['NOT FOUND: ' oeDirPath_ori]);
@@ -64,13 +66,12 @@ if ~isempty(fullOIName)
         if exist(oiDirPath_dest,'dir') && ~overwrite
             disp('Skipped copying imaging directory');
         else
+            disp(['Copying FROM ' oiDirPath_ori ' TO ' oiDirPath_dest]);
             copyfile(oiDirPath_ori, oiDirPath_dest);
-            disp(['Copied FROM ' oiDirPath_ori ' TO ' oiDirPath_dest]);
+            disp('DONE');
         end
     else
         disp(['NOT FOUND: ' oiDirPath_ori]);
     end
     vargout{1} = oiDirPath_dest;
 end
-
-

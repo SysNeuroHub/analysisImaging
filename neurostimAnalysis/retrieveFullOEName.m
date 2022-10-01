@@ -18,6 +18,8 @@ function fullOEName = retrieveFullOEName(pth, partialOEName)
 %
 % This function will scan the supplied path and the truncated directory name into an appropriate directory name.
 %
+
+currentDir = pwd;
 assert(exist(pth,'dir') == 7,'%s is not a valid folder name or does not exist.',pth);
 
 pat = ['^.*\', filesep, '(?<year>\d{4})\', filesep, '(?<month>\d{2})\', filesep, '(?<day>\d{2})\', filesep, '*$'];
@@ -40,3 +42,5 @@ src = d(ii).name;
 fullOEName = src;
 % fullOEName = sprintf('%s_%s-%s-%s_%s-%s-%s', ...
 %     d(ii).name,pinfo.year,pinfo.month,pinfo.day,m{ii}.hour,m{ii}.minute,m{ii}.second);
+
+cd(currentDir);
