@@ -14,7 +14,7 @@ if makeFig
     vline(expOnTimes);
     xlabel('time');
     ylabel('before adjustment');
-    title('checkAdjustTrTimes');
+    title('checkAdjustTrTimes. r:trial On, b:trial Off');
 end
 
 %% sanity check trial onset timestamps. Adjust if necessary
@@ -29,7 +29,7 @@ elseif expOnTimes > trOnTimes(1)
     trOnTimes = trOnTimes(2:end);
     trOffTimes = trOffTimes(2:end);
 else
-    disp('PASSED experiment onset test:  Stimulus onset came after experiment onset');
+    disp('PASSED experiment onset test:  Trial onset came after experiment onset');
 end
 
 %#trial onsets and offsets are equal?

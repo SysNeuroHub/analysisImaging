@@ -36,11 +36,11 @@ if nargin < 5
     onThresh = [];
 end
 
-if nargin < 4
+if nargin < 4||isempty(frScreen)
     frScreen = 120;
 end
 
-if nargin < 3
+if nargin < 3||isempty(sampTo)
     sampTo = 1e3;
 end
 %[pd,t0,frSamp] = o.loadADC(args.channel);

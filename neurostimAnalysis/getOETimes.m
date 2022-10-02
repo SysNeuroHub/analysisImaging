@@ -25,7 +25,8 @@ nrRepeats = c.nrTrials;%    c.blocks.nrRepeats;
 
 [OETimes.expOnTimes, OETimes.expOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.expCh);
 [OETimes.stimOnTimesDigi, OETimes.stimOffTimesDigi] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.trCh);
-[OETimes.stimOnTimesPD, OETimes.stimOffTimesPD, pd_ds, pdOn, t_ori, t_ds] = processContinuousDiodeOE(oeInfo.jsonFile, oeInfo.pdCh);
+[OETimes.stimOnTimesPD, OETimes.stimOffTimesPD, pd_ds, pdOn, t_ori, t_ds] = ...
+    processContinuousDiodeOE(oeInfo.jsonFile, oeInfo.pdCh,[],[],3e4);
 [OETimes.ventOnTimes, OETimes.ventOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.ventilatorCh);
 [camOnTimes_c1, camOnTimes_c2] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.camStrobeCh);
 OETimes.camOnTimes = sort([camOnTimes_c1;camOnTimes_c2]);
