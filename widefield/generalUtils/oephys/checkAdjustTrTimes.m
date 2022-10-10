@@ -1,8 +1,18 @@
 function [trOnTimes, trOffTimes] = checkAdjustTrTimes(trOnTimes, trOffTimes, expOnTimes, nrRepeats, makeFig)
-%[stimOnTimesPD, stimOffTimesPD] = checkAdjustTrTimes(stimOnTimesPD, stimOffTimesPD, expOnTimes, nrRepeats)
+%[trOnTimes, trOffTimes] = checkAdjustTrTimes(trOnTimes, trOffTimes, expOnTimes)
+% checks the following:
+% 1, if the expstart comes earlier than 1st trial onset
+% 2, if trial onsets and offsets matches
+%
+%[...] = checkAdjustTrTimes(stimOnTimesPD, stimOffTimesPD, expOnTimes, nrRepeats)
+% additionally check if #trials recorded in PD is equal to #trials in CIC
+
 
 if nargin < 5
     makeFig = true;
+end
+if nargin < 4
+    nrRepeats = [];
 end
 
 if makeFig
@@ -52,12 +62,16 @@ else
 end
     
 %recorded #trial equal to one specified in CIC?
-if numel(trOnTimes) > nrRepeats
-    error('trial numbers in CIC test: Too many stimulus onsets detected. Consider adjusting threshold');
-elseif numel(trOnTimes) < nrRepeats
-    warning(['trial numbers in CIC test: ' num2str(nrRepeats-numel(trOnTimes)) 'missed trials.']);
-else 
-    disp('PASSED trial numbers in CIC test: #detected trials matches #specified trials');
+if ~isempty(nrRepeats)
+    if numel(trOnTimes) > nrRepeats
+        error('trial numbers in CIC test: Too many stimulus onsets detected. Consider adjusting threshold');
+    elseif numel(trOnTimes) < nrRepeats
+        warning(['trial numbers in CIC test: ' num2str(nrRepeats-numel(trOnTimes)) 'missed trials.']);
+    else
+        disp('PASSED trial numbers in CIC test: #detected trials matches #specified trials');
+    end
+else
+    disp('skipped trial number test');
 end
 
 if makeFig

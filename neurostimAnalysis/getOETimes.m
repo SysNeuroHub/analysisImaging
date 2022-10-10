@@ -1,4 +1,4 @@
-function OETimes = getOETimes(oeInfo, c, makeFig)
+function OETimes = getOETimes(oeInfo, nrRepeats, makeFig)
 %OETimes = getOETimes(oeInfo, c)
 %
 %INPUT: oeInfo
@@ -20,8 +20,11 @@ function OETimes = getOETimes(oeInfo, c, makeFig)
 if nargin < 3
     makeFig = 1;
 end
+if nargin < 2
+    nrRepeats = [];
+end
 
-nrRepeats = c.nrTrials;%    c.blocks.nrRepeats;
+%nrRepeats = c.nrTrials;%    c.blocks.nrRepeats;
 
 [OETimes.expOnTimes, OETimes.expOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.expCh);
 [OETimes.stimOnTimesDigi, OETimes.stimOffTimesDigi] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.trCh);
