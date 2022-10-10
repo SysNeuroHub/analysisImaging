@@ -66,6 +66,38 @@ switch c.paradigm
         stimInfo.tgtFreq = 1/stimInfo.stimDur;
         stimInfo.labelDescription = '-1: xx, +1: xx';
         stimInfo.vfRange = [0 360];%
+    case 'freqTag'
+        fields = fieldnames(c);
+        jj=1;
+        for ii = 1:numel(fields)
+           if regexp(fields{ii}, regexptranslate('wildcard','gabor*'));
+            tgtfields{jj} = fields{ii};
+           jj=jj+1;
+           end
+        end
+        tgtfields = sort(tgtfields);
+        
+        dur = []; xpos = []; ypos = [];
+        for ff = 1:numel(tgtfields)
+            dur(ff) = get(c.(tgtfields{ff}).prms.dur,'atTrialTime',inf);
+            xpos(ff) = get(c.(tgtfields{ff}).prms.X,'atTrialTime',inf);
+            ypos(ff) = get(c.(tgtfields{ff}).prms.Y,'atTrialTime',inf);
+        end
+        
+        stimInfo.tgtFreq = 1./dur; 
+        stimInfo.stimLabels=1;
+        stimInfo.blankDur = 0;
+        
+        if numel(unique(xpos))==1 && numel(unique(ypos))>1
+            stimInfo.labelDescription = 'y [deg]';
+            stimInfo.condLabels = ypos;
+        elseif numel(unique(xpos))>1 && numel(unique(ypos))==1
+            stimInfo.labelDescription = 'x [deg]';
+            stimInfo.condLabels = xpos;
+        end
+        duration = c.trialDuration; %get(c.contour.prms.duration,'atTrialTime',inf);
+        stimInfo.duration = duration(1)/1e3; %nealy 20s longer than specified
+
     case 'runPassiveMovies'
         stimInfo.tgtFreq = [];
         stimInfo.stimLabels = [];

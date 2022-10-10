@@ -20,7 +20,7 @@ end
 %% sanity check trial onset timestamps. Adjust if necessary
 %first trial onset appears after the experiment start?
 if isempty(expOnTimes)
-    error('experiment onset test: experiment onset NOT detected');
+    warning('experiment onset test: experiment onset NOT detected');
 elseif numel(expOnTimes)>1
     error('experiment onset test: Multiple experiment onset detected');
 elseif expOnTimes > trOnTimes(1)
