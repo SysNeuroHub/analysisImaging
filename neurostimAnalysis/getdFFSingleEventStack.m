@@ -4,11 +4,11 @@ function singlePeriEventStack = getdFFSingleEventStack(singlePeriEventStack, bas
 
 if ~doMedian
     switch dFFmethod
-        case 1 %subtract by grand avg of prestimulus
+        case 1 %subtract by grand avg of baseWin
             preMean = nanmean(nanmean(singlePeriEventStack(:,:,baseWin,:),3),4);
             singlePeriEventStack = 100*(singlePeriEventStack - preMean)./preMean; %dI/I [%]
             
-        case 2 %subtract by each trial prestimulus
+        case 2 %subtract by each trial baseWin
             preMean = nanmean(singlePeriEventStack(:,:,baseWin,:),3);
             singlePeriEventStack = 100*(singlePeriEventStack - preMean)./preMean; %dI/I [%]
             

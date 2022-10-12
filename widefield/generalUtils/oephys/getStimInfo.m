@@ -63,8 +63,19 @@ switch c.paradigm
         stimInfo.condLabels = unique(contDir);
         stimInfo.stimDur = get(c.contour.prms.dur,'atTrialTime',inf,'trial',1);
         stimInfo.blankDur = 0;
-        stimInfo.tgtFreq = 1/stimInfo.stimDur;
-        stimInfo.labelDescription = '-1: xx, +1: xx';
+        stimInfo.tgtFreq = 2/stimInfo.stimDur; %2F to detect orientation column
+        stimInfo.labelDescription = '-1: CW, +1: CCW';
+        stimInfo.vfRange = [0 360];%
+    case 'kalatsky_wedge'
+        contDir = get(c.contour.prms.contDir, 'atTrialTime', inf);
+        duration = c.trialDuration; %get(c.contour.prms.duration,'atTrialTime',inf);
+        stimInfo.duration = duration(1)/1e3;
+        stimInfo.stimLabels = contDir;
+        stimInfo.condLabels = unique(contDir);
+        stimInfo.stimDur = get(c.contour.prms.dur,'atTrialTime',inf,'trial',1);
+        stimInfo.blankDur = 0;
+        stimInfo.tgtFreq = 1/stimInfo.stimDur; %2F to detect orientation column
+        stimInfo.labelDescription = '-1: CW, +1: CCW';
         stimInfo.vfRange = [0 360];%
     case 'freqTag'
         fields = fieldnames(c);

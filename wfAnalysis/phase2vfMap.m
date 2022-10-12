@@ -3,10 +3,8 @@ function map_vf = phase2vfMap(ANGLEMAPS, vfRange, blankDur, stimDur, delay)
 %assumption: ANGLEMAPS(:,:,2) is response to increasing degree (rightward or upward)
 
 if nargin < 5
-     mDelay = 0.5*(ANGLEMAPS(:,:,1)+ANGLEMAPS(:,:,2)); %[rad]
-    mDelay(mDelay<0) = mDelay(mDelay<0)+pi; %[0 2pi]
-    
-    delay = mean(mDelay(:)); %[0 2pi]
+    [mDelay] = phase2Delay(ANGLEMAPS);
+    delay = median(mDelay(:)); %[0 2pi]
 end
 
 ANGLEMAPS = ANGLEMAPS - delay;

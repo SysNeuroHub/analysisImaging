@@ -454,7 +454,7 @@ classdef StackSet
             
             if nargin<2, showgraphics = 0; end
             resp = reshape(S.Values,S.nRows*S.nCols,S.nFrames*S.nConds);
-            [~,~,~,Model,Residual] = MakeSeparable(resp,showgraphics);
+            [~,~,~,Model,Residual] = tools.MakeSeparable(resp,showgraphics);
             Res = S; Res.Values = reshape(Residual,Res.nRows,Res.nCols,Res.nFrames,Res.nConds);
             Sep = S; Sep.Values = reshape(   Model,Res.nRows,Res.nCols,Res.nFrames,Res.nConds);
         end
