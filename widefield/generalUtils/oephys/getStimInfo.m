@@ -1,4 +1,11 @@
 function stimInfo = getStimInfo(c)
+%stimInfo = getStimInfo(c)
+% .labelDescription
+% .duration
+% .stimLabels
+% .condLabels
+% .tgtFreq
+
 switch c.paradigm
     case {'oriXYZ','oriXYZc'}
         
@@ -18,16 +25,6 @@ switch c.paradigm
             error('both X&Y positions are variable?');
         end
             
-%         
-%         posXYparam = zeros(length(posXparam)*length(posYparam),1);
-%         istim = 1;
-%         for ix = 1:length(posXparam)
-%             for iy = 1:length(posYparam)
-%                 posXYparam(istim) = posXparam(ix) +1i*posYparam(iy);
-%                 istim = istim+1;
-%             end
-%         end
-        
         duration = get(c.gabor.prms.duration,'atTrialTime',inf);
         stimInfo.duration = duration(1)/1e3;
         %calcWin = [-0.2*duration duration*1.2];
@@ -114,5 +111,12 @@ switch c.paradigm
         stimInfo.stimLabels = [];
         duration = get(c.movie.prms.duration,'atTrialTime',inf);
         stimInfo.duration = duration(1)/1e3;
+        
+        fileNames_full = get(c.movie.prms.filename,'atTrialTime',inf);
+        [fileDirectory,fileNames_idx] = cellfun(@(x)(fileparts(x)), fileNames_full, 'UniformOutput', false);
+        stimInfo.stimLabels = cellfun(@(x)(str2num(x)), fileNames_idx);
+        stimInfo.condLabels = unique(stimInfo.stimLabels); %sorted incremental order
+        stimInfo.labelDescription = ['movie name in' fileDirectory{1}];
+        
         %calcWin = [-0.2*duration duration*1.2];
 end

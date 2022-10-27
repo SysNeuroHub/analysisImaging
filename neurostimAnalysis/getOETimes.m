@@ -25,11 +25,12 @@ if nargin < 2
 end
 
 %nrRepeats = c.nrTrials;%    c.blocks.nrRepeats;
+onThresh = 3e4; %works for acute marmo rig as of 13/10/22
 
 [OETimes.expOnTimes, OETimes.expOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.expCh);
 [OETimes.stimOnTimesDigi, OETimes.stimOffTimesDigi] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.trCh);
 [OETimes.stimOnTimesPD, OETimes.stimOffTimesPD, pd_ds, pdOn, t_ori, t_ds] = ...
-    processContinuousDiodeOE(oeInfo.jsonFile, oeInfo.pdCh,[],[],3e4);
+    processContinuousDiodeOE(oeInfo.jsonFile, oeInfo.pdCh,[],[], onThresh);
 [OETimes.ventOnTimes, OETimes.ventOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.ventilatorCh);
 [camOnTimes_c1, camOnTimes_c2] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.camStrobeCh);
 OETimes.camOnTimes = sort([camOnTimes_c1;camOnTimes_c2]);
