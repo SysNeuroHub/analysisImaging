@@ -1615,7 +1615,11 @@ classdef StackSet
             tensorSize = size(S.Values);
             S.nRows = tensorSize(1);
             S.nCols = tensorSize(2);
-            S.nFrames = tensorSize(3);
+            if length(tensorSize)>2
+                S.nFrames = tensorSize(3);
+            else
+                S.nFrames = 1;
+            end
             if length(tensorSize)>3
                 S.nConds = tensorSize(4);
             else

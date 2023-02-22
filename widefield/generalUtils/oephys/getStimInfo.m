@@ -12,17 +12,23 @@ switch c.paradigm
         %     pos = get(c.gabor.prms.X, 'atTrialTime',inf);
         posX = get(c.gabor.prms.X, 'atTrialTime',inf);
         posY = get(c.gabor.prms.Y, 'atTrialTime',inf);
-        
+        orientation = get(c.gabor.prms.orientation, 'atTrialTime',inf);
+       
         posXparam = unique(posX);
         posYparam = unique(posY);
+        oriParam = unique(orientation);
         if numel(posXparam)==1 && numel(posYparam)>1
             stimInfo.labelDescription = 'vertical position [deg]';
             pos = posY;
-        elseif numel(posXparam) >= 1 && numel(posYparam)==1
+        elseif numel(posXparam) > 1 && numel(posYparam)==1
             stimInfo.labelDescription = 'horizontal position [deg]';
             pos = posX;
+        elseif numel(posXparam) == 1 && numel(posYparam)==1 && numel(oriParam)>1
+            pos = orientation;
+            stimInfo.labelDescription = 'orientation [deg]';
         else
-            error('both X&Y positions are variable?');
+            pos = posX;
+            %error('both X&Y positions are variable?');
         end
             
         duration = get(c.gabor.prms.duration,'atTrialTime',inf);
@@ -119,4 +125,8 @@ switch c.paradigm
         stimInfo.labelDescription = ['movie name in' fileDirectory{1}];
         
         %calcWin = [-0.2*duration duration*1.2];
+        
+        stimInfo.screenPix = [c.movie.prms.yPixels.value c.movie.prms.xPixels.value]; %#pixels
+        stimInfo.width = c.movie.prms.width.value; % width of stimulus window in [deg]
+        stimInfo.height = c.movie.prms.height.value; % height of stimulus window in [deg]
 end

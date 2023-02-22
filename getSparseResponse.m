@@ -11,8 +11,9 @@ function [response_t, response_grid] = getSparseResponse(V, frameTimes, ...
 % (default:white)
 %
 %OUTPUT:
-% response_grid{px_y,px_x}(nSV, #presentation)
 % response_t: avg across events [delay x nSV? x yScreenPix*xScreenPix]
+% response_grid{px_y,px_x}(nSV, #presentation)
+% surround_time:
 
 % 16/7/20 created from AP_sparsenoise...
 % TODO separate times for baseline and response. cf SF's code
@@ -23,6 +24,10 @@ if nargin<6
     polarity = 'white';
 end
 subtractFirstFrame = 0;
+
+if size(frameTimes,1) > size(frameTimes,2)
+    frameTimes = frameTimes';
+end
 
 framerate = 1./nanmedian(diff(frameTimes));
 ny = size(stim_screen,1);

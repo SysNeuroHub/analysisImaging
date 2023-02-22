@@ -2,7 +2,7 @@ function [avgPeriEventV, winSamps, periEventV, sortedLabels, uniqueLabels] ...
     = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin, doMedian)
 % [avgPeriEventV, winSamps, periEventV, sortedLabels] ...
 % = eventLockedAvg(V, t, eventTimes, eventLabels, calcWin)
-
+%
 % Inputs: 
 %   V: nCells x nTimePoints
 %   t: 1 x nTimePoints, the time points of each sample in V

@@ -1,7 +1,12 @@
-function [nsPath_dest, oeDirPath_dest, vargout] = copyServer2Local(origin, destination, fullOEName, fullOIName, overwrite)
-% [nsPath_dest, oeDirPath_dest, vargout] = copyServer2Local(origin, destination, fullOEName, fullOIName)
+function [nsPath_dest, oeDirPath_dest, vargout] = copyServer2Local(origin, ...
+    destination, fullOEName, fullOIName, overwrite, copyOE)
+% [nsPath_dest, oeDirPath_dest, vargout] = copyServer2Local(origin, ...
+% destination, fullOEName, fullOIName)
 % origin and destination assume yyyy/mm/dd
 
+if nargin < 6
+    copyOE = true;
+end
 if nargin < 5
     overwrite = false;
 end
@@ -46,7 +51,7 @@ end
 oeDirPath_ori = fullfile(originDir, fullOEName);
 oeDirPath_dest = fullfile(destinationDir, fullOEName);
 if exist(oeDirPath_ori,'dir')
-    if exist(oeDirPath_dest,'dir') && ~overwrite
+    if (exist(oeDirPath_dest,'dir') && ~overwrite) || ~copyOE
         disp('Skipped copying OpenEphys directory');
     else
         disp(['Copying FROM ' oeDirPath_ori ' TO ' oeDirPath_dest]);

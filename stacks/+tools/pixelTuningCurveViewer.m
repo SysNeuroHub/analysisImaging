@@ -167,7 +167,7 @@ colorbar
 title(sprintf('pixel %d, %d selected', thisPixel(1), thisPixel(2)));
 set(thisAx, 'ButtonDownFcn', @(f,k)tcViewerCallbackClick(f, k, allFrames, cLabels, timePoints, alphaData));
 set(thisAx, 'Tag', 'brainImage');
-axis xy equal tight;
+axis ij equal tight;
 
 % plot the traces across time for each condition for the selected pixel,
 % along with a marker for zero and for the selected time point

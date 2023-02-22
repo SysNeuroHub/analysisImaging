@@ -19,7 +19,7 @@ function [t_concord, input_points, base_points, fliplrCam1, fliplrCam2, ...
 % 2014-5-10 DS added 10th 11th outputs. allow input and base_images to be 3D
 % 2015-12-22 DS added gui sliders to control image min and max
 % 2016-03-07 DS added option to pick up landmark points by mouse click
-% using ginput
+% using ginput. To enable mouse click, right click in the input window
 
 % TODO:
 % put location of chosen landmarks on image
