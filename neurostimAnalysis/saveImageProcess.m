@@ -177,6 +177,12 @@ Fcam = 1/median(diff(OETimes.camOnTimes)); %camera effective sampling rate
 
 %% temporal filtering
 V = reshape(imageData.imstack, imageSize_r(1)*imageSize_r(2), nFrames);%V: nPixels x nTimePoints
+
+%hack for CJ231
+ngidx = find(mean(V,1) < 0.9*mean(V(:)));
+Vinterp = repmat(median(V,2),[1,numel(ngidx)]);
+V(:,ngidx) = Vinterp;
+
 imageData.imstack = [];
 if ~isempty(cutoffFreq)
     meanV = mean(V,2);
@@ -250,7 +256,7 @@ imageProc.conditions = conditions;
 
 
 stimInfo = getStimInfo(cic);
-save(imageSaveName,'imageProc','cic','stimInfo','-append');
+save(imageSaveName,'imageProc','cic','stimInfo','nanMask','-append');
 
 
 % [~, winSamps, singlePeriEventV, stimLabels_ok, uniqueLabels] ...

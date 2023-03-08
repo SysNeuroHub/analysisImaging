@@ -76,6 +76,12 @@ if makeFig
 end
 
 if ~isempty(OETimes.stimOnTimesPD)
+    
+    %hack for CJ231
+    if numel(OETimes.stimOffTimesPD)<numel(OETimes.stimOffTimesDigi)
+        OETimes.stimOffTimesPD(24) = OETimes.stimOffTimesDigi(24);
+    end
+    
     [OETimes.stimOnTimes, OETimes.stimOffTimes] = checkAdjustTrTimes(OETimes.stimOnTimesPD, ...
         OETimes.stimOffTimesPD, OETimes.expOnTimes, nrRepeats, makeFig);
 else
