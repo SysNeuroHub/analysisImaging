@@ -18,7 +18,7 @@ if nargin<5
 end
 load('intrinsicImagingOps.mat');
     %where resulting .dat is saved
-    ops.localSavePath = 'E:\tmp';
+    ops.localSavePath = fileparts(imagingDir_full); %'E:\tmp';
     
     
     

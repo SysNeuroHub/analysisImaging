@@ -28,6 +28,7 @@ switch c.paradigm
             stimInfo.labelDescription = 'orientation [deg]';
         else
             pos = posX;
+             stimInfo.labelDescription = 'fullfield flash';
             %error('both X&Y positions are variable?');
         end
             
