@@ -7,4 +7,14 @@ order = 3;
 Wn = cutoffFreq/(Fs/2);
 [b,a]=butter(order, Wn, 'high');
 
+% Vtmp = double(V'); %space x time
+try
 filtV = single(filtfilt(b,a,double(V')))';
+catch err
+    disp('computing hpFilt for each pix...')
+    filtV = single(zeros(size(V)));
+    for ispace = 1:size(V,2)
+        filtV(:,ispace) = single(filtfilt(b,a,double(V(:,ispace)')))';
+    end
+end
+    

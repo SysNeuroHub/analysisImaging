@@ -1,5 +1,5 @@
-function imageData = buildImageDataOI(imagingDir_full, rescaleFac, makeROI, makeAvi)
-% imageData = buildImageDataOI(imagingDir_full, makeROI, makeAvi)
+function imageData = buildImageDataOI(imagingDir_full, rescaleFac, makeROI, makeAvi, loadFirst)
+% imageData = buildImageDataOI(imagingDir_full, makeROI, makeAvi, loadFirst)
 
 %fixed parameters
 batchSize = 1e3; %imaging loading
@@ -12,6 +12,9 @@ if nargin<3
 end
 if nargin<4
     makeAvi = false;
+end
+if nargin<5
+    loadFirst = 0;
 end
 load('intrinsicImagingOps.mat');
     %where resulting .dat is saved
@@ -32,6 +35,9 @@ load('intrinsicImagingOps.mat');
     loadDatOps.datPath = fullfile(ops.localSavePath,[expName '_vid' num2str(1) 'raw.dat']);
     if exist(loadDatOps.datPath,'file')
         delete(loadDatOps.datPath);
+    end
+    if loadFirst
+        ops.theseFiles = ops.theseFiles(1);
     end
     loadDatOps.theseFiles = ops.theseFiles;
     loadDatOps.verbose = ops.verbose;

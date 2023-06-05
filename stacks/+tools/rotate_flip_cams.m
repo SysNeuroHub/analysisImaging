@@ -184,6 +184,7 @@ zoom on;
 validanswer = false;
 while ~validanswer
     doRotate = input('rotate inputImage?  ({y}es or {n}o) >>','s');
+    disp('delete the GUI to return the registration result.');
     
     if strcmp(doRotate, 'y')
         
@@ -202,6 +203,7 @@ while ~validanswer
                 'Position',[100 105 200 20],...
                 'String','input points (x, y):')
             set(hi, 'ButtonDownFcn', @addPoints);
+           
             
             
             hb = uicontrol(h2(iii),'Style','edit',...
@@ -213,7 +215,7 @@ while ~validanswer
                 'String','base points (x, y):')
             set(hb, 'ButtonDownFcn', @addPoints);
             
-            %ddd=0;
+            %% the button to update the image registration
             hUpdate = uicontrol(h2(iii),'Style','pushbutton',...
                 'Position',[350 20 50 40],...
                 'String','Update','Callback',@updateEdit);
@@ -225,6 +227,7 @@ while ~validanswer
             %             set(hDone, 'UserData',0);
             
             waitfor(hUpdate, 'UserData');
+            %updatePoints(hi);
             
             result = ishandle(h0);
             if ~result
@@ -269,13 +272,15 @@ while ~validanswer
             end
             imcache = cam1_registered(:,:,1);
             
+            
+            %% show a figure after image registration
             figure(resultFig);
             for iii = 1:numBaseImage
                 subplot(numBaseImage, 3, 1+3*(iii-1)); imagesc(imcache, prctile(imcache(:),[15 90]));
                 pos = get(gca,'position');
                 colorbar;
                 set(gca,'position',[pos(1) pos(2) pos(3) pos(4)]);
-                axis equal tight;grid minor;title('inputImage rotated');
+                axis equal tight;grid minor;title('inputImage rotated(green)');
                 hold on;
                 plot(base_points(:,1),base_points(:,2),'r*-');
                 plot(input_points_rx,input_points_ry,'g*-');
@@ -290,7 +295,7 @@ while ~validanswer
                 contour(edge(cam1_registered(:,:,1),'canny'),1,'g');
                 set(gca,'position',[pos(1) pos(2) pos(3) pos(4)]);
                 set(gca,'fontsize',12);grid minor;
-                axis equal tight;grid minor;title('baseImage');
+                axis equal tight;grid minor;title('baseImage(red)');
                 colormap(gca, cmap);
                 ax2_result=gca;
                 
@@ -433,9 +438,35 @@ hold off
 if ~oldhold, hold off; end
 end
 
+% function [xx, yy, hp] = updatePoints(source)
+% 
+% %Get current figure and axis parameters
+% % oldvals = get(gcf);
+% % oldhold = ishold(gca);
+% % set(gcf,'Pointer','crosshair','doublebuffer','on');
+% % zoom off
+% % [xx,yy] = ginput(1);
+% 
+% ax=axes('Parent',source);
+% currentPoints = str2num(get(source, 'String'));
+% % addedPoints = round([xx yy],1);
+% % set(source, 'String', num2str([currentPoints]));
+% % zoom on
+% 
+% %plot landmark points on the image
+% plotPoints = [currentPoints];
+% hold on
+% hp = plot(plotPoints(:,1),plotPoints(:,2),'go','Parent',ax);
+% %need to delete previous hp, so only the current plotPoints are visible
+% %but how to delete previous hp?
+% hold off
+% 
+% %if ~oldhold, hold off; end
+% end
 function source = updateEdit(source, callbackdata)
-set(source, 'UserData',1);
+set(source, 'UserData',1); %reset the button value to 1
 end
+
 
 % function source = doneEdit(source, callbackdata)
 % set(source, 'UserData',1);

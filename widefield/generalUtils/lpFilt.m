@@ -7,4 +7,12 @@ order = 3;
 Wn = cutoffFreq/(Fs/2);
 [b,a]=butter(order, Wn, 'low');
 
-filtV = single(filtfilt(b,a,double(V')))';
+try
+    filtV = single(filtfilt(b,a,double(V')))';
+catch err
+    disp('computing lpFilt for each pix...')
+    filtV = single(zeros(size(V)));
+    for ispace = 1:size(V,2)
+        filtV(:,ispace) = single(filtfilt(b,a,double(V(:,ispace)')))';
+    end
+end

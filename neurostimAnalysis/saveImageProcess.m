@@ -1,11 +1,20 @@
-function imageProc = saveImageProcess(expInfo, procParam, rebuildImageData,...
-    makeMask, uploadResult)
+function [imageProc, cic, stimInfo] = saveImageProcess(expInfo, rescaleFac, rebuildImageData)
 % imageProc = saveImageProcess(expInfo, procParam, rebuildImageData,...
 %     makeMask, uploadResult)
-% save imageProc struct, after temporally aligining oephys & neurostim
-% events, low & high-pass filtering
+% save imageProc struct, after temporally aligining oephys & neurostim events
+% imageProc contains V that is pixels x frames
+% imageProc.V
+% imageProc.OETimes
+% imageProc.cic
+% imageProc.stimInfo
+% imageProc.rescaleFac
+% imageProc.OEInfo
+% imageProc.nrRepeats
+% imageProc.conditions
 %
 % 2022-02-09 DS from quickAnalysisCJ231
+% 2022-04-22 temporal filtering is no longer done in this function (to
+% reduce computation time)
 %
 % TODO: replace save names with those from getDataPaths.m
 
@@ -19,16 +28,10 @@ end
 if isempty(rebuildImageData)
     rebuildImageData = false;
 end
-if isempty(makeMask)
-    makeMask = true;
-end
-if isempty(uploadResult)
-    uploadResult = true;
-end
 
-rescaleFac = procParam.rescaleFac;
-cutoffFreq = procParam.cutoffFreq;
-lpFreq = procParam.lpFreq;
+%rescaleFac = procParam.rescaleFac;
+%cutoffFreq = procParam.cutoffFreq;
+%lpFreq = procParam.lpFreq;
 
 %addDirPrefs;
 dirPref = getpref('nsAnalysis','dirPref');
@@ -119,31 +122,11 @@ if exist(imageSaveName,'file')
     load(imageSaveName,'imageData');
 else
     
-    imageData = buildImageDataOI(imagingDir_full, rescaleFac, makeMask, 0);
+    imageData = buildImageDataOI(imagingDir_full, rescaleFac, 0, 0);
     
     mkdir(fileparts(imageSaveName));
     save(imageSaveName, 'imageData', '-v7.3');
 end
-
-imageSize_r = size(imageData.imstack,[1 2]);
-
-if isfield(imageData, 'mask')
-    nanMask = nan(size(imageData.mask));
-    nanMask(imageData.mask) = 1;
-elseif makeMask
-    imagesc(imageData.meanImage);colormap(gray);
-    roiAhand = images.roi.AssistedFreehand;
-    draw(roiAhand);
-    roi = createMask(roiAhand);
-    nanMask = nan(size(roi));
-    nanMask(roi) = 1;
-    
-    imageData.imstack = imageData.imstack.*(nanMask==1);
-    imageData.imageMeans = squeeze(mean(mean(imageData.imstack)));
-else
-    nanMask = ones(size(imageData.meanImage));
-end
-
 
 %% load stimulus data
 load(stimFile,'c');
@@ -175,34 +158,23 @@ end
 nFrames = length(OETimes.camOnTimes);
 Fcam = 1/median(diff(OETimes.camOnTimes)); %camera effective sampling rate
 
-%% temporal filtering
-V = reshape(imageData.imstack, imageSize_r(1)*imageSize_r(2), nFrames);%V: nPixels x nTimePoints
-imageData.imstack = [];
-if ~isempty(cutoffFreq)
-    meanV = mean(V,2);
-    V =  hpFilt(V-meanV, Fcam, cutoffFreq); %cutoffFreq
-    disp(['high pass filetered at ' num2str(cutoffFreq) '[Hz]'])
-    V = V + meanV;
-end
-if ~isempty(lpFreq)
-    meanV = mean(V,2);%must be temporal avg
-    V =  lpFilt(V-meanV, 1/median(diff(OETimes.camOnTimes)), lpFreq); %low-pass Freq
-    disp(['low pass filetered at ' num2str(lpFreq) '[Hz]'])
-    V = V + meanV;
-end
 
 [pspecBefore, axisPspec] = pmtm(imageData.imageMeans(1:nFrames) - mean(imageData.imageMeans(1:nFrames)), ...
     3,nFrames,Fcam);
-imageMeansAfter = mean(V,1);
-[pspecAfter, axisPspec] = pmtm(imageMeansAfter-mean(imageMeansAfter), ...
-    3,nFrames,Fcam);
+
+V = reshape(imageData.imstack, size(imageData.imstack,1)*size(imageData.imstack,2), []);
+imageData.imstack = [];
+
+% imageMeansAfter = mean(V,1);
+% [pspecAfter, axisPspec] = pmtm(imageMeansAfter-mean(imageMeansAfter), ...
+%     3,nFrames,Fcam);
 
 
 %% mean image across time
 figure;
 imagesc(imageData.meanImage);
-hold on
-contour(nanMask==1,1,'color','r');
+%hold on
+%contour(nanMask==1,1,'color','r');
 colormap(gray)
 axis equal tight
 mcolorbar;
@@ -213,7 +185,7 @@ close;
 figure('position',[0 0 1920 1080]);
 ax(1)=subplot(211);
 plot(OETimes.camOnTimes, imageData.imageMeans(1:nFrames));hold on
-plot(OETimes.camOnTimes, imageMeansAfter);
+% plot(OETimes.camOnTimes, imageMeansAfter);
 
 vbox(OETimes.stimOnTimes, OETimes.stimOffTimes,[],@cool,conditions);
 xlabel('time [s]');
@@ -223,14 +195,14 @@ title(['mean: ' num2str(mm) ', sd: ' num2str(sd) ' (sd/mean: ' num2str(sd/mm*1e2
 
 ax(3) = subplot(212);
 loglog(axisPspec, pspecBefore);hold on;
-loglog(axisPspec, pspecAfter);
+% loglog(axisPspec, pspecAfter);
 if isfield(OETimes,'ventOnTimes')
     respFreq = 1/median(diff(OETimes.ventOnTimes));
     vline(respFreq,ax(3),'-',[.8 .8 .8]);
 end
 xlabel('Frequency [Hz]');
 ylabel('PSD');
-legend('before filtering','after filtering');
+%legend('before filtering','after filtering');
 
 saveas(gcf, fullfile(saveDir_full,['imageMeans' stimName(1:end-4) '.png']));
 close;
@@ -243,14 +215,13 @@ imageProc.cic = cic;
 imageProc.stimInfo = stimInfo;
 imageProc.rescaleFac = rescaleFac;
 imageProc.OEInfo = OEInfo;
-imageProc.nanMask = nanMask;
-imageProc.procParam = procParam;
+%imageProc.nanMask = nanMask;
+%imageProc.procParam = procParam;
 imageProc.nrRepeats = nrRepeats;
 imageProc.conditions = conditions;
 
-
-stimInfo = getStimInfo(cic);
-save(imageSaveName,'imageProc','cic','stimInfo','-append');
+save(imageSaveName,'imageProc','-append');
+%save(imageSaveName,'imageProc','cic','stimInfo','-append');
 
 
 % [~, winSamps, singlePeriEventV, stimLabels_ok, uniqueLabels] ...
