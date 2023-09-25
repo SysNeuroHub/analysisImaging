@@ -1,18 +1,21 @@
-function filtV = lpFilt(V, Fs, cutoffFreq)
-% filtV = hpFilt(V, Fs, cutoffFreq)
-% returns V after temporal filtering above cutoffFreq
-% recommended cutoffFreq = 0.01 (Hz). 
-
+function filtV = lpFilt(V, Fs, cutoffFreq,     filterEachPixel)
+% filtV = ipFilt(V, Fs, cutoffFreq)
+% returns V after temporal filtering (applied to the 2nd dimension) below cutoffFreq
+%
+% INPUT:
+%V: time x space
+%
+% see also. filtV
 order = 3;
 Wn = cutoffFreq/(Fs/2);
 [b,a]=butter(order, Wn, 'low');
 
-try
+if filterEachPixel == 0
     filtV = single(filtfilt(b,a,double(V')))';
-catch err
+elseif filterEachPixel == 1
     disp('computing lpFilt for each pix...')
     filtV = single(zeros(size(V)));
-    for ispace = 1:size(V,2)
-        filtV(:,ispace) = single(filtfilt(b,a,double(V(:,ispace)')))';
+    for ispace = 1:size(V,1)
+        filtV(:,ispace) = single(filtfilt(b,a,double(V(ispace,:)')))';
     end
 end
