@@ -16,6 +16,6 @@ elseif filterEachPixel == 1
     disp('computing lpFilt for each pix...')
     filtV = single(zeros(size(V)));
     for ispace = 1:size(V,1)
-        filtV(:,ispace) = single(filtfilt(b,a,double(V(ispace,:)')))';
+        filtV(ispace,:) = single(filtfilt(b,a,double(V(ispace,:)')))';
     end
 end
