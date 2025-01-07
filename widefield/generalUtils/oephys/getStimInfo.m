@@ -13,6 +13,7 @@ switch c.paradigm
         posX = get(c.gabor.prms.X, 'atTrialTime',inf);
         posY = get(c.gabor.prms.Y, 'atTrialTime',inf);
         orientation = get(c.gabor.prms.orientation, 'atTrialTime',inf);
+        spd = get(c.gabor.prms.spd, 'atTrialTime',inf);
        
         posXparam = unique(posX);
         posYparam = unique(posY);
@@ -26,6 +27,8 @@ switch c.paradigm
         elseif numel(posXparam) == 1 && numel(posYparam)==1 && numel(oriParam)>1
             pos = orientation;
             stimInfo.labelDescription = 'orientation [deg]';
+        elseif unique(spd)>1
+            pos = spd;
         else
             pos = posX;
              stimInfo.labelDescription = 'fullfield flash';

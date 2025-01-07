@@ -4,10 +4,10 @@ function V = filtV(V, Fs, cutoffFreq, lpFreq, filterEachPix)
 %
 % see also. hpFilt, lpFilt
 
-if nargin < 3 
+if nargin < 4 
     lpFreq = [];
 end
-if nargin < 4
+if nargin < 5
     filterEachPix = 0;
 end
 

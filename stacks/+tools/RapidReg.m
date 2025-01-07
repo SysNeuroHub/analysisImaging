@@ -166,7 +166,7 @@ if parallel
             eidx = min((i + 1)*chunkSize, nFrames);
             parfor t = sidx:eidx
                 %find the best registration translation
-                output = dftregistration(fttarget, ftMovie(:,:,t), precision);
+                output = tools.dftregistration(fttarget, ftMovie(:,:,t), precision);
                 dx(t) = output(4);
                 dy(t) = output(3);
                 

@@ -99,7 +99,8 @@ else
     % green circle should be better, because does not belong to the colormap
     plot(pixel(2), pixel(1), 'o', 'Color', [0 0.8 0]);
     hold off;
-    caxis([-1 1]);
+    %caxis([-1 1]);
+    caxis([-0.5 0.5]);
     % cax = caxis();
     % caxis([-max(abs(cax)) max(abs(cax))]);
     colorbar
