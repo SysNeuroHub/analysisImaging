@@ -17,7 +17,7 @@ function pipelineHereKT()
 close all;
 
 showFig = 1;
-saveDat = 0; %if 1, save dat files into the Vault server, else delete them
+saveDat = 1; %if 1, save dat files into the Vault server, else delete them
 
 %serverDir = '\\ad.monash.edu\home\User006\dshi0006\Documents\tempDataServer'; %7/5/20
 %'\\lugaro.cortexlab.net\bigdrive\staging\';
