@@ -31,7 +31,7 @@ expNums = 5;%[1:4];
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
 makeROI = false; %if false, use already saved ROI from the save subject (thisROI.mat)
-doRegistration = 1; %15/10/20
+doRegistration = 1;%1; %15/10/20
 
 
 %where vidXraw.dat and vidXreg.dat are created (subsequently moved to the data server)
