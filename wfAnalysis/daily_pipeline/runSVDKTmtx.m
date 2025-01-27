@@ -24,13 +24,13 @@ load('amberOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'susanoo';
-thisDate = '2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'himiko';%'susanoo';
+thisDate = '2025-01-23';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
-expNums = 5;%[1:4];
+expNums = 3;%[1:4];
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
-makeROI = false; %if false, use already saved ROI from the save subject (thisROI.mat)
+makeROI = true; %if false, use already saved ROI from the save subject (thisROI.mat)
 doRegistration = 1;%1; %15/10/20
 
 
