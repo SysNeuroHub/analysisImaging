@@ -120,6 +120,9 @@ switch c.paradigm
         stimInfo.duration = duration(1)/1e3;
         
         fileNames_full = get(c.movie.prms.filename,'atTrialTime',inf);
+        if IsLinux
+            fileNames_full = strrep(fileNames_full,'\','/');
+        end
         [fileDirectory,fileNames_idx] = cellfun(@(x)(fileparts(x)), fileNames_full, 'UniformOutput', false);
         stimInfo.stimLabels = cellfun(@(x)(str2num(x)), fileNames_idx);
         stimInfo.condLabels = unique(stimInfo.stimLabels); %sorted incremental order

@@ -3,6 +3,9 @@ function [nsPath_dest, oeDirPath_dest, vargout] = copyServer2Local(origin, ...
 % [nsPath_dest, oeDirPath_dest, vargout] = copyServer2Local(origin, ...
 % destination, fullOEName, fullOIName)
 % origin and destination assume yyyy/mm/dd
+%
+% TODO:
+% implement mechanism that original and copied data are identical 
 
 if nargin < 6
     copyOE = true;

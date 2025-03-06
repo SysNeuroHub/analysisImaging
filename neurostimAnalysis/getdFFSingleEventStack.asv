@@ -1,7 +1,5 @@
 function singlePeriEventStack = getdFFSingleEventStack(singlePeriEventStack, baseWin, dFFmethod, doMedian)
 % singlePeriEventStack = getdFFSingleEventStack(singlePeriEventStack, baseWin, dFFmethod, doMedian)
-%
-% INPUTS:
 % singlePeriEventStack: x - y - t - events
 
 if ~doMedian

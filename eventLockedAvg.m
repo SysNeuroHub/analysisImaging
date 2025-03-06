@@ -6,7 +6,7 @@ function [avgPeriEventV, winSamps, periEventV, sortedLabels, uniqueLabels] ...
 % Inputs: 
 %   V: nCells x nTimePoints
 %   t: 1 x nTimePoints, the time points of each sample in V
-%   eventTimes: 1 x nEvents, the time of each event. 
+%   eventTimes: 1 x nEvents, the time of each event.  (Nans are omitted in periEventV)
 %   eventLabels: 1 x nEvents, the label of each event, e.g. the contrast
 %       value or some text label. If this is a cell array, the "tuning curve"
 %       will be plotted evenly spaced; if numeric array then these will be the
@@ -26,6 +26,10 @@ if nargin < 6
     doMedian = false;
 end
 
+if isempty(eventLabels)
+    eventLabels = ones(length(eventTimes),1);
+end
+
 t = t(:)'; % make row
 eventTimes = eventTimes(:)';
 [eventTimes, ii] = sort(eventTimes);
@@ -42,7 +46,7 @@ winSamps = calcWin(1):1/Fs:calcWin(2);
 periEventTimes = bsxfun(@plus, eventTimes', winSamps); % rows of absolute time points around each event
 
 %% only use events whose time window is within the recording 
-okEvents = intersect(find(periEventTimes(:,end)<max(t)), find(periEventTimes(:,1)>min(t)));
+okEvents = intersect(find(periEventTimes(:,end)<=max(t)), find(periEventTimes(:,1)>=min(t)));
 periEventTimes = periEventTimes(okEvents,:);
 sortedLabels = sortedLabels(okEvents);
 
