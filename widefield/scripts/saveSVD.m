@@ -15,8 +15,8 @@ function saveSVD(ops, U, V, dataSummary)
 %        frameRecIndex, 1xN integers where N is the number of frames in V and the entries identify which recording (sequentially) that frame was part
 
 
-% [numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineTimelineAlignments(ops, size(V,2));
-[numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineOEphysAlignments(ops, size(V,2));
+[numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineTimelineAlignments(ops, size(V,2));
+%[numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineOEphysAlignments(ops, size(V,2));
 
 if ops.verbose
     fprintf(1, 'saving SVD results to server... \n');

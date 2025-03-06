@@ -9,25 +9,23 @@
 % make a prompter to select expt info through GUI (use info in market
 % server)
 
-%addpath(genpath('C:\npy-matlab'));
-%addpath(genpath('C:\Users\dshi0006\npy-matlab'));
-%addpath(genpath('C:\Users\Analysis\npy-matlab'));
-addpath(genpath('S:\biomed-physiology\imaging-data\MATLAB\functions\WideFieldAnalysis'));
-addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\widefield'));
-addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\visbox\rigbox'));
-addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis');
-addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis');
-addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\Matteobox');
+% addpath(genpath('S:\biomed-physiology\imaging-data\MATLAB\functions\WideFieldAnalysis'));
+% addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\widefield'));
+% addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\visbox\rigbox'));
+% addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis');
+% addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis');
+% addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\Matteobox');
+setPath_analysisImaging;
 
 %% experiment
-expt.subject = 'L4GCaMP6s_252';
-expt.expDate = '2021-02-05_2';
-expt.expNum = 4;
+expt.subject = 'susanoo';
+expt.expDate = '2024-11-22_1';
+expt.expNum = 5;
 
 
 %% SVD
 nSV = 1000;
-params.movieSuffix = 'blue';% 'purple'
+params.movieSuffix = 'amber';% 'purple'
 params.useCorrected = 1;
 
 %% analysis

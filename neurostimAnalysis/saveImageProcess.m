@@ -1,4 +1,5 @@
-function [imageProc, cic, stimInfo] = saveImageProcess(expInfo, rescaleFac, rebuildImageData)
+function [imageProc, cic, stimInfo] = saveImageProcess(expInfo, rescaleFac, ...
+    rebuildImageData, doRegistration)
 % imageProc = saveImageProcess(expInfo, procParam, rebuildImageData,...
 %     makeMask, uploadResult)
 % save imageProc struct, after temporally aligining oephys & neurostim events
@@ -17,6 +18,8 @@ function [imageProc, cic, stimInfo] = saveImageProcess(expInfo, rescaleFac, rebu
 % reduce computation time)
 %
 % TODO: replace save names with those from getDataPaths.m
+
+showFig = 0;
 
 addpath('\\storage.erc.monash.edu\shares\R-MNHS-Syncitium\Shared\Daisuke\sandbox');
 if exist('C:\Users\dshi0006\git','dir')
@@ -123,7 +126,8 @@ if exist(imageSaveName,'file')
     load(imageSaveName,'imageData');
 else
     
-    imageData = buildImageDataOI(imagingDir_full, rescaleFac, 0, 0);
+    imageData = buildImageDataOI(imagingDir_full, rescaleFac, 0, 0, false, ...
+        doRegistration);
     
     mkdir(fileparts(imageSaveName));
     save(imageSaveName, 'imageData', '-v7.3');
@@ -138,7 +142,8 @@ conditions = get(c.prms.condition, 'atTrialTime', inf);
 
 %% retrieve time stamps
 disp('Retrieving timestamps in OpenEphys')
-OETimes = getOETimes(OEInfo, nrRepeats);
+PDTh = []; %CJ246
+OETimes = getOETimes(OEInfo, nrRepeats, showFig,PDTh);
 close all;
 
 if nrRepeats > numel(OETimes.stimOnTimes)

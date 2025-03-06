@@ -10,8 +10,9 @@
 addpath(genpath('C:\git\analysisImaging'));
 addpath(genpath('C:\git\dsbox'));
 
-pathToJsonFile = 'E:\data\2022\10\27\test.oriXYZc.170412_2022-10-27_17-04-29\Record Node 103\experiment1\recording1';
-
+% pathToJsonFile = 'E:\data\2022\10\27\test.oriXYZc.170412_2022-10-27_17-04-29\Record Node 103\experiment1\recording1';
+% pathToJsonFile = '\\Mu00122377\e\data\2023\09\15\test.runPassiveMovies.171651\Record Node 103\experiment1\recording1';
+pathToJsonFile = '\\Mu00122377\e\data\2023\09\16\test.oriXYZc.095616_2023-09-16_09-56-37\Record Node 103\experiment1\recording1'
 %oeInfo.jsonFile = 'E:\data\2022\10\03\CJ224.freqTag.185816_2022-10-03_18-58-34\Record Node 103\experiment1\recording1\structure.oebin';
 oeInfo.jsonFile = fullfile(pathToJsonFile, 'structure.oebin');
 

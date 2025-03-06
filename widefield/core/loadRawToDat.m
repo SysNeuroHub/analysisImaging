@@ -195,8 +195,9 @@ try
         if ops.verbose && extraVerbose
             fprintf(1, '  computing mean image\n');
         end
-        sumImage = sumImage+sum(double(imstack),3);
-        
+        %         sumImage = sumImage+sum(double(imstack),3);
+         sumImage = sumImage+sum(imstack,3); %9/1/25
+         
         if ops.verbose
             fprintf(1, '  saving to dat\n');
         end

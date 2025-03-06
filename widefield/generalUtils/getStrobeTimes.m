@@ -27,6 +27,9 @@ switch rigName
     case 'wfrig' %8/5/20
         strobeName = 'camExposure';
         strobeThresh = 2;
+    case 'alloptrig' %09/01/25
+        strobeName = 'PCObusy';
+        strobeThresh = 2;
     otherwise
         error('getStrobeTimes doesn''t recognize rig name %s', rigName);
 end

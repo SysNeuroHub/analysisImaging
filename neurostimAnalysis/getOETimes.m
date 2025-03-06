@@ -1,5 +1,6 @@
-function OETimes = getOETimes(oeInfo, nrRepeats, makeFig)
+function OETimes = getOETimes(oeInfo, nrRepeats, makeFig, PDThresh)
 %OETimes = getOETimes(oeInfo, c)
+%OETimes = getOETimes(oeInfo, c, makeFig, PDThresh)
 %
 %INPUT: oeInfo
 %.trCh: 1
@@ -17,6 +18,9 @@ function OETimes = getOETimes(oeInfo, nrRepeats, makeFig)
 %OETimes.camOn(Off)Times
 %OETimes.stimOn(Off)Times: stimOnset times after adjustment
 
+if nargin < 4
+    PDThresh = 3e4; %works for acute marmo rig as of 13/10/22
+end
 if nargin < 3
     makeFig = 1;
 end
@@ -25,12 +29,12 @@ if nargin < 2
 end
 
 %nrRepeats = c.nrTrials;%    c.blocks.nrRepeats;
-onThresh = 3e4; %works for acute marmo rig as of 13/10/22
+
 
 [OETimes.expOnTimes, OETimes.expOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.expCh);
 [OETimes.stimOnTimesDigi, OETimes.stimOffTimesDigi] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.trCh);
 [OETimes.stimOnTimesPD, OETimes.stimOffTimesPD, pd_ds, pdOn, t_ori, t_ds] = ...
-    processContinuousDiodeOE(oeInfo.jsonFile, oeInfo.pdCh,[],[], onThresh);
+    processContinuousDiodeOE(oeInfo.jsonFile, oeInfo.pdCh,[],[], PDThresh);
 [OETimes.ventOnTimes, OETimes.ventOffTimes] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.ventilatorCh);
 [camOnTimes_c1, camOnTimes_c2] = getDigitalTimesOE(oeInfo.jsonFile, oeInfo.camStrobeCh);
 OETimes.camOnTimes = sort([camOnTimes_c1;camOnTimes_c2]);

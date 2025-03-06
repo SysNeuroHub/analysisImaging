@@ -1,4 +1,5 @@
-function imageData = buildImageDataOI(imagingDir_full, rescaleFac, makeROI, makeAvi, loadFirst)
+function imageData = buildImageDataOI(imagingDir_full, rescaleFac, makeROI, ...
+    makeAvi, loadFirst, doRegistration)
 % imageData = buildImageDataOI(imagingDir_full, makeROI, makeAvi, loadFirst)
 
 %fixed parameters
@@ -15,6 +16,9 @@ if nargin<4
 end
 if nargin<5
     loadFirst = 0;
+end
+if nargin<6
+    doRegistration = false;
 end
 load('intrinsicImagingOps.mat');
     %where resulting .dat is saved
@@ -76,6 +80,21 @@ load('intrinsicImagingOps.mat');
         imstack_c = fread(fid,  imageSize(1)*imageSize(2)*batchSize, '*single');%'*int16');
         %imstack_c = single(imstack_c);
         imstack_c = reshape(imstack_c, imageSize(1), imageSize(2), []);
+        
+        %% image registration
+        %\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\stacks
+        if doRegistration
+            if b==1
+                [dx, dy, target, imstack_c] = ...
+                    tools.RapidReg(imstack_c, 'auto');
+            else
+                [dx_c, dy_c, target, imstack_c] = ...
+                    tools.RapidReg(imstack_c, target);
+                dx = [dx_c dx];
+                dy = [dy_c dy];
+            end
+        end
+        
         imstack_c = imresize(imstack_c, rescaleFac); %image resize 10/6/21
         
         imageData.imstack = cat(3,imageData.imstack, imstack_c);
@@ -83,6 +102,10 @@ load('intrinsicImagingOps.mat');
     clear imstack_c
     imageSize_r = size(imageData.imstack,[1 2]);
     imageData.imageSize = imageSize_r;
+    if doRegistration
+        imageData.dx = dx;
+        imageData.dy = dy;
+    end
     if makeROI
         imageData.mask = imresize(loadDatOps.roi, imageData.imageSize, 'nearest');
         %imageData.imstack = imageData.imstack.*imageData.mask;
