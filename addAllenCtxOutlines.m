@@ -1,4 +1,4 @@
-function addAllenCtxOutlines(bregma, lambda, lineColor, pixSize, addBL)
+function addAllenCtxOutlines(bregma, lambda, lineColor, pixSize)
 % to get bregma/lambda, do:
 % >> figure; imagesc(myImg); axis image; 
 % then use the cursor to click on bregma, then swap the coords (if cursor
@@ -45,8 +45,4 @@ for q = 1:numel(coords) % coords is from ctxOutlines.mat
     
     plot(cx,cy, 'LineWidth', 1.0, 'Color', lineColor);
     hold on;
-end
-if addBL
-    scatter(bregma(2), bregma(1),'MarkerFaceColor',lineColor);
-    scatter(lambda(2), lambda(1),'MarkerFaceColor',lineColor);
 end

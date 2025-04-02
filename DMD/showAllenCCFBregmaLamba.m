@@ -12,23 +12,28 @@ MmPerPixel_t = 0.0104; %measured w scale 27/1/25 from getMmPerPix.m
 
 f=figure;
 f.InnerPosition = [1 1 width height];
+%rectangle('position',f.InnerPosition,'edgecolor','r');hold on; %otherwise black region outside brain will be trimmed in savePaperFigure
 image(zeros(size(brainImage)));colormap(gray);
 
-hold on;
 bregma = [380 501];
 lambda = [825 501];
 % bregma = [380 515];%[yy xx] himiko
 % lambda = [825 515];%[yy xx] himiko
-addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t, 1);%this looks at lambda and shrinks the CCF
-axis image off
+addAllenCtxOutlines(bregma, lambda, 'k', MmPerPixel_t);%this looks at lambda and shrinks the CCF
+scatter(bregma(2), bregma(1),600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
+scatter(lambda(2), lambda(1),600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
+axis ij image off
 xlim([1 size(brainImage,2)]);
 ylim([1 size(brainImage,1)]);
-margin = 50;%pix
-line([margin margin+1/MmPerPixel_t], [margin margin],'linewidth',2,'color','w');
+line([450 450+1/MmPerPixel_t], [800 800],'linewidth',2,'color','w');
 
 ax = gca;
 ax.Position = [0 0 1 1];
 
-screen2png('CCFBL_1000x900',f);
+savePaperFigure(f, 'CCFBL_1000x900');%use .eps to paint a ROI then save as a png
+
+
+screen2png('CCFBL_1000x900',f);%
 %exportgraphics(f,'CCFBL_1000x900.png','BackgroundColor','k'); %does not preserve original pixel size
+
 

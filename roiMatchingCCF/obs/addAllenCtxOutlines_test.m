@@ -1,5 +1,6 @@
 addpath(genpath('C:\Users\dshi0006\allenCCF'));
-load('M:\Subjects\himiko\2025-01-23_1\dataSummary_amber.mat', 'dataSummary');
+% load('M:\Subjects\himiko\2025-01-23_1\dataSummary_amber.mat', 'dataSummary');
+load('M:\Subjects\izanami\2025-01-30_2\dataSummary_amber.mat', 'dataSummary')
 brainImage = dataSummary.meanImage;
 MmPerPixel_t = 6.5e-3/0.5;
 
