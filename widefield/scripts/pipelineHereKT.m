@@ -234,10 +234,8 @@ for v = 1:length(ops.vids)
 end
 
 inspectSVDresult(results); %15/5/20
-for n = 1:length(saveOps.expRefs)
-    filePath = dat.expPath(saveOps.expRefs{n}, 'main', 'master');
-    movefile('*.png', filePath);
-end
+filePath = dat.expPath(saveOps.expRefs{1}, 'main', 'master');
+movefile('*.png', filePath);
 
 %% save results.mat locally commented out 3/2/25
 % fprintf(1, 'saving all results locally at %s\n', fullfile(ops.localSavePath, 'results.mat'));

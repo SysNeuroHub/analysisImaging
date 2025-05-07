@@ -10,9 +10,9 @@
 setPath_analysisImaging;
 
 %% experiment
-expt.subject = 'robita';
-expt.expDate = '2025-03-29_1';
-expt.expNum = 5;
+expt.subject = 'yamatotakeru';
+expt.expDate = '2025-04-21_1';
+expt.expNum = 12;
 bklightCtrl = 0;
 
 %% SVD
@@ -121,7 +121,7 @@ end
 %% stimulus triggered movie
 pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respWin);
 [avgPeriEventV, winSamps, periEventV] = ...
-    eventLockedAvg(fV, t, expt.stimTimes.onset, stimSequence.seq, respWin);
+    eventLockedAvg(V, t, expt.stimTimes.onset, stimSequence.seq, respWin);
 %avgPeriEventV: icond x nSV x time
 %periEventV: event x nSV x time
 
@@ -130,7 +130,7 @@ pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respW
     %% time-avg response & stimulus preference map
     preIdx = find(winSamps<0);
      [~,postIdx] = min(abs(winSamps - 0.25));%to examine laser artifact
-%     postIdx = intersect(find(winSamps>3), find(winSamps < 7));%min(p.pfiledurs)));
+%      postIdx = intersect(find(winSamps>1), find(winSamps < 2));%min(p.pfiledurs)));
 
 %subtract by prestimulus in each condition
 tavgRespV = mean(avgPeriEventV(:,:,postIdx),3) - mean(avgPeriEventV(:,:,preIdx),3);
@@ -140,7 +140,7 @@ tavgResp = svdFrameReconstruct(U, tavgRespV');
 %tavgResp = tavgResp - tavgResp(:,:,p.blankstims);%still blood vessel remains...
 
 nRows            = 1;%ceil(sqrt(p.nstim));
-nCols = ceil(p.nstim/nRows);
+nCols = p.nstim-1;%ceil(p.nstim/nRows);
 figure('position',[0 0 1900 1200]);
 panel = [];
 for istim = 1:p.nstim-1
@@ -148,7 +148,7 @@ for istim = 1:p.nstim-1
     imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
     axis equal tight;
     title(stimSequence.labels{istim});
-   caxis([-.1 .1])
+   caxis([-3 3])
     [h,g]=mcolorbar;
 end
 g.YLabel.String='dF/F [%]';
