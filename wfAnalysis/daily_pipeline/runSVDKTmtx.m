@@ -19,32 +19,32 @@ setPath_analysisImaging;
 
 %cd('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\daily_pipeline');
 cd('C:\Users\dshi0006\git\analysisImaging\wfAnalysis\daily_pipeline');
-load('amberOps.mat');
+load('amberRedOps.mat');
 % For blue/purple alternate
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'robita';%'susanoo';
-thisDate = '2025-03-29';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'mupi';%'susanoo';
+thisDate = '2025-05-05';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
 expNums = 5;%[1:4];
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
-makeROI = false; %if false, use already saved ROI from the save subject (thisROI.mat)
+makeROI = true; %if false, use already saved ROI from the save subject (thisROI.mat)
 doRegistration = 0;%1; %15/10/20
 
 
 %where vidXraw.dat and vidXreg.dat are created (subsequently moved to the data server)
-%rootDrive = 'C:\svdinput'; %NG ... too small
-rootDrive = 'E:\svdinput';
+rootDrive = 'C:\svdinput'; %NG ... too small
+%rootDrive = 'E:\svdinput';
 %will be used in;
 %ops.localSavePath
 
 %where raw data is temporally downloaded must be under
 %rawDataDir/(animal)/(session)/(expNum)
 %rawDataDir = '\\vault-v2.erc.monash.edu.au\MNHS-dshi0006\Subjects';%if the raw data is already uploaded to the server
-%rawDataDir = 'M:\Subjects'; %market server ... too slow to load
-rawDataDir = 'E:\Subjects'; %local temporary storage
+rawDataDir = 'M:\Subjects'; %market server ... too slow to load
+%rawDataDir = 'E:\Subjects'; %local temporary storage
 
 
 %where SVD and summary data is saved
