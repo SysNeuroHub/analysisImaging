@@ -24,13 +24,13 @@ load('amberRedOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'mupi';%'susanoo';
-thisDate = '2025-05-05';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
-thisSeries = 1;
-expNums = 5;%[1:4];
+mouseName = 'test';%'susanoo';
+thisDate = '2025-05-08';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+thisSeries = 3;
+expNums = 1;%[1:4];
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
-makeROI = true; %if false, use already saved ROI from the save subject (thisROI.mat)
+makeROI = -1; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
 doRegistration = 0;%1; %15/10/20
 
 
@@ -61,7 +61,7 @@ rawDataDir = 'M:\Subjects'; %market server ... too slow to load
 %ops.vids = ops.vids(1);%3/7/20
 
 thisDateSeries = [thisDate, '_' num2str(thisSeries)];
-if ~makeROI
+if makeROI == 0
     if exist(fullfile(rawDataDir, mouseName,'thisROI.mat'),'file')
         load(fullfile(rawDataDir, mouseName,'thisROI.mat'),'thisROI');
         ops.roi = thisROI;
@@ -113,7 +113,7 @@ end
 
 
 % create ROI
-if makeROI
+if makeROI == 1
     theseFiles = generateFileList(ops, 1);
     
     imageForROI = mean(loadTiffStack(theseFiles{1}, 'tiffobj',0),3); %make purple and blue image separately??
@@ -131,9 +131,11 @@ if makeROI
     %22/7/20 for use later
     thisROI=ops.roi;
     save(fullfile(rawDataDir, mouseName,'thisROI.mat'),'thisROI');
-else %reuse ROI created previously.
+elseif makeROI == 0 %reuse ROI created previously.
     load(fullfile(rawDataDir, mouseName,'thisROI.mat'));
     ops.roi = thisROI; 
+elseif makeROI == -1
+    ops.roi = [];
 end
 
 
