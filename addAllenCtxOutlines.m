@@ -1,5 +1,3 @@
-
-
 function addAllenCtxOutlines(bregma, lambda, lineColor, pixSize)
 % to get bregma/lambda, do:
 % >> figure; imagesc(myImg); axis image; 

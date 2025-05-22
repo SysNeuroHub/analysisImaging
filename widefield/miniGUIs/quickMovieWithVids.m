@@ -1,14 +1,19 @@
-function quickMovieWithVids(mouseName, thisDate, expNum)
+function quickMovieWithVids(expt, params)
 % quickMovieWithVids(mouseName, thisDate, expNum)
 
-reposName = 'master';
+%reposName = 'master';
 nSV = 250;
 
-expPath = dat.expPath(mouseName, thisDate, expNum, 'main', 'master');
+mouseName = expt.subject;
+thisDate = expt.expDate(1:10);
+thisSeries = str2num(expt.expDate(12:end));
+expPath = fileparts(dat.expFilePath(mouseName, thisDate, thisSeries, expt.expNum, 'widefield','master'));
 
-[U, V, t] = quickLoadUVt(expPath, nSV);
+%expPath = dat.expPath(mouseName, thisDate, expNum, 'main', 'master');
 
-load(dat.expFilePath(mouseName, thisDate, expNum, 'Timeline', 'master'));
+[U, V, t] = quickLoadUVt(expPath, nSV, [], params);
+
+load(dat.expFilePath(mouseName, thisDate, thisSeries, expt.expNum, 'Timeline', 'master'));
 traces = prepareTimelineTraces(Timeline);
 
 auxVid = prepareAuxVids(mouseName, thisDate, expNum);

@@ -30,7 +30,7 @@ function dataSummary = loadRawToDat(ops)
 %    - images included are those for which: mod(frameNumber,
 %    frameMod(1))==frameMod(2). So [1 0] takes all images.
 % - flipudVid - logical, whether to flip up/down.
-extraVerbose = false;
+extraVerbose = true;
 
 loadMethod = 'tiffobj'; %or 'imread'. NS recommends tiffobj
 
@@ -58,7 +58,8 @@ try
         thisFile = theseFiles{fileInd};
         %[thisFilePrefix, thisFileSuffix] = sscanf(thisFile,'%*s_%d');
         [filepath,fname,fext] = fileparts(thisFile);
-        texts = textscan(fname,'%s %d', 'delimiter', '_');
+        %texts = textscan(fname,'%s %d', 'delimiter', '_'); %for PCO edge
+        texts = textscan(fname,'%s %d', 'delimiter', '@'); %for PCO panda
         thisFilePrefix = texts{1}{1};
         thisFileSuffix = texts{2};
         

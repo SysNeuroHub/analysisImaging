@@ -234,13 +234,14 @@ for v = 1:length(ops.vids)
 end
 
 inspectSVDresult(results); %15/5/20
+filePath = dat.expPath(saveOps.expRefs{1}, 'main', 'master');
+movefile('*.png', filePath);
 
-%% save results.mat locally
-fprintf(1, 'saving all results locally at %s\n', fullfile(ops.localSavePath, 'results.mat'));
-save(fullfile(ops.localSavePath, 'results.mat'), 'results', '-v7.3');
+%% save results.mat locally commented out 3/2/25
+% fprintf(1, 'saving all results locally at %s\n', fullfile(ops.localSavePath, 'results.mat'));
+% save(fullfile(ops.localSavePath, 'results.mat'), 'results', '-v7.3');
+% fprintf(1, 'done saving results.mat\n');
 
-
-fprintf(1, 'done saving results.mat\n');
 rng('shuffle','twister');
 
 if isfield(ops, 'emailAddress') && ~isempty(ops.emailAddress)        
@@ -279,58 +280,58 @@ for v = 1:length(ops.vids)
     end
 end
 
-%% Copy rawdata and processed data into vault server
-%destFolder = fullfile(serverDir, [ops.mouseName '_' ops.thisDate]);
-thisDateStr = ops.thisDate(1:10); %8/5/20
-thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
-destFolder = fileparts(dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum,1,'vault','master'));
-
-% if ~strcmp(destFolder, ops.vids(1).fileBase) %commented out 20/1/20
-fprintf(1, 'copying files to vault server\n');
-mkdir(destFolder);
-if  isfield(ops, 'inclExpList') && ~isempty(ops.inclExpList) && ~isequal(ops.vids(1).fileBase, destFolder)
-    for ee = 1:length(ops.inclExpList)
-        copyfile(fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee))),...
-            fullfile(destFolder, num2str(ops.inclExpList(ee)))); %will change to movefile
-        
-    end
-    %movefile can produce error. better use copy here then rmdir later
-    copyfile(fullfile(ops.localSavePath,'*'), ...
-        fullfile(destFolder, num2str(ops.inclExpList(ee))));
-    
-else
-    if  ~isequal(ops.vids(1).fileBase, destFolder)
-        copyfile(fullfile(ops.vids(1).fileBase, '*'), destFolder); %will change to movefile
-    end
-    copyfile(fullfile(ops.localSavePath,'*'), destFolder); 
-end
-
-
-% end
-
-if ~isequal(ops.vids(1).fileBase, destFolder)
-    try
-        for ee = 1:length(ops.inclExpList)
-            delete(fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee)),'*')); %25/6/20
-            disp(['Deleted ' fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee)))]);
-        end
-    catch err
-        disp(['Could not delete '  fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee)))]);
-    end
-end
-fprintf(1, 'done moving files\n');
-
-
-%% delete the working folder
-if length(dir(ops.localSavePath))==2 % if the folder is empty
-    %this condition ensures that the all the data is moved to the server
-
-    cd(fileparts(ops.localSavePath));
-    rmdir(ops.localSavePath);
-    fprintf('moved the process files to the Vault server');
-end
-
-fprintf(1, 'done backup and cleanup\n');
+% % %% Copy rawdata and processed data into vault server
+% % %destFolder = fullfile(serverDir, [ops.mouseName '_' ops.thisDate]);
+% % thisDateStr = ops.thisDate(1:10); %8/5/20
+% % thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
+% % destFolder = fileparts(dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum,1,'vault','master'));
+% % 
+% % % if ~strcmp(destFolder, ops.vids(1).fileBase) %commented out 20/1/20
+% % fprintf(1, 'copying files to vault server\n');
+% % mkdir(destFolder);
+% % if  isfield(ops, 'inclExpList') && ~isempty(ops.inclExpList) && ~isequal(ops.vids(1).fileBase, destFolder)
+% %     for ee = 1:length(ops.inclExpList)
+% %         copyfile(fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee))),...
+% %             fullfile(destFolder, num2str(ops.inclExpList(ee)))); %will change to movefile
+% %         
+% %     end
+% %     %movefile can produce error. better use copy here then rmdir later
+% %     copyfile(fullfile(ops.localSavePath,'*'), ...
+% %         fullfile(destFolder, num2str(ops.inclExpList(ee))));
+% %     
+% % else
+% %     if  ~isequal(ops.vids(1).fileBase, destFolder)
+% %         copyfile(fullfile(ops.vids(1).fileBase, '*'), destFolder); %will change to movefile
+% %     end
+% %     copyfile(fullfile(ops.localSavePath,'*'), destFolder); 
+% % end
+% % 
+% % 
+% % % end
+% % 
+% % if ~isequal(ops.vids(1).fileBase, destFolder)
+% %     try
+% %         for ee = 1:length(ops.inclExpList)
+% %             delete(fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee)),'*')); %25/6/20
+% %             disp(['Deleted ' fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee)))]);
+% %         end
+% %     catch err
+% %         disp(['Could not delete '  fullfile(ops.vids(1).fileBase, num2str(ops.inclExpList(ee)))]);
+% %     end
+% % end
+% % fprintf(1, 'done moving files\n');
+% % 
+% % 
+% % %% delete the working folder
+% % if length(dir(ops.localSavePath))==2 % if the folder is empty
+% %     %this condition ensures that the all the data is moved to the server
+% % 
+% %     cd(fileparts(ops.localSavePath));
+% %     rmdir(ops.localSavePath);
+% %     fprintf('moved the process files to the Vault server');
+% % end
+% % 
+% % fprintf(1, 'done backup and cleanup\n');
 
 % catch me
 %     disp(me.message);

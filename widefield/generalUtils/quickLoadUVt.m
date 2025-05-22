@@ -62,6 +62,8 @@ roiOutside = (sum(U,3)==0);
 mimg(roiOutside)=nan;
 roi = ~roiOutside;
 
+timeStampPath = fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.timestamps.npy']);
+
 corrPath = fullfile(vPath, 'svdTemporalComponents_corr.npy');
 if exist(corrPath, 'file') && useCorrected
     disp(['loading ' corrPath]);
@@ -73,10 +75,15 @@ if exist(corrPath, 'file') && useCorrected
 else
     disp(['loading svdTemporalComponents_' movieSuffix '.npy']);
     V = readVfromNPY(fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.npy']), nSV);
-    t = readNPY(fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.timestamps.npy']));
-    Fs = 1/mean(diff(t));
-
+    if exist(timeStampPath, 'file')
+        t = readNPY(timeStampPath);
+        Fs = 1/mean(diff(t));
+    else
+        disp('timestamps NOT FOUND');
+        t = [];
+    end
     %V = detrendAndFilt(V, Fs); %17/6/20 commented out
+    
 end
 
 if length(t)==size(V,2)+1 % happens if there was an extra blue frame at the end

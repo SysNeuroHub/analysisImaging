@@ -35,7 +35,8 @@ function expt = grabStimTimesWF(expt, getAllPhdFlips, TLDir, ISI, bklightCtrl, v
 % judge whether backlight is controlled with frequency analogy of
 % photodiode and camera exposure (to know camera sampling freq)
 
-detectTDiff = 1; %detect time difference between photodiode and syncsquare 
+detectTDiff = 0;%1; %detect time difference between photodiode and syncsquare 
+%1NG when using analog switch ... why? 
 
 if nargin < 6 || isempty(verbose)
     verbose = 0; % Display progress or not
@@ -79,7 +80,7 @@ else
     
     tltime = Timeline.rawDAQTimestamps';
     
-    %% Get wheter syncSquare on screen was flickering
+    %% Get whether syncSquare on screen was flickering
     syncSquare_idx = strcmp({Timeline.hw.inputs.name}, 'syncSquare');
     if any(syncSquare_idx)
         syncSquare_flicker = max(Timeline.rawDAQData(:,syncSquare_idx)) - ...

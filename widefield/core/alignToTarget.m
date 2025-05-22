@@ -15,6 +15,9 @@ function allDs = alignToTarget(datPath, targetFrame, imageSize, nFr, ops)
 %
 % called in runSVDKT.m
 
+% format = '*int16';
+format = '*uint16'; %28/1/25
+
 batchSize = ops.nRegisterBatchLimit; % images at once
 numBatches = ceil(nFr/batchSize);
 fid = fopen(datPath);
@@ -22,7 +25,7 @@ ind = 1;
 allDs = zeros(nFr, 2);
 try
     for b = 1:numBatches
-        imstack = fread(fid,  imageSize(1)*imageSize(2)*batchSize, '*int16');
+        imstack = fread(fid,  imageSize(1)*imageSize(2)*batchSize, format);
         imstack = single(imstack);
         imstack = reshape(imstack, imageSize(1), imageSize(2), []);
         [ds, ~]  = registration_offsets(imstack, ops, targetFrame, 0);
