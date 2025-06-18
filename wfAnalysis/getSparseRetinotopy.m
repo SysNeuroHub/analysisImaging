@@ -9,40 +9,35 @@
 %% TODO
 %subtract global signal across pixels?
 
-addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\visbox\Stimulus'));%stimScreen
-addpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\stimFiles\current\xfiles');%xfiles
-addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis'));
-rmpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\obs'));
-addpath(genpath('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\dsbox'));
+setPath_analysisImaging;
 
 %% experiment info
-expt.subject = 'L4GCaMP6s_252';
-expt.expDate = '2021-01-13_1';%'2020-06-25_1';%'2020-06-16_1';
-expt.expNum = 2;%9;
+expt.subject = 'hercules';
+expt.expDate = '2025-05-29_1';%'2020-06-25_1';%'2020-06-16_1';
+expt.expNum = 5;%9;
 bklightCtrl = 0; %6/11/20
 
-pixies = [50 50];%[58 143; 104 119; 80 150];
+pixies = [50 50];%selected pixels to show RF [
 
 %NG SF's stim on this code
 
 %% analysis info
 nSV=1000;
-params.movieSuffix = 'blue';% 'purple''corr_dFF'; %'blue'  %U for corr_dFF can have NANs..
-params.useCorrected = 1;
-respWin = [0 0.8];
+params.movieSuffix = 'red';% 'purple''corr_dFF'; %'blue'  %U for corr_dFF can have NANs..
+params.useCorrected = 0;
+respWin = [0.1 0.5];
 %AP: 6s = [0.05 0.2], 6f = [0 0.18];
 %SF: 6s = [0.1,0.5], 6f = [0.05,0.2]
 %blWin = [-1 0]; %SF
-resizeS = 1; %.125
+resizeS = .25; %.125 Resize factor in cortical space
 
 %for estimation of preferred stim
 n_boot = 10;%1 to see retinotopy only, 10 to compute VFS
 use_method = 'max'; % max or com
 screen_resize_scale = 3; %3 if max method
 
-resultSaveDir = fullfile('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\AnalysisResult\wf',...
-    [expt.subject '_' expt.expDate '_' num2str(expt.expNum)]);
-mkdir(resultSaveDir);
+resultSaveDir = fullfile('M:\Subjects\',expt.subject,...
+    expt.expDate, num2str(expt.expNum));
 
 %% data location
 thisDate = expt.expDate(1:10);

@@ -97,7 +97,8 @@ for v = 1:length(ops.vids)
         results(v).(fn{f}) = dataSummary.(fn{f});
     end
     
-    save(fullfile(ops.localSavePath, 'results.mat'), 'results');
+  %  save(fullfile(ops.localSavePath, 'results.mat'), 'results');
+  %  %TEMPORALLY DISABLED
 end
 
 
