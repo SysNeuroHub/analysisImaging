@@ -1,1 +1,2 @@
 found subdirectories in fileBase, will look for files there
+warning! Looked for files in ~\tmp\hercules\2025-05-29_3\1 but that directory did not exist.
