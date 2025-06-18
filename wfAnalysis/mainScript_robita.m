@@ -10,9 +10,9 @@
 setPath_analysisImaging;
 
 %% experiment
-expt.subject = 'yamatotakeru';
-expt.expDate = '2025-04-21_1';
-expt.expNum = 13;
+expt.subject = 'robita';
+expt.expDate = '2025-03-29_1';
+expt.expNum = 2;
 bklightCtrl = 0;
 
 %% SVD
@@ -24,12 +24,6 @@ params.useCorrected = 0;
 marginT = .5; %[s]
 resizeS = 0.25; %spatial rescaling factor
 
-
-
-%for estimation of preferred stim
-n_boot = 10;%1 to see retinotopy only, 10 to compute VFS
-use_method = 'max'; % max or com
-screen_resize_scale = 3; %3 if max method
 
 
 resultSaveDir = fullfile('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\AnalysisResult\wf',...
@@ -109,15 +103,6 @@ if length(expt.stimTimes.onset) ~= p.nstim * p.nrepeats
     error(['Detected #stim onset:' num2str(expt.stimTimes.onset') '/ total #stim' num2str(p.nstim * p.nrepeats)]);
 end
 
-% %% hack for izanami 2025-01-30_2 exp4
-% lastValidTime = expt.stimTimes.offset(18*3);
-% [~, lastValidTidx] = min(abs(t - lastValidTime));
-% 
-% t = t(1:lastValidTidx);
-% V = V(:,1:lastValidTidx);
-% fV = fV(:,1:lastValidTidx);
-% newV = newV(:,1:lastValidTidx);
-
 %% stimulus triggered movie
 pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respWin);
 [avgPeriEventV, winSamps, periEventV] = ...
@@ -126,37 +111,51 @@ pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respW
 %periEventV: event x nSV x time
 
 
+istim = 6;
+t1 = 2.5;
+t2 = 3;
+ypixRange = [181 220];
+xpixRange = [51 90];
+crange = [-.08 .08];
 
-    %% time-avg response & stimulus preference map
-    preIdx = find(winSamps<0);
-     [~,postIdx] = min(abs(winSamps - 0.25));%to examine laser artifact
-%      postIdx = intersect(find(winSamps>1), find(winSamps < 2));%min(p.pfiledurs)));
+%% time-avg response & stimulus preference map
+preIdx = find(winSamps<0);
+postIdx = intersect(find(winSamps>t1), find(winSamps < t2));
 
-%subtract by prestimulus in each condition
-tavgRespV = mean(avgPeriEventV(:,:,postIdx),3) - mean(avgPeriEventV(:,:,preIdx),3);
-%condition x nSV
+%dF/F
+avgResp = 100*svdFrameReconstruct(U, squeeze(avgPeriEventV(istim,:,:)))./repmat(mimg,[1 1 numel(winSamps)]);
+avgResp = avgResp - mean(avgResp(:,:,preIdx),3);
+tavgResp = mean(avgResp(:,:,postIdx),3);
 
-tavgResp = svdFrameReconstruct(U, tavgRespV');
-%tavgResp = tavgResp - tavgResp(:,:,p.blankstims);%still blood vessel remains...
-
-nRows            = 1;%ceil(sqrt(p.nstim));
-nCols = p.nstim-1;%ceil(p.nstim/nRows);
-figure('position',[0 0 1900 1200]);
+figure('position',[0 0 1000 300]);
 panel = [];
-for istim = 1:p.nstim-1
-    panel(istim) = subplot(nRows,nCols,istim);
-    imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
-    axis equal tight;
-    title(stimSequence.labels{istim});
-   caxis([-3 3])
-    [h,g]=mcolorbar;
-end
+panel(istim) = subplot(121);
+imagesc(tavgResp,'alphadata',mask);
+axis equal tight off;
+hold on;
+rectangle('position', [xpixRange(1) ypixRange(1) diff(xpixRange) diff(ypixRange)]);
+%title(stimSequence.labels{istim});
+title([num2str(t1) '-' num2str(t2) 's after optoStim onset']);
+clim(crange)
+colormap(flipud(parula));
+[h,g]=mcolorbar(gca,.5);
 g.YLabel.String='dF/F [%]';
-saveas(gcf,fullfile(resultSaveDir,figname),'fig');
-close;
 
+MmPerPixel_t = 0.0104 / resizeS;
 
-%% show movie
-traces = prepareTimelineTraces(Timeline);
-movieWithTracesSVD(U, fV, t, traces);
+bregma = [110 135];
+lambda = [227 135];
+addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);
+%drawTopDownCtx
+
+subplot(122);
+plot(winSamps, squeeze(mean(mean(avgResp(ypixRange(1):ypixRange(2),xpixRange(1):xpixRange(2),:)))));
+axis ij; ylim(crange);
+set(gca,'tickdir','out')
+vbox([0 1 2],[.5 1.5 2.5],gca,[.8 .8 1]);
+vbox(t1,t2,gca,[1 .8 .8]);hline(0);
+xlabel('Time [s]'); ylabel('dF/F[%]');
+
+savePaperFigure(gcf,[figname '_icond' num2str(istim)]);
+
 

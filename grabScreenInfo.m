@@ -4,7 +4,11 @@ function expt = grabScreenInfo(expt, SIDir)
 %12/10/20 created from grabStimTimesWF.m
 
 if nargin < 2 || isempty(SIDir)
-    SIDir = '\\storage.erc.monash.edu.au\shares\MNHS-dshi0006\Subjects';
+    if ispc
+        SIDir = '\\storage.erc.monash.edu.au\shares\MNHS-dshi0006\Subjects';
+    elseif isunix
+        SIDir = '//mnt/dshi0006_market/Subjects';
+    end
 end
 
 filename_SI = sprintf('%s_%d_%s_hardwareInfo.mat',expt.expDate, expt.expNum, expt.subject);

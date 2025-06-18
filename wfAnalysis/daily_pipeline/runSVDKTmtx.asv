@@ -28,7 +28,7 @@ load('amberRedOps.mat');
 mouseName = 'hercules';%'susanoo';
 thisDate = '2025-05-29';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
-expNums = 3;
+expNums = 7;
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
 makeROI = 0; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
@@ -158,14 +158,11 @@ pipelineHereKT();
 
 
 %% save this script
-originalFileNameAndLocation=[mfilename('fullpath')  '.m'];
+originalFileNameAndLocation=[mfilename('fullpath')];
 suffix = ['_' mouseName '_' thisDate '_' num2str(thisSeries) '_' num2str(expNums)];
 newFileLocation = fullfile(rawDataDir, mouseName, [thisDate '_' num2str(thisSeries)]);
-[~, filename] = fileparts(originalFileNameAndLocation);
-newFileNameAndLocation=fullfile(newFileLocation, [filename suffix '.m']);
-A = exist(newFileNameAndLocation,'file');
+newbackup=sprintf('%s%s.m',newFileNameLocation, [mfilename suffix]);
+A = exist(newbackup,'file');
 if (A~=0)
     warning('Backup already exists for the current version')
-else
-    copyfile(originalFileNameAndLocation, newFileNameAndLocation);
 end

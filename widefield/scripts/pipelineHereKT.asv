@@ -75,8 +75,12 @@ for v = 1:length(ops.vids)
     loadDatOps.flipudVid = ops.vids(v).flipudVid;
     
     dataSummary = loadRawToDat(loadDatOps);
+    
+    load(timelinePath)
+    strobeTimes = getStrobeTimes(Timeline, ops.rigName);
+    theseStrobeNumbers = 1:numel(strobeTimes);
+    inclStrobes = mod(theseStrobeNumbers, ops.frameMod(1))==ops.frameMod(2);
 
-   
     if showFig
         %check how frameNumbersFromStamp & frameNumbersWithinRec are used from
         %here
@@ -225,9 +229,6 @@ for v = 1:length(ops.vids)
     %% match timestamps with Timeline, split V into each exp, 
     % and upload to the market server specified as
     % dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master')
-
-     V = V(:,1:43518); %hack for hercules exp3
-
     saveSVD(saveOps, U, V, results(v)); 
     
     results(v).U = U;

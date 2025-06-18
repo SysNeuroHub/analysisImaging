@@ -22,7 +22,8 @@ apDir = lambda-bregma; apDir = apDir./norm(apDir);
 ccfbregma = allenCCFbregma()/100/pixSize;
 
 %load('J:\allen\ctxOutlines.mat');
-load('C:\Users\dshi0006\allenCCF\Browsing Functions\ctxOutlines.mat');
+thisDir = fileparts(which('addAllenCtxOutlines'));
+load(fullfile(thisDir, 'allenCCF','Browsing Functions','ctxOutlines.mat'), 'coords');
 
 hold on; 
 for q = 1:numel(coords) % coords is from ctxOutlines.mat
