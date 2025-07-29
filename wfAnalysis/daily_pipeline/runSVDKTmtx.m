@@ -25,19 +25,19 @@ elseif isunix
 end
 
 load('amberRedOps.mat');
-mouseName = 'hercules';%'susanoo';
-thisDate = '2025-05-29';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
-thisSeries = 1;
+mouseName = 'test';%'susanoo';
+thisDate = '2025-06-20';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+thisSeries = 2;
 expNums = 3;
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
-makeROI = 0; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
+makeROI = -1; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
 doRegistration = 0;%1; %15/10/20
 
 
 %where vidXraw.dat and vidXreg.dat are created (subsequently moved to the data server)
-%rootDrive = 'C:\svdinput'; %NG ... too small
-rootDrive = '~/tmp/';%'E:\svdinput';
+rootDrive = 'C:\svdinput'; %NG ... too small
+%rootDrive = '~/tmp/';%'E:\svdinput';
 %will be used in;
 %ops.localSavePath
 
@@ -46,7 +46,8 @@ rootDrive = '~/tmp/';%'E:\svdinput';
 %rawDataDir = '\\vault-v2.erc.monash.edu.au\MNHS-dshi0006\Subjects';%if the raw data is already uploaded to the server
 %rawDataDir = 'X:\Subjects'; %market server ... too slow to load
 if ispc
-    rawDataDir = '~/tmp/';%E:\Subjects'; %local temporary storage
+%     rawDataDir = '~/tmp/';%E:\Subjects'; %local temporary storage
+    rawDataDir = 'M:\Subjects';
 elseif isunix
     rawDataDir = '/mnt/dshi0006_market/Subjects';
 end

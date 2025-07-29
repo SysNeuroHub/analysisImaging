@@ -10,9 +10,9 @@
 setPath_analysisImaging;
 
 %% experiment
-expt.subject = 'hinaku';
-expt.expDate = '2025-06-09_1';
-expt.expNum = 2;
+expt.subject = 'test';
+expt.expDate = '2025-06-18_2';
+expt.expNum = 3;
 bklightCtrl = 0;
 
 %% SVD
@@ -46,7 +46,7 @@ load(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'Timeline'
 
 
 %% load wf data
-for icolor = 3
+for icolor = 1:2
     
     switch icolor
         case 1
@@ -150,10 +150,10 @@ for icolor = 3
     crange = max(abs(prctile(range_c(:),[1 99.99])));
     
     nRows            = 1;%ceil(sqrt(p.nstim));
-    nCols = p.nstim-1;%ceil(p.nstim/nRows);
+    nCols = p.nstim;%ceil(p.nstim/nRows);
     figure('position',[0 0 1900 400]);
     panel = [];
-    for istim = 1:p.nstim-1
+    for istim = 1:p.nstim
         panel(istim) = subplot(nRows,nCols,istim);
         imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
         axis equal tight;
@@ -162,7 +162,7 @@ for icolor = 3
         [h,g]=mcolorbar;
     end
     linkaxes(panel);
-    xlim([40 110]); ylim([140 220])
+%     xlim([40 110]); ylim([140 220])
     g.YLabel.String='dF/F [%]';
     screen2png(fullfile(resultSaveDir,figname));
     close;
@@ -170,8 +170,8 @@ for icolor = 3
 end
 
 
-traces = prepareTimelineTraces(Timeline);
-movieWithTracesSVD(U, fV, t, traces);
+% traces = prepareTimelineTraces(Timeline);
+% movieWithTracesSVD(U, fV, t, traces);
 
 % figure;
 % imagesc(mimg);

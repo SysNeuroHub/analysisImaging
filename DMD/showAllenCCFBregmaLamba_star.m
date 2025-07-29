@@ -33,25 +33,30 @@ screen2png(saveName,f);%
 % savePaperFigure(f, saveName);%use .eps to paint a ROI then save as a png
 %exportgraphics(f,'CCFBL_1000x900.png','BackgroundColor','k'); %does not preserve original pixel size
 
+
+
 %% superimpose grid on CCF
-xfrombregma = -4:1:0; %[mm]
-yfrombregma = -4:3; %A>0, P<0
+xfrombregma = -2.7; %[mm]
+yfrombregma = -3.5; %A>0, P<0
+radiusmm = MmPerPixel_t*[40]; %[mm];
 
-xgrid = 1/MmPerPixel_t * xfrombregma + bregma(2);
-ygrid = -1/MmPerPixel_t * yfrombregma + bregma(1);
+xfrombregmapix = 1/MmPerPixel_t * xfrombregma + bregma(2);
+yfrombregmapix = -1/MmPerPixel_t * yfrombregma + bregma(1);
+radiuspix = 1/MmPerPixel_t * radiusmm;
 
-hline(ygrid, ax,'-','w');
-vline(xgrid, ax,'-','w');
+hline(yfrombregmapix, ax,'-','w');
+vline(xfrombregmapix, ax,'-','w');
 
 screen2png([saveName '_grid'],f);%
 
 
 %% show only patches along the grid
 
-gridNumber = 0;
-for yy = 1:numel(yfrombregma)-1
-    for xx = 1:numel(xfrombregma)-1
-        gridNumber = gridNumber + 1;
+patchNumber = 0;
+for yy = 1:numel(yfrombregma)
+    for xx = 1:numel(xfrombregma)
+        for rr = 1:numel(radiusmm)
+        patchNumber = patchNumber + 1;
 
         fpatch=figure;
         fpatch.InnerPosition = [1 1 width height];
@@ -59,16 +64,16 @@ for yy = 1:numel(yfrombregma)-1
         image(zeros(size(brainImage)));colormap(gray);
         addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);%this looks at lambda and shrinks the CCF
         hold on;
-        rectangle('position',[xgrid(xx) ygrid(yy+1) ...
-            diff(xgrid(xx:xx+1)) -diff(ygrid(yy:yy+1))],...
-            'facecolor','w');
+
+         plot(xfrombregmapix(xx), yfrombregmapix(yy),'rp','MarkerSize',radiuspix(rr),'MarkerEdgeColor','w')
         axis ij image off
         xlim([1 size(brainImage,2)]);
         ylim([1 size(brainImage,1)]);
         
         axpatch = gca;
         axpatch.Position = [0 0 1 1];
-        screen2png([num2str(gridNumber) '_wCCF'],fpatch);
+        screen2png([num2str(patchNumber) '_wCCF'],fpatch);
         close(fpatch);
+        end
     end
 end

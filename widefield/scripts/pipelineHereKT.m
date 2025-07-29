@@ -227,7 +227,6 @@ for v = 1:length(ops.vids)
     % and upload to the market server specified as
     % dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master')
 
-     V = V(:,1:43518); %hack for hercules exp3
 
     saveSVD(saveOps, U, V, results(v)); 
     

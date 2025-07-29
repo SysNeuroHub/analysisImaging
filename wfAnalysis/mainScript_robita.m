@@ -12,7 +12,7 @@ setPath_analysisImaging;
 %% experiment
 expt.subject = 'robita';
 expt.expDate = '2025-03-29_1';
-expt.expNum = 2;
+expt.expNum = 1;%2;
 bklightCtrl = 0;
 
 %% SVD
@@ -111,12 +111,12 @@ pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respW
 %periEventV: event x nSV x time
 
 
-istim = 6;
-t1 = 2.5;
-t2 = 3;
-ypixRange = [181 220];
+istim = 5;
+t1 = 0;%2.5;
+t2 = 2.5;%3;
+ypixRange = [181 220];  
 xpixRange = [51 90];
-crange = [-.08 .08];
+crange = [-.054 .054];
 
 %% time-avg response & stimulus preference map
 preIdx = find(winSamps<0);
@@ -133,19 +133,19 @@ panel(istim) = subplot(121);
 imagesc(tavgResp,'alphadata',mask);
 axis equal tight off;
 hold on;
-rectangle('position', [xpixRange(1) ypixRange(1) diff(xpixRange) diff(ypixRange)]);
+rectangle('position', [xpixRange(1) ypixRange(1) diff(xpixRange) diff(ypixRange)], 'curvature',1);
 %title(stimSequence.labels{istim});
 title([num2str(t1) '-' num2str(t2) 's after optoStim onset']);
-clim(crange)
+caxis(crange)
 colormap(flipud(parula));
 [h,g]=mcolorbar(gca,.5);
 g.YLabel.String='dF/F [%]';
 
 MmPerPixel_t = 0.0104 / resizeS;
 
-bregma = [110 135];
-lambda = [227 135];
-addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);
+% bregma = [110 135];
+% lambda = [227 135];
+% addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);
 %drawTopDownCtx
 
 subplot(122);
@@ -155,6 +155,7 @@ set(gca,'tickdir','out')
 vbox([0 1 2],[.5 1.5 2.5],gca,[.8 .8 1]);
 vbox(t1,t2,gca,[1 .8 .8]);hline(0);
 xlabel('Time [s]'); ylabel('dF/F[%]');
+xlim([-0.5 8.5]);
 
 savePaperFigure(gcf,[figname '_icond' num2str(istim)]);
 

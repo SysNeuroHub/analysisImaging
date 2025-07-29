@@ -3,27 +3,29 @@ addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 
 %load('M:\Subjects\himiko\2025-01-23_1\dataSummary_amber.mat', 'dataSummary');
 %brainImage = dataSummary.meanImage;
-
-scale = 0.5;%
-width = scale*1168;%1000;
-height = scale*900;
+width = 1168;%1000;
+height = 900;
 brainImage = zeros(height,width);
-MmPerPixel_t = 0.0104 / scale; %measured w scale 27/1/25 from getMmPerPix.m
+% MmPerPixel_t = 6.5e-3/0.5; %nominal value
+%MmPerPixel_t = 0.75*6.5e-3/0.5; %educated guess
+MmPerPixel_t = 0.0104; %measured w scale 27/1/25 from getMmPerPix.m
 
 f=figure;
 f.InnerPosition = [1 1 width height];
 %rectangle('position',f.InnerPosition,'edgecolor','r');hold on; %otherwise black region outside brain will be trimmed in savePaperFigure
 image(zeros(size(brainImage)));colormap(gray);
 
-bregma = [scale*380 width/2+1]; 
-lambda = [scale*825 width/2+1];
+bregma = [380 width/2+1];
+lambda = [825 width/2+1];
+% bregma = [380 515];%[yy xx] himiko
+% lambda = [825 515];%[yy xx] himiko
 addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);%this looks at lambda and shrinks the CCF
-scatter(bregma(2), bregma(1), scale*600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
-scatter(lambda(2), lambda(1), scale*600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
+scatter(bregma(2), bregma(1),600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
+scatter(lambda(2), lambda(1),600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
 axis ij image off
 xlim([1 size(brainImage,2)]);
 ylim([1 size(brainImage,1)]);
-line([width/2-scale*50 width/2-scale*50+1/MmPerPixel_t], scale*[800 800],'linewidth',2,'color','w');
+line([width/2-50 width/2-50+1/MmPerPixel_t], [800 800],'linewidth',2,'color','w');
 
 ax = gca;
 ax.Position = [0 0 1 1];
