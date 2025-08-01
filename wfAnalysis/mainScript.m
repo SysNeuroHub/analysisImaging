@@ -10,15 +10,15 @@
 setPath_analysisImaging;
 
 %% experiment
-expt.subject = 'yamatotakeru';
-expt.expDate = '2025-04-21_1';
-expt.expNum = 12;
+expt.subject = 'achilles';
+expt.expDate = '2025-05-21_1';
+expt.expNum = 5;
 bklightCtrl = 0;
 
 %% SVD
 nSV = 1000;%1000;
-params.movieSuffix = 'amber';% 'purple'
-params.useCorrected = 1;
+params.movieSuffix = 'amber';%'amber';% 'purple'
+params.useCorrected = 0;
 
 %% analysis
 marginT = .5; %[s]

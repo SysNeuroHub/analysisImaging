@@ -15,6 +15,7 @@
 % 2, download the raw data under E:\Subjects
 
 clear all
+addpath 'C:\Documents\git\analysisImaging'
 setPath_analysisImaging;
 
 %cd('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\daily_pipeline');
@@ -24,13 +25,13 @@ load('amberRedOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'apollo';%'susanoo';
-thisDate = '2025-05-21';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'Aurelius';%'susanoo';
+thisDate = '2025-07-30';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
-expNums = [1:2];
+expNums = [3:5];
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
-makeROI = -1; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
+makeROI = 1; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
 doRegistration = 0;%1; %15/10/20
 
 
@@ -93,6 +94,8 @@ ops.expRefs = expRefs;
 
 % retrieve camera sampling rate and exposure duration from Timeline
 timelinePath = dat.expFilePath(expRefs{1}, 'timeline', 'master');
+[~,timelineName] = fileparts(timelinePath);
+timelinePath = fullfile(ops.fileBase,num2str(expNums(1)),timelineName);
 load(timelinePath);
 [strobeOnTimes, ~, strobeDurs] = getStrobeTimes(Timeline, ops.rigName);
 exposureDur = median(strobeDurs); %[s]

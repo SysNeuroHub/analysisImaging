@@ -29,6 +29,8 @@ thisDateStr = ops.thisDate(1:10); %8/5/20
 thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
 filePath = dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master');
 Upath = fileparts(filePath); % root for the date - we'll put U (etc) and data summary here
+% Upath = 'D:\Subjects\test\2025-06-18_2\3\';
+% filePath = Upath;
 if ~exist(Upath)
     mkdir(Upath);
 end
@@ -71,6 +73,7 @@ elseif isfield(ops, 'expRefs') && ~isempty(ops.expRefs) && length(ops.expRefs)==
             fprintf(1, '  saving V for exp %s without timestamps... \n', ops.expRefs{n});
         end
         filePath = dat.expPath(ops.expRefs{n}, 'main', 'master');
+        filePath = Upath;
         mkdir(filePath);
         
         V = allV(:,recInds==n);
