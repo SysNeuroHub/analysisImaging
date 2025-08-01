@@ -54,7 +54,11 @@ if nargin < 3 || isempty(TLDir)
     %thisDate = expt.expDate(1:10);
     %thisSeries = str2num(expt.expDate(12:end));
     %TLDir = fileparts(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'timeline','master'));
-    TLDir = '\\storage.erc.monash.edu.au\shares\MNHS-dshi0006\Subjects';
+    if ispc
+        TLDir = '\\storage.erc.monash.edu.au\shares\MNHS-dshi0006\Subjects';
+    elseif isunix
+        TLDir = '//mnt/dshi0006_market/Subjects';
+    end
 end
 if nargin < 2
     getAllPhdFlips = 0;

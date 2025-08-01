@@ -66,6 +66,7 @@ OEInfo.pdCh = 1;
 
 %% rename OEphys filenames (NS data is kept intact)
 expDate = sprintf('%s\\%s\\%s',YYYYMMDD(1:4),YYYYMMDD(5:6), YYYYMMDD(7:8));
+expDate  = strrep(expDate,'\',filesep);
 %nsOriDir = fullfile(nsOriServer, expDate);
 oeOriDir = fullfile(oeOriServer, expDate);
 fixoephys(oeOriDir,'verbose',true);%skip already renamed folders
@@ -93,7 +94,7 @@ copyServer2Local(oiOriServer, rootDir, fullOEName, OIName);
 %% at this moment, assume all data is uploaded to "rootDir"
 
 DirBase = fullfile(rootDir,expDate);%,expName);
-ephysDirBase = fullfile(DirBase,fullOEName,'Record Node 103\experiment1\recording1');
+ephysDirBase = strrep(fullfile(DirBase,fullOEName,'Record Node 103\experiment1\recording1'),'\',filesep);
 saveDirBase = fullfile(rootDir,subject,'processed');
 OEInfo.jsonFile = fullfile(ephysDirBase,'structure.oebin');
 stimName = [fullOEName(1:end-20) '.mat'];

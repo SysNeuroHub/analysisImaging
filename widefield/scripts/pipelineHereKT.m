@@ -75,7 +75,8 @@ for v = 1:length(ops.vids)
     loadDatOps.flipudVid = ops.vids(v).flipudVid;
     
     dataSummary = loadRawToDat(loadDatOps);
-    
+
+   
     if showFig
         %check how frameNumbersFromStamp & frameNumbersWithinRec are used from
         %here
@@ -96,7 +97,8 @@ for v = 1:length(ops.vids)
         results(v).(fn{f}) = dataSummary.(fn{f});
     end
     
-    save(fullfile(ops.localSavePath, 'results.mat'), 'results');
+  %  save(fullfile(ops.localSavePath, 'results.mat'), 'results');
+  %  %TEMPORALLY DISABLED
 end
 
 
@@ -224,6 +226,8 @@ for v = 1:length(ops.vids)
     %% match timestamps with Timeline, split V into each exp, 
     % and upload to the market server specified as
     % dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master')
+
+
     saveSVD(saveOps, U, V, results(v)); 
     
     results(v).U = U;
@@ -244,14 +248,14 @@ movefile('*.png', filePath);
 
 rng('shuffle','twister');
 
-if isfield(ops, 'emailAddress') && ~isempty(ops.emailAddress)        
-                                                                                                                                                                         
-    messages = {'I am the SVD master.', 'Decomposing all day, decomposing all night.', 'Yes! Yes! Woooooooooo!', 'Wha wha whaaat?? It happened! It really happened!!'};    
-    % Send the email
-    mailFromLugaro(ops.emailAddress, [ops.mouseName '_' ops.thisDate ' finished.'], ...
-        messages{randi(numel(messages),1)}, diaryFilename);
-    
-end
+% if isfield(ops, 'emailAddress') && ~isempty(ops.emailAddress)        
+% 
+%     messages = {'I am the SVD master.', 'Decomposing all day, decomposing all night.', 'Yes! Yes! Woooooooooo!', 'Wha wha whaaat?? It happened! It really happened!!'};    
+%     % Send the email
+%     mailFromLugaro(ops.emailAddress, [ops.mouseName '_' ops.thisDate ' finished.'], ...
+%         messages{randi(numel(messages),1)}, diaryFilename);
+% 
+% end
 
 % save(fullfile(ops.localSavePath, 'done.mat'), []);
 % Instead, copy the folder of raw files into the /mnt/data/toArchive folder

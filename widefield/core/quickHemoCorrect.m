@@ -1,7 +1,7 @@
 function [Ub, Vcorr, tb, mimgB] = quickHemoCorrect(expPath, savePath, nSV, ...
-    hemoFreq, pixSpace)
+    hemoFreq, pixSpace, suffix_fluo, suffix_hemo)
 % [Ub, Vcorr, tb, mimgB] = quickHemoCorrect(expPath, savePath, nSV, hemoFreq, pixSpace)
-% loads SVD of blue and purple, 
+% loads SVD of suffix_fluo(blue) and suffix_hemo(purple), 
 % transforms V of blue so that timestamp is common between blue and purple (alignTimeStamp.m),
 % transforms V of purple so that U is common between blue and purple (ChangeU.m), 
 % returns V of blue after hemodynamic correction (HemoCorrectLocal.m)
@@ -27,37 +27,43 @@ end
 if nargin < 5
     pixSpace = 3; % Something about subsampling the image to correct hemo
 end
+if nargin < 6
+    suffix_fluo = 'amber';
+end
+if nargin < 7
+    suffix_hemo = 'red';
+end
 
 expRoot = fileparts(expPath);
-fprintf(1, 'loading blue\n')
+fprintf(1, ['loading ' suffix_fluo '\n'])
 try
-    Ub = readUfromNPY(fullfile(expRoot, 'svdSpatialComponents_blue.npy'), nSV);
-    mimgB = readNPY(fullfile(expRoot, 'meanImage_blue.npy'));
-    load(fullfile(expRoot, 'dataSummary_blue.mat'));
+    Ub = readUfromNPY(fullfile(expRoot, ['svdSpatialComponents_' suffix_fluo '.npy']), nSV);
+    mimgB = readNPY(fullfile(expRoot, ['meanImage_' suffix_fluo '.npy' ]));
+    load(fullfile(expRoot, ['dataSummary_' suffix_fluo '.mat']));
     DSb = dataSummary;
 catch err
-    Ub = readUfromNPY(fullfile(expPath, 'svdSpatialComponents_blue.npy'), nSV);
-    mimgB = readNPY(fullfile(expPath, 'meanImage_blue.npy'));
-    load(fullfile(expPath, 'dataSummary_blue.mat'));
+    Ub = readUfromNPY(fullfile(expPath, ['svdSpatialComponents_' suffix_fluo '.npy']), nSV);
+    mimgB = readNPY(fullfile(expPath, ['meanImage_' suffix_fluo '.npy']));
+    load(fullfile(expPath, ['dataSummary_' suffix_fluo '.mat']));
     DSb = dataSummary;
 end
-Vb = readVfromNPY(fullfile(expPath, 'svdTemporalComponents_blue.npy'), nSV);
-tb = readNPY(fullfile(expPath, 'svdTemporalComponents_blue.timestamps.npy'));
+Vb = readVfromNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_fluo '.npy']), nSV);
+tb = readNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_fluo '.timestamps.npy']));
 
-fprintf(1, 'loading purple\n')
+fprintf(1, ['loading ' suffix_hemo '\n'])
 try
-    Up = readUfromNPY(fullfile(expRoot, 'svdSpatialComponents_purple.npy'), nSV);
-    mimgP = readNPY(fullfile(expRoot, 'meanImage_purple.npy'));
-    load(fullfile(expRoot, 'dataSummary_purple.mat'));
+    Up = readUfromNPY(fullfile(expRoot, ['svdSpatialComponents_' suffix_hemo '.npy']), nSV);
+    mimgP = readNPY(fullfile(expRoot, ['meanImage_' suffix_hemo '.npy']));
+    load(fullfile(expRoot, ['dataSummary_' suffix_hemo '.mat']));
     DSp = dataSummary;
 catch err
-    Up = readUfromNPY(fullfile(expPath, 'svdSpatialComponents_purple.npy'), nSV);
-    mimgP = readNPY(fullfile(expPath, 'meanImage_purple.npy'));
-    load(fullfile(expPath, 'dataSummary_purple.mat'));
+    Up = readUfromNPY(fullfile(expPath, ['svdSpatialComponents_' suffix_hemo '.npy']), nSV);
+    mimgP = readNPY(fullfile(expPath, ['meanImage_' suffix_hemo '.npy']));
+    load(fullfile(expPath, ['dataSummary_' suffix_hemo '.mat']));
     DSp = dataSummary;
 end
-Vp = readVfromNPY(fullfile(expPath, 'svdTemporalComponents_purple.npy'), nSV);
-tp = readNPY(fullfile(expPath, 'svdTemporalComponents_purple.timestamps.npy'));
+Vp = readVfromNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_hemo '.npy']), nSV);
+tp = readNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_hemo '.timestamps.npy']));
 
 if size(Vb,2)>size(Vp,2)
     % can be an extra blue frame - need same number
@@ -125,6 +131,18 @@ ROItrace_b = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub)),Vb)); %squeeze(nan
 ROItrace_p = squeeze(svdFrameReconstruct(nanmean(nanmean(Up)),Vp));
 ROItrace_corr = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub)),Vcorr));
 
+%% test
+% ROItrace_b = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub(600:700,300:400,:))),Vb)); %squeeze(nanmean(nanmean(svdFrameReconstruct(Ub,Vb))));
+% ROItrace_p = squeeze(svdFrameReconstruct(nanmean(nanmean(Up(600:700,300:400,:))),Vp));
+% ROItrace_corr = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub(600:700,300:400,:))),Vcorr));
+% figure;
+% ax(1)=subplot(211);
+% plot(tb, ROItrace_b,'color',[1 .5 0]);hold on;
+% plot(tp, ROItrace_corr,'k');grid minor; legend('amber','amber corrected');
+% ax(2)=subplot(212);
+% plot(tp, ROItrace_p,'r');grid minor; legend('red');
+% linkaxes(ax,'x');
+
 fig=figure('position',[0 0 1900 1200]);
 subplot(211);
 plot(tb, ROItrace_b, tp, ROItrace_p, tp, ROItrace_corr);
@@ -142,7 +160,7 @@ xlabel('freq (hz)');
 ylabel('power');
 axis tight;
 marginplot;
-legend(h,'blue','purple','blue corrected')
+legend(h,suffix_fluo, suffix_hemo,[suffix_fluo ' corrected'])
 
 subplot(224);
 imagesc(ScaleFactor);

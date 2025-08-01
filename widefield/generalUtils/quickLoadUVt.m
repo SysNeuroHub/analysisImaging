@@ -24,7 +24,7 @@ if nargin < 3 || isempty(vPath)
     vPath = expPath;
 end
 
-movieSuffix = 'blue';
+movieSuffix = 'amber';%'blue';
 useCorrected = 1;
 if ~isempty(varargin)
     params = varargin{1};

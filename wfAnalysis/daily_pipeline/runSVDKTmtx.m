@@ -19,6 +19,7 @@ addpath 'C:\Documents\git\analysisImaging'
 setPath_analysisImaging;
 
 %cd('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\daily_pipeline');
+<<<<<<< HEAD
 cd('C:\Documents\git\analysisImaging\wfAnalysis\daily_pipeline');
 load('amberRedOps.mat');
 % For blue/purple alternate
@@ -29,6 +30,19 @@ mouseName = 'Aurelius';%'susanoo';
 thisDate = '2025-07-30';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
 expNums = [3:5];
+=======
+if ispc
+    cd('C:\Users\dshi0006\git\analysisImaging\wfAnalysis\daily_pipeline');
+elseif isunix
+    cd('/home/daisuke/Documents/git/analysisImaging/wfAnalysis/daily_pipeline');
+end
+
+load('amberRedOps.mat');
+mouseName = 'test';%'susanoo';
+thisDate = '2025-06-20';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+thisSeries = 2;
+expNums = 3;
+>>>>>>> origin/main
 hwbinning = 1; %automatically retrieve this from thorcam header??
 magnification = .5; 
 makeROI = 1; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
@@ -36,17 +50,32 @@ doRegistration = 0;%1; %15/10/20
 
 
 %where vidXraw.dat and vidXreg.dat are created (subsequently moved to the data server)
+<<<<<<< HEAD
 %rootDrive = 'C:\svdinput'; %NG ... too small
 rootDrive = 'D:\svdinput';
+=======
+rootDrive = 'C:\svdinput'; %NG ... too small
+%rootDrive = '~/tmp/';%'E:\svdinput';
+>>>>>>> origin/main
 %will be used in;
 %ops.localSavePath
 
 %where raw data is temporally downloaded must be under
 %rawDataDir/(animal)/(session)/(expNum)
 %rawDataDir = '\\vault-v2.erc.monash.edu.au\MNHS-dshi0006\Subjects';%if the raw data is already uploaded to the server
+<<<<<<< HEAD
 %rawDataDir = 'M:\Subjects'; %market server ... too slow to load
 rawDataDir = 'D:\Subjects'; %local temporary storage
 
+=======
+%rawDataDir = 'X:\Subjects'; %market server ... too slow to load
+if ispc
+%     rawDataDir = '~/tmp/';%E:\Subjects'; %local temporary storage
+    rawDataDir = 'M:\Subjects';
+elseif isunix
+    rawDataDir = '/mnt/dshi0006_market/Subjects';
+end
+>>>>>>> origin/main
 
 %where SVD and summary data is saved
 %dat.expFilePath(ops.mouseName, thisDate, thisSeries, expNums, 'widefield','master')
@@ -156,40 +185,15 @@ save ops.mat ops
 pipelineHereKT();
 
 
-
-
-%%
-% mouseName = 'Erlanger';
-% thisDate = datestr(now, 'yyyy-mm-dd');
-% expNums = [2 3];
-% 
-% 
-% addpath(genpath('C:\Users\Experiment\Documents\GitHub\widefield'))
-% addpath(genpath('\\zserver.cortexlab.net\Code\Rigging\main'));
-% addpath(genpath('\\zserver.cortexlab.net\Code\Rigging\cb-tools'));
-% 
-% s = svdVid.listen;
-% 
-% s.ops.mouseName = mouseName;
-% s.ops.thisDate = thisDate;
-% 
-% s.wizard
-% 
-% s.ops.vids(1).fileBase = fullfile('J:\data', mouseName, thisDate);
-% s.ops.vids(2).fileBase = fullfile('J:\data', mouseName, thisDate);
-% s.ops.vids(1).rigName = 'kilotrode';
-% s.ops.vids(2).rigName = 'kilotrode';
-% s.ops.useGPU = true;
-% 
-% for e = 1:length(expNums)
-%     clear ed
-%     ed.expRef = dat.constructExpRef(mouseName, thisDate, expNums(e));
-%     s.addExpDat(ed)
-% end
-% 
-% s.ops.localSavePath = fullfile('J:\data', mouseName, thisDate);
-% 
-% cd(fullfile('J:\data', mouseName, thisDate))
-% ops = s.ops;
-% save ops.mat ops
-% pipelineHereKT
+%% save this script
+originalFileNameAndLocation=[mfilename('fullpath')  '.m'];
+suffix = ['_' mouseName '_' thisDate '_' num2str(thisSeries) '_' num2str(expNums)];
+newFileLocation = fullfile(rawDataDir, mouseName, [thisDate '_' num2str(thisSeries)]);
+[~, filename] = fileparts(originalFileNameAndLocation);
+newFileNameAndLocation=fullfile(newFileLocation, [filename suffix '.m']);
+A = exist(newFileNameAndLocation,'file');
+if (A~=0)
+    warning('Backup already exists for the current version')
+else
+    copyfile(originalFileNameAndLocation, newFileNameAndLocation);
+end

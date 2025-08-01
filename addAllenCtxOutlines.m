@@ -22,7 +22,8 @@ apDir = lambda-bregma; apDir = apDir./norm(apDir);
 ccfbregma = allenCCFbregma()/100/pixSize;
 
 %load('J:\allen\ctxOutlines.mat');
-load('C:\Users\dshi0006\allenCCF\Browsing Functions\ctxOutlines.mat');
+% C:\Users\dshi0006\git\analysisImaging\roiMatchingCCF\allenCCF\Browsing Functions\ctxOutlines.mat
+load('ctxOutlines.mat');
 
 hold on; 
 for q = 1:numel(coords) % coords is from ctxOutlines.mat

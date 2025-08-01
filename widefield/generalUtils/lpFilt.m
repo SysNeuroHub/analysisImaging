@@ -1,11 +1,16 @@
 function filtV = lpFilt(V, Fs, cutoffFreq,     filterEachPixel)
-% filtV = ipFilt(V, Fs, cutoffFreq)
+% filtV = ipFilt(V, Fs, cutoffFreq, filterEachPixel)
 % returns V after temporal filtering (applied to the 2nd dimension) below cutoffFreq
 %
 % INPUT:
 %V: time x space
 %
 % see also. filtV
+
+if nargin < 4
+    filterEachPixel = 0;
+end
+
 order = 3;
 Wn = cutoffFreq/(Fs/2);
 [b,a]=butter(order, Wn, 'low');
