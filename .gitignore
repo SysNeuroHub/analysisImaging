@@ -6,3 +6,5 @@
 *.png
 *.eps
 *.fig
+.ipynb_checkpoints/
+__pycache__
