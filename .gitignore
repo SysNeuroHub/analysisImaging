@@ -1,0 +1,8 @@
+*.asv
+*.m~
+*.mat
+*._*.m
+*._*.java
+*.png
+*.eps
+*.fig
