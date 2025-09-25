@@ -1,0 +1,62 @@
+Index  Abbr   Name   #Pixel (Image size:500 X 800) 
+
+1     Mop     Right Primary motor area     334     
+2     Mos     Right Secondary motor area     590     
+3     SSP-n     Right Primary somatosensory area, nose     85     
+4     SSP-bfd     Right Primary somatosensory area, barrel field     254     
+5     SSP-ll     Right Primary somatosensory area, lower limb     101     
+6     SSP-m     Right Primary somatosensory area, mouth     117     
+7     SSP-ul     Right Primary somatosensory area, upper limb     115     
+8     SSP-tr     Right Primary somatosensory area, trunk     71     
+9     SSP-un     Right Primary somatosensory area, unassigned     48     
+10     SSs     Right Supplemental somatosensory area     131     
+11     AUDd     Right Dorsal auditory area     40     
+12     AUDp     Right Primary auditory area     51     
+13     AUDpo     Right Posterior auditory area     27     
+14     AUDv     Right Ventral auditory area     18     
+15     VISal     Right Anterolateral visual area     39     
+16     VISam     Right Anteromedial visual area     41     
+17     VISl     Right Lateral visual area     67     
+18     VISp     Right Primary visual area     436     
+19     VISpl     Right Posterolateral visual area     22     
+20     VISpm     Right Posteromedial visual area     77     
+21     VISli     Right Laterointermediate area     17     
+22     VISpor     Right Postrhinal area     41     
+23     ACAd     Right Anterior cingulate area, dorsal part     42     
+24     PL     Right Prelimbic area     35     
+25     RSPagl     Right Retrosplenial area, lateral agranular part     141     
+26     RSPd     Right Retrosplenial area, dorsal part     249     
+27     RSPv     Right Retrosplenial area, ventral part     45     
+28     VISa     Right Anterior area     82     
+29     VISrl     Right Rostrolateral visual area     61     
+30     TEa     Right Temporal association areas     45     
+31     Mop     Left Primary motor area     308     
+32     Mos     Left Secondary motor area     521     
+33     SSP-n     Left Primary somatosensory area, nose     83     
+34     SSP-bfd     Left Primary somatosensory area, barrel field     231     
+35     SSP-ll     Left Primary somatosensory area, lower limb     111     
+36     SSP-m     Left Primary somatosensory area, mouth     150     
+37     SSP-ul     Left Primary somatosensory area, upper limb     131     
+38     SSP-tr     Left Primary somatosensory area, trunk     65     
+39     SSP-un     Left Primary somatosensory area, unassigned     43     
+40     SSs     Left Supplemental somatosensory area     132     
+41     AUDd     Left Dorsal auditory area     35     
+42     AUDp     Left Primary auditory area     46     
+43     AUDpo     Left Posterior auditory area     27     
+44     AUDv     Left Ventral auditory area     22     
+45     VISal     Left Anterolateral visual area     40     
+46     VISam     Left Anteromedial visual area     44     
+47     VISl     Left Lateral visual area     62     
+48     VISp     Left Primary visual area     414     
+49     VISpl     Left Posterolateral visual area     28     
+50     VISpm     Left Posteromedial visual area     74     
+51     VISli     Left Laterointermediate area     19     
+52     VISpor     Left Postrhinal area     47     
+53     ACAd     Left Anterior cingulate area, dorsal part     45     
+54     PL     Left Prelimbic area     34     
+55     RSPagl     Left Retrosplenial area, lateral agranular part     155     
+56     RSPd     Left Retrosplenial area, dorsal part     239     
+57     RSPv     Left Retrosplenial area, ventral part     44     
+58     VISa     Left Anterior area     91     
+59     VISrl     Left Rostrolateral visual area     57     
+60     TEa     Left Temporal association areas     52     
