@@ -18,6 +18,11 @@ while true
         [~, idx] = sort([imageFiles.datenum], 'descend');
         latestImageFile = imageFiles(idx(1)).name;
         
+        if numel(idx)>1
+            otherImageFiles = imageFiles(idx(2:end)).name;
+            delete(otherImageFiles);
+        end
+        
         % Read the latest image
         latestImage = imread(fullfile(imageFolder, latestImageFile));
         

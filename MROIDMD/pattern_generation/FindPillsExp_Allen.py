@@ -5,7 +5,7 @@ import sys
 import nibabel
 import numpy
 
-debug = False
+debug = True
 if debug:
     print(os.getcwd())
 
@@ -16,6 +16,7 @@ import Utils
 
 nVoxels_th = 17 #200
 EigFactorThresh = 4 #5
+useCentre = False
 
 # segments the pills in Daisuke's mouse images
 
@@ -40,7 +41,10 @@ BrainMaskNII = nibabel.load(BrainMaskImage)
 #BrainMaskIMG = numpy.array(BrainMaskNII.dataobj) > 0
 BrainMaskIMG = numpy.asanyarray(BrainMaskNII.dataobj) != 0
 
-CentreMask = scipy.ndimage.binary_dilation(PillMaskIMG == 1, iterations=1)
+if useCentre:
+    CentreMask = scipy.ndimage.binary_dilation(PillMaskIMG == 1, iterations=1)
+else:
+    CentreMask = scipy.ndimage.binary_dilation(PillMaskIMG == 4, iterations=1)
 #CentreMask = numpy.logical_and(BrainMaskNotIMG, scipy.ndimage.binary_dilation(CentreMask, iterations=7))
 RightMask = scipy.ndimage.binary_dilation(PillMaskIMG == 2, iterations=1)
 #RightMask = numpy.logical_and(BrainMaskNotIMG, scipy.ndimage.binary_dilation(RightMask, iterations=7))
@@ -161,19 +165,19 @@ def heuristicChoice(IMG, Mask):
     return scipy.ndimage.binary_dilation(numpy.logical_and(IMG > P, Mask))
 
 
-
-if numLabelsCentre > 50 or numLabelsCentre == 0:
-    outLabels[heuristicChoice(ALLENSpaceIMG[:, :, :, 0], CentreMask)] = 1
-elif numLabelsCentre > 1:
-    # looking for left-right shape, dominant axis is 0
-    EigFactorsCentre = eigenFactorsAll(CentreL, 0)
-    H = numpy.bincount(CentreL[CentreL > 0])
-    print(EigFactorsCentre)
-    CentreToChoose = numpy.where(EigFactorsCentre > EigFactorThresh)[0] + 1
-    print("Centre Choosing " + str(CentreToChoose + 1))
-    outLabels[Utils.ismember(CentreL, CentreToChoose)] = 1
-elif numLabelsCentre == 1:
-    outLabels[CentreL == 1] = 1
+if useCentre:
+    if numLabelsCentre > 50 or numLabelsCentre == 0:
+        outLabels[heuristicChoice(ALLENSpaceIMG[:, :, :, 0], CentreMask)] = 1
+    elif numLabelsCentre > 1:
+        # looking for left-right shape, dominant axis is 0
+        EigFactorsCentre = eigenFactorsAll(CentreL, 0)
+        H = numpy.bincount(CentreL[CentreL > 0])
+        print(EigFactorsCentre)
+        CentreToChoose = numpy.where(EigFactorsCentre > EigFactorThresh)[0] + 1
+        print("Centre Choosing " + str(CentreToChoose + 1))
+        outLabels[Utils.ismember(CentreL, CentreToChoose)] = 1
+    elif numLabelsCentre == 1:
+        outLabels[CentreL == 1] = 1
 
 if numLabelsLeft > 50 or numLabelsLeft == 0:
     outLabels[heuristicChoice(ALLENSpaceIMG[:, :, :, 0], LeftMask)] = 2

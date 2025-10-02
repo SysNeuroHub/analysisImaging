@@ -8,8 +8,8 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, ang
 % image4, CCFBL_800x500_star.tif' (OI_ref.jpg): image taken by camera during
 %projection of image 3. Must be the same dimension to image 3
 
-autoTform = 1;
-autoTform2 = 1;
+autoTform = 0; %MR-OI
+autoTform2 = 1; %DMD
 
 %% Data load
 
@@ -89,7 +89,7 @@ end
 
 %% ROI extraction
 
-fprintf('Extrating ROIs...\n')
+fprintf('Extracting ROIs...\n')
 proj_anno_cortex=zeros(size(proj_anno));
 surviveR=[18 24 44 51 65 72 79 86 93 100 122 136 143 150 164 171 178 185 192 199 206 213 226 238 298 325 332 346 353 360];
 surviveL=surviveR+2000;

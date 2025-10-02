@@ -2,9 +2,9 @@
 % pills_labels.nii
 
 
-subjectName = 'tmpB';
+subjectName = 'Nero';
 
-MRIdir = '~/Dropbox/GSlab/MRI_alignment/Kim2023_test';
+MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
 addpath(genpath(MRIdir));
 mkdir(fullfile(MRIdir,subjectName));
 cd(fullfile(MRIdir,subjectName));
@@ -31,6 +31,10 @@ elseif strcmp(subjectName, 'tmpD')
     angle = [0 -(90-84) 0]; %roll pitch yaw
     load('/mnt/dshi0006_market/Subjects/mupi/2025-05-05_1/4/dataSummary_amber.mat');
     %J=60;
+elseif strcmp(subjectName,'Nero')
+    nii_ori = '/mnt/dshi0006_market/MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii';
+    angle = [];
+    dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
 end
 
 %% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
@@ -42,7 +46,7 @@ delete(fullfile(MRIdir, subjectName,'Brain_template.nii'));
 delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
 
 %% load widefield image w reference tubes
-image2 = (dataSummary.meanImage);
+image2 = double(dataSummary.meanImage);
 image2 = image2-min(image2(:));
 image2 = image2/max(image2(:));
 
