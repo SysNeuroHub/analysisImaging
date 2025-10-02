@@ -1,10 +1,10 @@
-addpath(genpath('C:\Users\dshi0006\allenCCF'));
+% addpath(genpath('C:\Users\dshi0006\allenCCF'));
 addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 
 %load('M:\Subjects\himiko\2025-01-23_1\dataSummary_amber.mat', 'dataSummary');
 %brainImage = dataSummary.meanImage;
 
-scale = 0.5;%
+scale = 1;%
 width = scale*1168;%1000;
 height = scale*900;
 brainImage = zeros(height,width);
@@ -15,8 +15,8 @@ f.InnerPosition = [1 1 width height];
 %rectangle('position',f.InnerPosition,'edgecolor','r');hold on; %otherwise black region outside brain will be trimmed in savePaperFigure
 image(zeros(size(brainImage)));colormap(gray);
 
-bregma = [scale*380 width/2+1]; 
-lambda = [scale*825 width/2+1];
+bregma = [scale*(380-20) width/2+1]; 
+lambda = [scale*(825-20) width/2+1];
 addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);%this looks at lambda and shrinks the CCF
 scatter(bregma(2), bregma(1), scale*600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
 scatter(lambda(2), lambda(1), scale*600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');

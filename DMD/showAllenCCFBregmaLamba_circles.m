@@ -38,7 +38,7 @@ screen2png(saveName,f);%
 %% superimpose grid on CCF
 xfrombregma = 3.5;%-2.7; %[mm]
 yfrombregma = -3.6; %A>0, P<0
-radiusmm = MmPerPixel_t*[1.5 10]; %[mm];
+radiusmm = MmPerPixel_t*[1.5 3 10]; %[mm];
 
 xfrombregmapix = 1/MmPerPixel_t * xfrombregma + bregma(2);
 yfrombregmapix = -1/MmPerPixel_t * yfrombregma + bregma(1);
@@ -53,7 +53,7 @@ radiuspix = 1/MmPerPixel_t * radiusmm;
 %% show only patches along the grid
 
 patchNumber = 0;
-for ii = 1%:2
+for ii = 1:3
     for yy = 1:numel(yfrombregma)
         for xx = 1:numel(xfrombregma)
             for rr = 1:numel(radiusmm)

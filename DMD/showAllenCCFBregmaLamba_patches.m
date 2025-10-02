@@ -1,6 +1,6 @@
 addpath(genpath('C:\Users\dshi0006\allenCCF'));
 addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
-
+addpath('C:\Documents\git\dsbox\visualization');
 %load('M:\Subjects\himiko\2025-01-23_1\dataSummary_amber.mat', 'dataSummary');
 %brainImage = dataSummary.meanImage;
 width = 1168;%1000;
@@ -15,8 +15,8 @@ f.InnerPosition = [1 1 width height];
 %rectangle('position',f.InnerPosition,'edgecolor','r');hold on; %otherwise black region outside brain will be trimmed in savePaperFigure
 image(zeros(size(brainImage)));colormap(gray);
 
-bregma = [380 width/2+1];
-lambda = [825 width/2+1];
+bregma = [380-20 width/2+1];
+lambda = [825-20 width/2+1];
 % bregma = [380 515];%[yy xx] himiko
 % lambda = [825 515];%[yy xx] himiko
 addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);%this looks at lambda and shrinks the CCF
@@ -36,8 +36,8 @@ screen2png(saveName,f);%
 %exportgraphics(f,'CCFBL_1000x900.png','BackgroundColor','k'); %does not preserve original pixel size
 
 %% superimpose grid on CCF
-xfrombregma = -4:1:0; %[mm]
-yfrombregma = -4:3; %A>0, P<0
+xfrombregma = -4:.4:4; %[mm]
+yfrombregma = -4:.4:3; %A>0, P<0
 
 xgrid = 1/MmPerPixel_t * xfrombregma + bregma(2);
 ygrid = -1/MmPerPixel_t * yfrombregma + bregma(1);

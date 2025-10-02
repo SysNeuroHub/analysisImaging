@@ -18,64 +18,30 @@ clear all
 addpath 'C:\Documents\git\analysisImaging'
 setPath_analysisImaging;
 
-%cd('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\master\Analysis\wfAnalysis\daily_pipeline');
-<<<<<<< HEAD
 cd('C:\Documents\git\analysisImaging\wfAnalysis\daily_pipeline');
 load('amberRedOps.mat');
 % For blue/purple alternate
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'Aurelius';%'susanoo';
-thisDate = '2025-07-30';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'test';%'susanoo';
+thisDate = '2025-08-14';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
-expNums = [3:5];
-=======
+expNums = [6];
+makeROI = -1;
+doRegistration = 0;
+hwbinning = 1; %automatically retrieve this from thorcam header??
+magnification = .5; 
+
 if ispc
-    cd('C:\Users\dshi0006\git\analysisImaging\wfAnalysis\daily_pipeline');
+    cd('C:\Documents\git\analysisImaging\wfAnalysis\daily_pipeline');
 elseif isunix
     cd('/home/daisuke/Documents/git/analysisImaging/wfAnalysis/daily_pipeline');
 end
 
-load('amberRedOps.mat');
-mouseName = 'test';%'susanoo';
-thisDate = '2025-06-20';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
-thisSeries = 2;
-expNums = 3;
->>>>>>> origin/main
-hwbinning = 1; %automatically retrieve this from thorcam header??
-magnification = .5; 
-makeROI = 1; %1: make ROI and save thisROI.mat, 0: use already saved ROI from the save subject (thisROI.mat), -1: use all pixels
-doRegistration = 0;%1; %15/10/20
-
-
-%where vidXraw.dat and vidXreg.dat are created (subsequently moved to the data server)
-<<<<<<< HEAD
-%rootDrive = 'C:\svdinput'; %NG ... too small
 rootDrive = 'D:\svdinput';
-=======
-rootDrive = 'C:\svdinput'; %NG ... too small
-%rootDrive = '~/tmp/';%'E:\svdinput';
->>>>>>> origin/main
-%will be used in;
-%ops.localSavePath
-
-%where raw data is temporally downloaded must be under
-%rawDataDir/(animal)/(session)/(expNum)
-%rawDataDir = '\\vault-v2.erc.monash.edu.au\MNHS-dshi0006\Subjects';%if the raw data is already uploaded to the server
-<<<<<<< HEAD
-%rawDataDir = 'M:\Subjects'; %market server ... too slow to load
 rawDataDir = 'D:\Subjects'; %local temporary storage
 
-=======
-%rawDataDir = 'X:\Subjects'; %market server ... too slow to load
-if ispc
-%     rawDataDir = '~/tmp/';%E:\Subjects'; %local temporary storage
-    rawDataDir = 'M:\Subjects';
-elseif isunix
-    rawDataDir = '/mnt/dshi0006_market/Subjects';
-end
->>>>>>> origin/main
 
 %where SVD and summary data is saved
 %dat.expFilePath(ops.mouseName, thisDate, thisSeries, expNums, 'widefield','master')
@@ -121,7 +87,7 @@ for e = 1:length(expNums)
 end
 ops.expRefs = expRefs;
 
-% retrieve camera sampling rate and exposure duration from Timeline
+% retrieve camera sampling rate and expos   ure duration from Timeline
 timelinePath = dat.expFilePath(expRefs{1}, 'timeline', 'master');
 [~,timelineName] = fileparts(timelinePath);
 timelinePath = fullfile(ops.fileBase,num2str(expNums(1)),timelineName);
