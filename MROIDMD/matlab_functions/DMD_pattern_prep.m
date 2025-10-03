@@ -6,10 +6,14 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, ang
 % image3, CCFBL_800x500_star.png (DMD_ref.jpg) : reference DMD image. MUST be
 %800x500 pixels
 % image4, CCFBL_800x500_star.tif' (OI_ref.jpg): image taken by camera during
-%projection of image 3. Must be the same dimension to image 3
+%projection of image 3. Must be the same dimension to image 2
 
-autoTform = 0; %MR-OI
+autoTform = 1; %MR-OI
 autoTform2 = 1; %DMD
+
+% if size(image2) ~= size(image4)
+%     error(['image2 size ' numstr(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
+% end
 
 %% Data load
 
@@ -23,118 +27,26 @@ if(~exist('J','var'))
     fprintf('J not inserted; default J=70.\n')
 end
 
-%load_bead=load_nii('T2w_resample.nii');  %TOBE RECOVERED
-%load_anno=load_nii('Atlas_anno_to_T2.nii');
-
-%oriimg=load_anno.img; 
-oriimg(oriimg==2000)=0; img=oriimg;
- 
-%% Remove layers (Right hemi)
-
-for i = [107 114 100 37 51 72 93 79 65 325 332 346 360 150 122 353 346 171 206 136 143 185 164 199 178 86 192 199 213 238]
-    for j = 1:6
-        img(oriimg == i+j) = i;
-    end
-end
-
-for i = [285 45 18 24 226 232 298 367 373]
-    for j = 1:5
-        img(oriimg == i+j) = i;
-    end
-end
-
-for j=1:12
-    img(oriimg==494+j)=494;
-end
-
-%% Remove layers (Left hemi)
-
-for i = [107 114 100 37 51 72 93 79 65 325 332 346 360 150 122 353 346 171 206 136 143 185 164 199 178 86 192 199 213 238]+2000
-    for j = 1:6
-        img(oriimg == i+j) = i;
-    end
-end
-
-for i = [285 45 18 24 226 232 298 367 373]+2000
-    for j = 1:5
-        img(oriimg == i+j) = i;
-    end
-end
-
-for j=1:12
-    img(oriimg==2494+j)=2494;
-end
-
-%% Projection to +z direction (Annotation)
-anno = img;
-if ~isempty(angle)
-    anno = imrotate3(anno, angle(1), [1 0 0],'nearest','crop'); %roll
-    anno = imrotate3(anno, angle(2), [0 1 0],'nearest','crop'); %pitch 
-    anno = imrotate3(anno, angle(3), [0 0 1],'nearest','crop'); %yaw 
-end
-
-anno=flip(rot90(permute(anno,[3 1 2]),2),3);
-
-
-proj_anno=zeros([size(anno,1) size(anno,2)]);
-for i=1:size(anno,3)
-    for j=1:size(anno,1)
-        for k=1:size(anno,2)
-            if anno(j,k,size(anno,3)+1-i)~=0
-                proj_anno(j,k)=anno(j,k,size(anno,3)+1-i);
-            end
-        end
-    end
-end
-
-%% ROI extraction
-
-fprintf('Extracting ROIs...\n')
-proj_anno_cortex=zeros(size(proj_anno));
-surviveR=[18 24 44 51 65 72 79 86 93 100 122 136 143 150 164 171 178 185 192 199 206 213 226 238 298 325 332 346 353 360];
-surviveL=surviveR+2000;
-survive=[surviveR surviveL];
-ROI_info=cell(length(survive),4);
-
-for i=1:length(survive) % 60 regions 
-proj_anno_cortex(find(proj_anno==survive(i)))=proj_anno(find(proj_anno==survive(i)));
-A=Load_ATLAS_info(survive(i));
-ROI_info{i,1}=A{1}; % Original value
-ROI_info{i,2}=A{2}; % Name, abbr
-ROI_info{i,3}=A{3}; % Name, full
-ROI_info{i,4}=length(find(proj_anno_cortex==survive(i))); % # pixels
-end
+ [~, proj_anno_cortex, ROI_info] = project_anno(oriimg, angle);
 
 %% Transform to OI
 if ~isempty(angle)
-    mr_bead = imrotate3(mr_bead, angle(1), [1 0 0],'nearest','crop'); %roll
-    mr_bead = imrotate3(mr_bead, angle(2), [0 1 0],'nearest','crop'); %pitch
-    mr_bead = imrotate3(mr_bead, angle(3), [0 0 1],'nearest','crop'); %yaw
+    mr_bead = imrotate3(mr_bead, angle(1), [1 0 0],'linear','crop'); %roll
+    mr_bead = imrotate3(mr_bead, angle(2), [0 1 0],'linear','crop'); %pitch
+    mr_bead = imrotate3(mr_bead, angle(3), [0 0 1],'linear','crop'); %yaw
 
-    mr_brain = imrotate3(mr_brain, angle(1), [1 0 0],'nearest','crop'); %roll
-    mr_brain = imrotate3(mr_brain, angle(2), [0 1 0],'nearest','crop'); %pitch
-    mr_brain = imrotate3(mr_brain, angle(3), [0 0 1],'nearest','crop'); %yaw
+    mr_brain = imrotate3(mr_brain, angle(1), [1 0 0],'linear','crop'); %roll
+    mr_brain = imrotate3(mr_brain, angle(2), [0 1 0],'linear','crop'); %pitch
+    mr_brain = imrotate3(mr_brain, angle(3), [0 0 1],'linear','crop'); %yaw
 end
 
 aa_bead=permute(mr_bead,[1 3 2]);  
 % a1=max(aa_brain(:,:,J:end),[],3);
 a1_bead=mean(aa_bead,3);
 
-aa_brain=permute(mr_brain,[1 3 2]);  
-[rows, cols, slices] = size(aa_brain);
-surfZ = zeros(rows, cols);
-
-%detect depth of the surface in z
-for r = 1:rows
-    for c = 1:cols
-        idx = find(aa_brain(r,c,:) > 0, 1, 'last'); % first non-zero along z
-        if ~isempty(idx)
-            surfZ(r,c) = idx;   % store slice index of surface
-        end
-    end
-end
-mrimg_brain= double(fliplr(rot90(surfZ)));
-
+Vesselness = vesselness3D(mr_brain, 1, .5,.5,5000); %porus
+mrimg_brain = getSurfaceData(Vesselness);
+mrimg_brain = mrimg_brain/max(mrimg_brain(:));
 
 %b1=rgb2gray(imread('OI_bead.jpg'));
 
@@ -154,6 +66,7 @@ BW = createMask(roiAhand);
 mapconf=edge(double(BW));
 close all;
 
+disp('Computing transformation from MR to OI');
 if autoTform %SLOW AT IMREGTFORM
     % tform = imregcorr(mrimg_bead, borig); %cannot be used for images with too different sizes
     borig_th = borig;
@@ -171,6 +84,7 @@ if autoTform %SLOW AT IMREGTFORM
 
     mrwarped = imwarp(proj_anno_cortex,movingRef,tform,'nearest','OutputView',fixedRef);
     beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef);
+    brainwarped = imwarp(mrimg_brain,movingRef,tform,'cubic','OutputView',fixedRef);
 else
     fprintf('Mark movingPoints and fixedPoints...\n')
     [movingPoints,fixedPoints] = cpselect(mrimg_bead,borig,'Wait',true);
@@ -178,11 +92,14 @@ else
 
     mrwarped = imwarp(proj_anno_cortex,tform,'nearest','OutputView',imref2d(size(borig)));
     beadwarped = imwarp(mrimg_bead,tform,'cubic','OutputView',imref2d(size(borig)));
+    brainwarped = imwarp(mrimg_brain,tform,'cubic','OutputView',imref2d(size(borig)));
 end
+disp('...done');
 
+% figure;imshow(borig);hold on;h=imshow(cat(3,ones(size(borig)),zeros(size(borig)), ...
+% zeros(size(borig))));hold off;set(h,'AlphaData',beadwarped);title('Warped bead laid over OI')
+figure; image(cat(3,borig,brainwarped, beadwarped) );axis equal tight off;
 
-figure;imshow(borig);hold on;h=imshow(cat(3,ones(size(borig)),zeros(size(borig)), ...
-zeros(size(borig))));hold off;set(h,'AlphaData',beadwarped);title('Warped bead laid over OI')
 
 %% Transform to DMD
 
@@ -191,6 +108,7 @@ zeros(size(borig))));hold off;set(h,'AlphaData',beadwarped);title('Warped bead l
 a1 = image4; %DMD ref image captured by widefield camera
 b1 =image3;%rgb2gray(imread('CCFBL_800x500_star.png'));%DMD_ref.jpg
 
+disp('Computing transformation from OI to DMD');
 if autoTform2
     tform2 = imregcorr(a1, b1);
 else
@@ -198,6 +116,8 @@ else
         [movingPoints,fixedPoints] = cpselect(a1,b1,'Wait',true);
         tform2 = fitgeotrans(movingPoints,fixedPoints,TF);
 end
+disp('...done');
+
 mrwarpedtoDMD = imwarp(mrwarped,tform2,'nearest','OutputView',imref2d(size(b1)));
 % mrwarped2=[zeros(size(mrwarped,1),floor((size(borig,2)-size(mrwarped,2))/2)) mrwarped zeros(size(mrwarped,1),ceil((size(borig,2)-size(mrwarped,2))/2))];
 % mrwarped3=[zeros(floor((size(borig,1)-size(mrwarped2,1))/2),size(mrwarped2,2));mrwarped2;zeros(ceil((size(borig,1)-size(mrwarped2,1))/2),size(mrwarped2,2))];
@@ -207,7 +127,6 @@ OIwarpedtoDMD = imwarp(a1,tform2,'cubic','OutputView',imref2d(size(b1)));
 % beadwarped3=[zeros(floor((size(borig,1)-size(beadwarped2,1))/2),size(beadwarped2,2));beadwarped2;zeros(ceil((size(borig,1)-size(beadwarped2,1))/2),size(beadwarped2,2))];
 
 mapconfwarpedtoDMD = 100*imwarp(mapconf,tform2,'cubic','OutputView',imref2d(size(b1)));
-
 borigwarpedtoDMD = imwarp(borig, tform2,'cubic','OutputView',imref2d(size(b1)));
 
 %%

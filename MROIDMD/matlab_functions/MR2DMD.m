@@ -2,7 +2,7 @@
 % pills_labels.nii
 
 
-subjectName = 'Nero';
+subjectName = 'tmpD';
 
 MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
 addpath(genpath(MRIdir));
@@ -34,12 +34,13 @@ elseif strcmp(subjectName, 'tmpD')
 elseif strcmp(subjectName,'Nero')
     nii_ori = '/mnt/dshi0006_market/MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii';
     angle = [];
-    dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
+    %dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
+    dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-02/1000x1600.TIF');
 end
 
 %% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
 cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' nii_ori ' ' fullfile(MRIdir, subjectName)];
-system(cmdStr);
+system(cmdStr); %calls FindPillsExp_Allen.py inside
 
 delete(fullfile(MRIdir, subjectName,'Allen_annotation_modified.nii'));
 delete(fullfile(MRIdir, subjectName,'Brain_template.nii'));
