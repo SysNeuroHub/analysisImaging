@@ -16,7 +16,7 @@ import Utils
 
 nVoxels_th = 17 #200
 EigFactorThresh = 4 #5
-useCentre = False
+useCentre = True
 
 # segments the pills in Daisuke's mouse images
 

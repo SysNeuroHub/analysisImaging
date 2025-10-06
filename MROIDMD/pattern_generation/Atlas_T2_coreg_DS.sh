@@ -64,7 +64,7 @@ rm -f c.nii.gz
 rm -rf brain
 
 # Perform registration from Allen space to native T2w space
-#antsRegistrationSyN.sh -d 3 -f T2w_brain.nii -o Tem_to_T2 -m Brain_template.nii -t s
+antsRegistrationSyN.sh -d 3 -f T2w_brain.nii -o Tem_to_T2 -m Brain_template.nii -t s
 
 # Apply the forward transformation to the atlas annotation to bring it into T2w_brain.nii space
 antsApplyTransforms \

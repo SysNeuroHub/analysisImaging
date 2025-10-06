@@ -45,7 +45,7 @@ aa_bead=permute(mr_bead,[1 3 2]);
 a1_bead=mean(aa_bead,3);
 
 Vesselness = vesselness3D(mr_brain, 1, .5,.5,5000); %porus
-mrimg_brain = getSurfaceData(Vesselness);
+[~,mrimg_brain] = getSurfaceData(Vesselness);
 mrimg_brain = mrimg_brain/max(mrimg_brain(:));
 
 %b1=rgb2gray(imread('OI_bead.jpg'));
