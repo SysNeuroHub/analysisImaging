@@ -12,7 +12,7 @@ for r = 1:rows
         idx = find(aa_brain(r,c,:) > 0, 1, 'last'); % first non-zero along z
         if ~isempty(idx)
             surfZ(r,c) = idx;   % store slice index of surface
-            surfD(r,c) = aa_brain(r,c,idx);   % store slice index of surface
+            surfD(r,c) = aa_brain(r,c,idx);   % store surface value
         end
     end
 end

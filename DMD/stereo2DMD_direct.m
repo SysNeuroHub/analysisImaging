@@ -8,7 +8,6 @@ MmPerPixel_t = 0.0104 / scale; %measured w scale 27/1/25 from getMmPerPix.m
  
 xfrombregma = 3.5;%-2.7; %[mm]
 yfrombregma = -3.6; %A>0, P<0
-radiusmm = MmPerPixel_t*[1.5 5 10]; %[mm];
 bregma = [scale*(380-20) width/2+1]; 
 lambda = [scale*(825-20) width/2+1];
 
@@ -36,7 +35,7 @@ screen2png(saveName, fpatch);
 close(fpatch);
 ctxOutlines = rgb2gray(imread([saveName '.png']));    
 ctxOutlines = double(ctxOutlines/max(ctxOutlines(:)));
-subplot(2,3,1); imagesc(ctxOutlines); axis equal tight; title('image in stereotaxic coords')
+subplot(2,3,1); imagesc(ctxOutlines); axis equal tight; title('image in stereotaxic coords');
 
 %% CCF contour in 2D 
 MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
@@ -77,22 +76,28 @@ ctxOutlines_DMD = (TotalBrainImage==0)-(proj_brain==0);
 % tform3= imregtform(imfill(ctxOutlines, 'holes'), movingRef, imfill(ctxOutlines_DMD,'holes'), fixedRef,"similarity",optimizer, metric); %NG
 
   [movingPoints,fixedPoints] = cpselect(ctxOutlines,ctxOutlines_DMD,'Wait',true);
-    tform3 = fitgeotrans(movingPoints,fixedPoints, 'similarity');
+  tform3 = fitgeotrans(movingPoints,fixedPoints, 'similarity');
 
-ctxOutlines_reg = imwarp(ctxOutlines,tform3,'cubic','OutputView',imref2d(size(ctxOutlines_DMD)));
-subplot(2,3,2); imshowpair(ctxOutlines_DMD, ctxOutlines_reg);
-title('stereo image (m) registered to CCF (g)');
+refDMD = imref2d(size(ctxOutlines_DMD));
+usFactor = 5;
+refDMDbig = imref2d(usFactor * size(ctxOutlines_DMD));
+refDMDbig.XWorldLimits = refDMD.XWorldLimits;
+refDMDbig.YWorldLimits = refDMD.YWorldLimits;
+
+%ctxOutlines_reg = imwarp(ctxOutlines,tform3,'cubic','OutputView', refDMD);
+ctxOutlines_reg = imwarp(ctxOutlines,tform3,'linear','OutputView', refDMDbig, 'FillValues',0);
+% subplot(2,3,2); imshowpair(ctxOutlines_DMD, ctxOutlines_reg); title('stereo image (m) registered to CCF (g)');
+subplot(2,3,2); imagesc(ctxOutlines_reg); axis equal tight; title('stereo image registered to upscaled CCF');
 
 %% texture mapping from 2D to 3D in Allen CCF (Kim) space
-V = (oriimg~=0).*(oriimg~=2000);
-% Extract the surface voxels
-% Get surface voxels using isosurface
-fv = isosurface(flip(V,3), 0.5);
+%V = flip((oriimg~=0).*(oriimg~=2000), 3);
+surviveR=[18 24 44 51 65 72 79 86 93 100 122 136 143 150 164 171 178 185 192 199 206 213 226 238 298 325 332 346 353 360];
+surviveL=surviveR+2000; %from project_anno.m
+V = flip(ismember(oriimg, [surviveL surviveR]), 3);
+%V = imfill(V);
+V = imresize3(V, usFactor, 'linear');
 
-% Round coordinates to voxel indices
-surfX = round(fv.vertices(:,1)); %round(fv.vertices(:,2));% dorso-ventral
-surfY = round(fv.vertices(:,2)); %round(fv.vertices(:,3));% left-right
-surfZ = round(fv.vertices(:,3)); %round(fv.vertices(:,1));% antero-posterior
+ [surfX, surfY, surfZ] = vol2Surf(V, 50*usFactor);
 
 % 2. Initialize texture volume
 TexVol = zeros(size(V));
@@ -100,21 +105,17 @@ TexVol = zeros(size(V));
 % 3. Define projection mapping
 % Normalize x,y surface coordinates to image pixel coordinates
 I = ctxOutlines_reg;
-% u = round( rescale(surfX, 1, size(I,2)) );
-% v = round( rescale(surfY, 1, size(I,1)) );
-u = round( rescale(surfY, 1, size(I,2)) );
-v = round( rescale(surfZ, 1, size(I,1)) );
+if (size(V,1) ~= size(I,2)) | (size(V,3) ~= size(I,1))
+    error('volume size does not match image size');
+end
 
-% Clip to image bounds
-%u = max(min(u, size(I,2)), 1);
-%v = max(min(v, size(I,1)), 1);
+u = round( rescale(surfY, 1, size(I,2), "InputMin",1,"InputMax", size(V,1)) ); %CORRECT??
+v = round( rescale(surfZ, 1, size(I,1), "InputMin",1,"InputMax", size(V,3)) ); %CORRECT??
 
 % 4. Assign projected intensity to surface voxels
 for k = 1:length(surfX)
     TexVol(surfY(k), surfX(k), surfZ(k)) = I(v(k), u(k));
 end
-%<FIXME:  somehow texvol is mirrored in z-axis
-
 
 TexVol = flip(TexVol, 3); %why is this needed?
 subplot(2,3,3); isosurface(TexVol); axis equal tight;
@@ -122,48 +123,53 @@ title('Stereo image projection mapped to CCF');
 
 % 5. Smooth or fill small holes
 TexVolSmooth = imdilate(TexVol, strel('sphere', 1));
-
-
-% 6. Visualize
-% isosurface(TexVolSmooth, 0.5);
-% axis equal; camlight; lighting gouraud;
-volumeViewer(TexVolSmooth);
 info = oriimg_info;
 info.Datatype = 'double';
+info.Transform.T(1:3,1:3) = info.Transform.T(1:3,1:3)/usFactor;
+info.PixelDimensions = info.PixelDimensions/usFactor;
+info.ImageSize = size(TexVolSmooth);
 niftiwrite(TexVolSmooth,'TexVolSmooth.nii', info);
+
 
 %% warp to individual brain (in a shell script)
 subjectName = 'tmpD';
 
 copyfile(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'), ...
     fullfile(MRIdir, subjectName,'Brain_template.nii'));
+
+
+niftiwrite_us(fullfile(MRIdir,subjectName,'T2w_brain.nii'), usFactor);
 cmdStr = [fullfile(MRIdir,'pattern_generation/AtlasTexVol_to_T2.sh') ' ' 'TexVolSmooth.nii' ' ' fullfile(MRIdir, subjectName)];
 system(cmdStr); %output TexVol_T2.nii
 
 
-%% project to 2D
-TexVol_T2 = niftiread('TexVol_T2.nii');
+%% project back from 3D to 2D
+TexVol_T2 = niftiread('TexVolSmooth_T2.nii');
 
 % if ~isempty(angle)
 %     TexVol_T2 = imrotate3(TexVol_T2, angle(1), [1 0 0],'linear','crop'); %roll
 %     TexVol_T2 = imrotate3(TexVol_T2, angle(2), [0 1 0],'linear','crop'); %pitch
 %     TexVol_T2 = imrotate3(TexVol_T2, angle(3), [0 0 1],'linear','crop'); %yaw
 % end
-[~,TexImg] = getSurfaceData(TexVol_T2); 
-%<FIXME: extremely noisy
+%
+%[~, TexImg] = getSurfaceData(TexVol_T2); % extremely noisy
+
+%% volume mask returns less noisier image than surface mask
+brainMask = niftiread(fullfile(MRIdir,subjectName,'T2w_brain_us.nii'));
+TexImg = getSufraceData2(TexVol_T2, brainMask>0);
 subplot(2,3,4); imagesc(TexImg);axis equal tight; title('stereo warped to T2');
 
 %% convert to OI
 load('/home/daisuke/Documents/git/analysisImaging/MROIDMD/tmpD/Atlas_reg_info.mat',...
-    'tform','tform2');
+    'tform','tform2','mrwarpedtoDMD');
 
 % from CCF to OI
 OIsize = [1080 1080];
 fixedRef  = imref2d(OIsize, 0.0104, 0.0104);  % example pixel sizes in mm
-movingRef = imref2d(size(TexImg), 0.1, 0.1);
-mrwarped = imwarp(TexImg,movingRef,tform,'nearest','OutputView',fixedRef);
-mrwarpedtoDMD = imwarp(mrwarped,tform2,'nearest','OutputView',imref2d([500 800]));
+movingRef = imref2d(size(TexImg), 0.1/usFactor,  0.1/usFactor);
+TexImgwarped = imwarp(TexImg,movingRef,tform,'linear','OutputView',fixedRef);
+TexImgwarpedtoDMD = imwarp(TexImgwarped,tform2,'linear','OutputView',imref2d([500 800]));
 
-subplot(2,3,5); imagesc(mrwarped);axis equal tight; title('warped to OI');
-subplot(2,3,6); imagesc(mrwarpedtoDMD);axis equal tight; title('warped to DMD');
+subplot(2,3,5); imagesc(TexImgwarped);axis equal tight; title('T2 warped to OI');
+subplot(2,3,6); imshowpair(mrwarpedtoDMD, TexImgwarpedtoDMD);axis equal tight; title('OI warped to DMD(m)');
 

@@ -23,7 +23,7 @@ ccfbregma = allenCCFbregma()/100/pixSize;
 
 %load('J:\allen\ctxOutlines.mat');
 % C:\Users\dshi0006\git\analysisImaging\roiMatchingCCF\allenCCF\Browsing Functions\ctxOutlines.mat
-load('ctxOutlines.mat');
+load('ctxOutlines.mat'); %coords
 
 hold on; 
 for q = 1:numel(coords) % coords is from ctxOutlines.mat
