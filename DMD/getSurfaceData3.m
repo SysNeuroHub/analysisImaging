@@ -52,9 +52,13 @@ end
 
 % --- Sample data on the detected surface ---
 [xGrid, yGrid] = ndgrid(1:rows, 1:cols);
-surfD = interp3(aa_brain, yGrid, xGrid, surfZ, 'linear', 0);
 
 % --- Rotate back for visualization consistency ---
 surfDepth = double(fliplr(rot90(surfZ)));
-surfData  = double(fliplr(rot90(surfD)));
+
+
+if nargout>1
+    surfD = interp3(aa_brain, yGrid, xGrid, surfZ, 'linear', 0);
+    surfData  = double(fliplr(rot90(surfD)));
+end
 end
