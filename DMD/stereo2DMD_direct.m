@@ -8,11 +8,19 @@ MmPerPixel_t = 0.0104 / scale; %measured w scale 27/1/25 from getMmPerPix.m
  
 xfrombregma = 3.5;%-2.7; %[mm]
 yfrombregma = -3.6; %A>0, P<0
-bregma = [scale*(380-20) width/2+1]; 
-lambda = [scale*(825-20) width/2+1];
+bregma = [scale*(380-20) width/2+1]+0.5; %[y x]
+lambda = [scale*(825-20) width/2+1]+0.5;
 
-xfrombregmapix = 1/MmPerPixel_t * xfrombregma + bregma(2);
-yfrombregmapix = -1/MmPerPixel_t * yfrombregma + bregma(1);
+% xfrombregmapix = 1/MmPerPixel_t * xfrombregma + bregma(2);
+% yfrombregmapix = -1/MmPerPixel_t * yfrombregma + bregma(1);
+
+%% x-y grid
+xgridfrombregma = -4:.4:4; %[mm]
+ygridfrombregma = -4:.4:3; %A>0, P<0
+
+xgrid = 1/MmPerPixel_t * xgridfrombregma + bregma(2);
+ygrid = -1/MmPerPixel_t * ygridfrombregma + bregma(1);
+
 
 %% CCF contour projected to 2D (showAllenCCFBregmaLambda.m)
 
@@ -23,11 +31,18 @@ image(zeros(size(brainImage)));colormap(gray);
 addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_t);%this looks at lambda and shrinks the CCF
 
 hold on;
+
+scatter(bregma(2), bregma(1), scale*600,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
+
 axis ij image off
 xlim([1 size(brainImage,2)]);
 ylim([1 size(brainImage,1)]);
 
 axpatch = gca;
+
+hline(ygrid, axpatch,'-','w');
+vline(xgrid, axpatch,'-','w');
+
 axpatch.Position = [0 0 1 1];
 saveName = ['CCFBL_' num2str(width) 'x' num2str(height)];
 
@@ -35,69 +50,43 @@ screen2png(saveName, fpatch);
 close(fpatch);
 ctxOutlines = rgb2gray(imread([saveName '.png']));    
 ctxOutlines = double(ctxOutlines/max(ctxOutlines(:)));
-subplot(2,3,1); imagesc(ctxOutlines); axis equal tight; title('image in stereotaxic coords');
+subplot(2,3,1); imagesc(ctxOutlines); hold on; plot(bregma(2), bregma(1),'ro'); axis equal tight; title('image in stereotaxic coords');
 
 %% CCF contour in 2D 
 MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
 oriimg = niftiread(fullfile(MRIdir, 'pattern_generation/Allen_annotation_modified.nii'));
 oriimg_info = niftiinfo(fullfile(MRIdir, 'pattern_generation/Allen_annotation_modified.nii'));
-[proj_anno, proj_anno_cortex, ROI_info] = project_anno(oriimg);
-
-proj_brain=proj_anno_cortex;
-Brainimage={};
-for i=1:size(ROI_info,1)
-    ROI_all=zeros(size(proj_brain));
-    ROI_all(find(proj_brain==ROI_info{i,1}))=i;
-    ROI_all2=imerode(ROI_all,strel('disk',1));
-    %ROI_all3=imerode(ROI_all2,strel('diamond',1));
-    Brainimage{i}=ROI_all2;
-end
-
-ImageRow=[];
-ROI_information=ROI_info;
-for re=1:size(Brainimage,2)
-    ImageRow=cat(3,Brainimage{re},ImageRow);
-    ROI_information{re,1}=re;
-end
-TotalBrainImage=sum(ImageRow,3);
-
-ctxOutlines_DMD = (TotalBrainImage==0)-(proj_brain==0);
-
+mrsize_xy = [size(oriimg,3), size(oriimg,1)]; %[x y]
 
 %% register CCF2D contour from UCL to individual brain
 
- % tform3 = imregcorr(ctxOutlines, ctxOutlines_DMD); %NG
+MmPerPixel_mr = 0.1; %[mm]
+bregmak_c = allenCCFbregma()*MmPerPixel_mr;
+bregmak = [bregmak_c(1) bregmak_c(3)]+0.5; %[y x]
+movingPoints = [bregma(2) bregma(1); bregma(2)+1/MmPerPixel_t bregma(1)]; %[x y]
+fixedPoints = [bregmak(2) bregmak(1); bregmak(2)+1/MmPerPixel_mr bregmak(1)]; %[x y]
+tform3 = fitgeotform2d(movingPoints, fixedPoints, 'similarity');
+%  [movingPoints,fixedPoints] = cpselect(ctxOutlines,ctxOutlines_DMD,'Wait',true);
+%  tform3 = fitgeotrans(movingPoints,fixedPoints, 'similarity');
 
-%  [optimizer,metric] = imregconfig("multimodal");
-%  fixedRef  = imref2d(size(ctxOutlines_DMD), 0.1, 0.1);  % example pixel sizes in mm
-%  movingRef = imref2d(size(ctxOutlines), MmPerPixel_t, MmPerPixel_t);
-% 
-% tform3= imregtform(ctxOutlines, movingRef, ctxOutlines_DMD, fixedRef,"similarity",optimizer, metric); %NG
-% tform3= imregtform(imfill(ctxOutlines, 'holes'), movingRef, imfill(ctxOutlines_DMD,'holes'), fixedRef,"similarity",optimizer, metric); %NG
-
-  [movingPoints,fixedPoints] = cpselect(ctxOutlines,ctxOutlines_DMD,'Wait',true);
-  tform3 = fitgeotrans(movingPoints,fixedPoints, 'similarity');
-
-refDMD = imref2d(size(ctxOutlines_DMD));
+refDMD = imref2d(mrsize_xy);
 usFactor = 5;
-refDMDbig = imref2d(usFactor * size(ctxOutlines_DMD));
+refDMDbig = imref2d(usFactor * mrsize_xy);
 refDMDbig.XWorldLimits = refDMD.XWorldLimits;
 refDMDbig.YWorldLimits = refDMD.YWorldLimits;
 
-%ctxOutlines_reg = imwarp(ctxOutlines,tform3,'cubic','OutputView', refDMD);
 ctxOutlines_reg = imwarp(ctxOutlines,tform3,'linear','OutputView', refDMDbig, 'FillValues',0);
 % subplot(2,3,2); imshowpair(ctxOutlines_DMD, ctxOutlines_reg); title('stereo image (m) registered to CCF (g)');
 subplot(2,3,2); imagesc(ctxOutlines_reg); axis equal tight; title('stereo image registered to upscaled CCF');
 
 %% texture mapping from 2D to 3D in Allen CCF (Kim) space
-%V = flip((oriimg~=0).*(oriimg~=2000), 3);
 surviveR=[18 24 44 51 65 72 79 86 93 100 122 136 143 150 164 171 178 185 192 199 206 213 226 238 298 325 332 346 353 360];
 surviveL=surviveR+2000; %from project_anno.m
 V = flip(ismember(oriimg, [surviveL surviveR]), 3);
-%V = imfill(V);
 V = imresize3(V, usFactor, 'linear');
 
  [surfX, surfY, surfZ] = vol2Surf(V, 50*usFactor);
+ %plot3(surfX, surfY, surfZ, '.');
 
 % 2. Initialize texture volume
 TexVol = zeros(size(V));
@@ -119,7 +108,8 @@ end
 
 TexVol = flip(TexVol, 3); %why is this needed?
 subplot(2,3,3); isosurface(TexVol); axis equal tight;
-title('Stereo image projection mapped to CCF');
+ax = gca; set(gca, 'view', [120 20]);
+title('Projection mapped to upscaled CCF');
 
 % 5. Smooth or fill small holes
 TexVolSmooth = imdilate(TexVol, strel('sphere', 1));
@@ -146,17 +136,10 @@ system(cmdStr); %output TexVol_T2.nii
 %% project back from 3D to 2D
 TexVol_T2 = niftiread('TexVolSmooth_T2.nii');
 
-% if ~isempty(angle)
-%     TexVol_T2 = imrotate3(TexVol_T2, angle(1), [1 0 0],'linear','crop'); %roll
-%     TexVol_T2 = imrotate3(TexVol_T2, angle(2), [0 1 0],'linear','crop'); %pitch
-%     TexVol_T2 = imrotate3(TexVol_T2, angle(3), [0 0 1],'linear','crop'); %yaw
-% end
-%
-%[~, TexImg] = getSurfaceData(TexVol_T2); % extremely noisy
-
 %% volume mask returns less noisier image than surface mask
-brainMask = niftiread(fullfile(MRIdir,subjectName,'T2w_brain_us.nii'));
+%brainMask = niftiread(fullfile(MRIdir,subjectName,'T2w_brain_us.nii'));
 TexImg = getSufraceData2(TexVol_T2, brainMask>0);
+%[~, TexImg] = getSurfaceData3(TexVol_T2, 'last', 0);  %slightly faster but noisier
 subplot(2,3,4); imagesc(TexImg);axis equal tight; title('stereo warped to T2');
 
 %% convert to OI
@@ -164,11 +147,12 @@ load('/home/daisuke/Documents/git/analysisImaging/MROIDMD/tmpD/Atlas_reg_info.ma
     'tform','tform2','mrwarpedtoDMD');
 
 % from CCF to OI
-OIsize = [1080 1080];
+OIsize = [1080 1080];  %[y x]
+DMDSize = [500 800]; %[y x]
 fixedRef  = imref2d(OIsize, 0.0104, 0.0104);  % example pixel sizes in mm
-movingRef = imref2d(size(TexImg), 0.1/usFactor,  0.1/usFactor);
+movingRef = imref2d(size(TexImg), MmPerPixel_mr/usFactor,  MmPerPixel_mr/usFactor);
 TexImgwarped = imwarp(TexImg,movingRef,tform,'linear','OutputView',fixedRef);
-TexImgwarpedtoDMD = imwarp(TexImgwarped,tform2,'linear','OutputView',imref2d([500 800]));
+TexImgwarpedtoDMD = imwarp(TexImgwarped,tform2,'linear','OutputView',imref2d(DMDSize));
 
 subplot(2,3,5); imagesc(TexImgwarped);axis equal tight; title('T2 warped to OI');
 subplot(2,3,6); imshowpair(mrwarpedtoDMD, TexImgwarpedtoDMD);axis equal tight; title('OI warped to DMD(m)');
