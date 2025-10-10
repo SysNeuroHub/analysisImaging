@@ -6,12 +6,14 @@ fv = isosurface(V, 0.5);
 
 % Compute surface normals
 normals = isonormals(V, fv.vertices);
-
-% Normalize
 normals = normals ./ vecnorm(normals, 2, 2);
 
 % Keep surfaces facing +z direction and depth>50
-keepIdx = find((normals(:,1) > 0).*(fv.vertices(:,1) > th_depth));
+%keepIdx = find((normals(:,1) > 0).*(fv.vertices(:,1) > th_depth));
+
+% % depths = unique(fv.vertices(:,1));
+% % for dd = 1:numel(depths)
+% % fv.vertices(:,1) == depths()
 
 fv.vertices = fv.vertices(keepIdx,:);
 

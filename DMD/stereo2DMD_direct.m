@@ -51,9 +51,13 @@ ctxOutlines = double(ctxOutlines/max(ctxOutlines(:)));
 subplot(2,3,1); imagesc(ctxOutlines); hold on; plot(bregma(2), bregma(1),'ro'); axis equal tight; title('image in stereotaxic coords');
 
 %% CCF contour in 2D 
-% MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
+if ispc
 MRIdir = 'C:/Documents/git/analysisImaging/MROIDMD';
-V = flip(niftiread(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'))>0,3);
+else
+ MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
+end
+% V = flip(niftiread(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'))>0,3);
+V = niftiread(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'))>0;
 V_info = niftiinfo(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'));
 mrsize_xy = [size(V,3), size(V,1)]; %[x y]
 
@@ -84,6 +88,8 @@ V = imresize3(V, usFactor, 'linear');%once
 TexVol = paintSurfaceToVolume(surfDepth, ctxOutlines_reg, size(V));%all
 
 subplot(2,3,3); isosurface(TexVol); axis equal tight;
+ % f = gcf;
+ % f.CurrentAxes.ZDir = 'Reverse'; %should NOT reverse
 ax = gca; set(gca, 'view', [120 20]);
 title('Projection mapped to upscaled CCF');
 
@@ -106,31 +112,51 @@ copyfile(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'), ...
 
 
 niftiwrite_us(fullfile(MRIdir,subjectName,'T2w_brain.nii'), usFactor);
-cmdStr = [fullfile(MRIdir,'pattern_generation/AtlasTexVol_to_T2.sh') ' ' 'TexVolS.nii' ' ' fullfile(MRIdir, subjectName)];
+
+cmdStr = [fullfile('/home/daisuke/Documents/git/analysisImaging/DMD', '/AtlasTexVol_to_T2.sh') ' ' 'TexVol.nii' ' ' fullfile(MRIdir, subjectName)];
 system(cmdStr); %output TexVol_T2.nii %all
 
 
 %% project back from 3D to 2D
-TexVol_T2 = niftiread('TexVolSmooth_T2.nii');
+loadDir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD/tmpD/';
+load(fullfile(loadDir, 'Atlas_reg_info.mat'),...
+    'tform','tform2','mrwarpedtoDMD', 'mrwarped','image2','mrangle');
+
+TexVol_T2 = niftiread('TexVol_T2.nii'); %this looks correct
+
+if ~isempty(mrangle)
+    TexVol_T2 = imrotate3(TexVol_T2, mrangle(1), [1 0 0],'linear','crop'); %roll
+    TexVol_T2 = imrotate3(TexVol_T2, mrangle(2), [0 1 0],'linear','crop'); %pitch
+    TexVol_T2 = imrotate3(TexVol_T2, mrangle(3), [0 0 1],'linear','crop'); %yaw
+end
 
 %% volume mask returns less noisier image than surface mask
-%brainMask = niftiread(fullfile(MRIdir,subjectName,'T2w_brain_us.nii'));
-TexImg = getSufraceData2(TexVol_T2, brainMask>0);
-%[~, TexImg] = getSurfaceData3(TexVol_T2, 'last', 0);  %slightly faster but noisier
-subplot(2,3,4); imagesc(TexImg);axis equal tight; title('stereo warped to T2');
+% brainMask = niftiread(fullfile(MRIdir,subjectName,'T2w_brain_us.nii'));
+% TexImg = getSufraceData2(TexVol_T2, brainMask>0);
+[~, TexImg] = getSurfaceData3(TexVol_T2, 'last', 0);  %slightly faster but noisier
 
 %% convert to OI
-load('/home/daisuke/Documents/git/analysisImaging/MROIDMD/tmpD/Atlas_reg_info.mat',...
-    'tform','tform2','mrwarpedtoDMD');
+mr_brain = niftiread(fullfile(loadDir,  'T2w_brain.nii'));
+if ~isempty(mrangle)
+    mr_brain = imrotate3(mr_brain, mrangle(1), [1 0 0],'linear','crop'); %roll
+    mr_brain = imrotate3(mr_brain, mrangle(2), [0 1 0],'linear','crop'); %pitch
+    mr_brain = imrotate3(mr_brain, mrangle(3), [0 0 1],'linear','crop'); %yaw
+end
+surfDepth = getSurfaceData3(mr_brain, 'last');
+
+% subplot(2,3,4); imagesc(TexImg);axis equal tight; title('stereo warped to T2');
+% volumeViewer((imresize3(mr_brain,5)>0)+10*TexVol_T2) this looks ok
+subplot(2,3,4); imshowpair(imresize(surfDepth,usFactor), TexImg);axis equal tight; title('stereo warped to T2'); %OK
+% but this is not correct
 
 % from CCF to OI
-OIsize = [1080 1080];  %[y x]
-DMDSize = [500 800]; %[y x]
+OIsize = size(image2);  %[y x]
+DMDSize = [500 800]; %[y x] FIXED
 fixedRef  = imref2d(OIsize, 0.0104, 0.0104);  % example pixel sizes in mm
 movingRef = imref2d(size(TexImg), MmPerPixel_mr/usFactor,  MmPerPixel_mr/usFactor);
 TexImgwarped = imwarp(TexImg,movingRef,tform,'linear','OutputView',fixedRef);
 TexImgwarpedtoDMD = imwarp(TexImgwarped,tform2,'linear','OutputView',imref2d(DMDSize));
 
-subplot(2,3,5); imagesc(TexImgwarped);axis equal tight; title('T2 warped to OI');
+subplot(2,3,5); imshowpair(mrwarped, TexImgwarped);axis equal tight; title('T2 warped to OI'); %NG
 subplot(2,3,6); imshowpair(mrwarpedtoDMD, TexImgwarpedtoDMD);axis equal tight; title('OI warped to DMD(m)');
 

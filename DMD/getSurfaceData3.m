@@ -33,12 +33,14 @@ switch direction
         mask_cumsum = cumsum(mask,3);
         surfaceMask = (mask_cumsum == 1) & mask;
         [~, surfZ] = max(surfaceMask, [], 3);
-
+        surfZ(surfZ==size(surfaceMask,3)) = NaN;
+        
     case 'last'   % deepest voxel (largest z)
         mask_flip = flip(mask,3);
         mask_cumsum = cumsum(mask_flip,3);
         surfaceMask = (mask_cumsum == 1) & mask_flip;
         [~, surfZ] = max(surfaceMask, [], 3);
+        surfZ(surfZ==1) = NaN;
         surfZ = slices - surfZ + 1; % invert z index
 
     otherwise
@@ -58,7 +60,7 @@ surfDepth = double(fliplr(rot90(surfZ)));
 
 
 if nargout>1
-    surfD = interp3(aa_brain, yGrid, xGrid, surfZ, 'linear', 0);
+    surfD = interp3(aa_brain, yGrid, xGrid, surfZ, 'linear', 0); %very noisy
     surfData  = double(fliplr(rot90(surfD)));
 end
 end

@@ -1,4 +1,4 @@
-function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, angle)
+function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mrangle)
 % image1, mrimg (T2w_resample.nii): MRI image including reference capsuls, projected to x-y plane (will be
 % supplied as .nii in future). Must be the same dimension to Atlas_anno_to_T2.nii,  CCF registered to individual MR (120x160 pixels)
 % image2, (OI_bead.jpg): image taken by camera that captures reference capsuls.
@@ -11,9 +11,9 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, ang
 autoTform = 1; %MR-OI
 autoTform2 = 1; %DMD
 
-% if size(image2) ~= size(image4)
-%     error(['image2 size ' numstr(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
-% end
+if size(image2) ~= size(image4)
+    error(['image2 size ' numstr(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
+end
 
 %% Data load
 
@@ -27,17 +27,17 @@ if(~exist('J','var'))
     fprintf('J not inserted; default J=70.\n')
 end
 
- [~, proj_anno_cortex, ROI_info] = project_anno(oriimg, angle);
+ [~, proj_anno_cortex, ROI_info] = project_anno(oriimg, mrangle);
 
 %% Transform to OI
-if ~isempty(angle)
-    mr_bead = imrotate3(mr_bead, angle(1), [1 0 0],'linear','crop'); %roll
-    mr_bead = imrotate3(mr_bead, angle(2), [0 1 0],'linear','crop'); %pitch
-    mr_bead = imrotate3(mr_bead, angle(3), [0 0 1],'linear','crop'); %yaw
+if ~isempty(mrangle)
+    mr_bead = imrotate3(mr_bead, mrangle(1), [1 0 0],'linear','crop'); %roll
+    mr_bead = imrotate3(mr_bead, mrangle(2), [0 1 0],'linear','crop'); %pitch
+    mr_bead = imrotate3(mr_bead, mrangle(3), [0 0 1],'linear','crop'); %yaw
 
-    mr_brain = imrotate3(mr_brain, angle(1), [1 0 0],'linear','crop'); %roll
-    mr_brain = imrotate3(mr_brain, angle(2), [0 1 0],'linear','crop'); %pitch
-    mr_brain = imrotate3(mr_brain, angle(3), [0 0 1],'linear','crop'); %yaw
+    mr_brain = imrotate3(mr_brain, mrangle(1), [1 0 0],'linear','crop'); %roll
+    mr_brain = imrotate3(mr_brain, mrangle(2), [0 1 0],'linear','crop'); %pitch
+    mr_brain = imrotate3(mr_brain, mrangle(3), [0 0 1],'linear','crop'); %yaw
 end
 
 aa_bead=permute(mr_bead,[1 3 2]);  
@@ -99,7 +99,7 @@ disp('...done');
 % figure;imshow(borig);hold on;h=imshow(cat(3,ones(size(borig)),zeros(size(borig)), ...
 % zeros(size(borig))));hold off;set(h,'AlphaData',beadwarped);title('Warped bead laid over OI')
 figure; image(cat(3,borig,brainwarped, beadwarped) );axis equal tight off;
-
+title('OI space');
 
 %% Transform to DMD
 
@@ -163,5 +163,6 @@ fclose(fid);
 TotalBrainImage=ImageTotal;
 
 save('Atlas_reg_info.mat','ROI_info','proj_brain','TotalBrainImage','tform','tform2','mapconfwarpedtoDMD',...
-    'mrwarpedtoDMD',"OIwarpedtoDMD",'borigwarpedtoDMD','mrimg_bead','mrimg_brain','image2','image3','image4','proj_anno_cortex');
+    'mrwarpedtoDMD',"OIwarpedtoDMD",'borigwarpedtoDMD','mrimg_bead','mrimg_brain',...
+    'image2','image3','image4','proj_anno_cortex','mrwarped','mrangle');
 fprintf('Done! Execute DMD_pattern_generation([ROI indices])...\n')

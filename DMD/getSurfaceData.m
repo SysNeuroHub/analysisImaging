@@ -1,20 +1,60 @@
-function [surfDepth, surfData] = getSurfaceData(mr_brain)
-%[surfDepth, surfData] = getSurfaceData(mr_brain)
+function [surfDepth, surfData] = getSurfaceData(mr_brain, direction, threshold, smoothSigma)
+% getSurfaceData  Extracts a smooth surface map and intensity values from a 3D volume,
+%                 using only voxel-based operations (no isosurface).
+%
+%   [surfDepth, surfData] = getSurfaceData(mr_brain)
+%   [surfDepth, surfData] = getSurfaceData(mr_brain, direction, threshold, smoothSigma)
+%
+%   Inputs:
+%       mr_brain   - 3D matrix (e.g. MRI volume)
+%       direction  - 'first' (top surface) or 'last' (bottom surface) [default: 'first']
+%       threshold  - intensity threshold to define object [default: 0.2 * max(mr_brain(:))]
+%       smoothSigma - Gaussian smoothing of surface depth [default: 2]
+%
+%   Outputs:
+%       surfDepth  - depth index (z) of detected surface per (x,y)
+%       surfData   - voxel intensity at that surface
 
-aa_brain=permute(mr_brain,[1 3 2]);  
+% --- Defaults ---
+if nargin < 2 || isempty(direction), direction = 'first'; end
+if nargin < 3 || isempty(threshold), threshold = 0.2 * max(mr_brain(:)); end
+if nargin < 4 || isempty(smoothSigma), smoothSigma = []; end
+
+% --- Consistent orientation (match your original) ---
+aa_brain = permute(mr_brain,[1 3 2]);  
 [rows, cols, slices] = size(aa_brain);
-surfZ = zeros(rows, cols);
-surfD = zeros(rows, cols);
 
-%detect depth of the surface in z
-for r = 1:rows
-    for c = 1:cols
-        idx = find(aa_brain(r,c,:) > 0, 1, 'last'); % first non-zero along z
-        if ~isempty(idx)
-            surfZ(r,c) = idx;   % store slice index of surface
-            surfD(r,c) = aa_brain(r,c,idx);   % store surface value
-        end
-    end
+% --- Binary mask of object ---
+mask = aa_brain > threshold;
+
+% --- Find surface depth voxelwise ---
+switch direction
+    case 'first'  % topmost voxel (smallest z)
+        mask_cumsum = cumsum(mask,3);
+        surfaceMask = (mask_cumsum == 1) & mask;
+        [~, surfZ] = max(surfaceMask, [], 3);
+
+    case 'last'   % deepest voxel (largest z)
+        mask_flip = flip(mask,3);
+        mask_cumsum = cumsum(mask_flip,3);
+        surfaceMask = (mask_cumsum == 1) & mask_flip;
+        [~, surfZ] = max(surfaceMask, [], 3);
+        surfZ = slices - surfZ + 1; % invert z index
+
+    otherwise
+        error('direction must be ''first'' or ''last''.');
 end
+
+if ~isempty(smoothSigma)
+    % --- Smooth the surface depth map ---
+    surfZ = imgaussfilt(surfZ, smoothSigma);
+end
+
+% --- Sample data on the detected surface ---
+[xGrid, yGrid] = ndgrid(1:rows, 1:cols);
+surfD = interp3(aa_brain, yGrid, xGrid, surfZ, 'linear', 0);
+
+% --- Rotate back for visualization consistency ---
 surfDepth = double(fliplr(rot90(surfZ)));
-surfData = double(fliplr(rot90(surfD)));
+surfData  = double(fliplr(rot90(surfD)));
+end
