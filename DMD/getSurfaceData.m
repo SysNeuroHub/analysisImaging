@@ -21,11 +21,11 @@ if nargin < 3 || isempty(threshold), threshold = 0.2 * max(mr_brain(:)); end
 if nargin < 4 || isempty(smoothSigma), smoothSigma = []; end
 
 % --- Consistent orientation (match your original) ---
-aa_brain = permute(mr_brain,[1 3 2]);  
-[rows, cols, slices] = size(aa_brain);
+%aa_brain = permute(mr_brain,[1 3 2]);  
+[rows, cols, slices] = size(mr_brain);
 
 % --- Binary mask of object ---
-mask = aa_brain > threshold;
+mask = mr_brain > threshold;
 
 % --- Find surface depth voxelwise ---
 switch direction
@@ -33,12 +33,14 @@ switch direction
         mask_cumsum = cumsum(mask,3);
         surfaceMask = (mask_cumsum == 1) & mask;
         [~, surfZ] = max(surfaceMask, [], 3);
-
+        surfZ(surfZ==size(surfaceMask,3)) = NaN;
+        
     case 'last'   % deepest voxel (largest z)
         mask_flip = flip(mask,3);
         mask_cumsum = cumsum(mask_flip,3);
         surfaceMask = (mask_cumsum == 1) & mask_flip;
         [~, surfZ] = max(surfaceMask, [], 3);
+        surfZ(surfZ==1) = NaN;
         surfZ = slices - surfZ + 1; % invert z index
 
     otherwise
@@ -52,9 +54,25 @@ end
 
 % --- Sample data on the detected surface ---
 [xGrid, yGrid] = ndgrid(1:rows, 1:cols);
-surfD = interp3(aa_brain, yGrid, xGrid, surfZ, 'linear', 0);
 
 % --- Rotate back for visualization consistency ---
-surfDepth = double(fliplr(rot90(surfZ)));
-surfData  = double(fliplr(rot90(surfD)));
+%surfDepth = double(fliplr(rot90(surfZ)));
+surfDepth = double(surfZ);
+
+if nargout>1
+    dd = -10:10;
+
+    % Expand grids
+    surfZstack = surfZ + reshape(dd, 1, 1, 1, []);  % 4th dim for dd
+    xGrid4 = repmat(xGrid, 1, 1, 1, numel(dd));
+    yGrid4 = repmat(yGrid, 1, 1, 1, numel(dd));
+
+    % Interpolate in one call
+    surfDstack = interp3(mr_brain, yGrid4, xGrid4, surfZstack, 'linear', 0);
+
+    % Sum (or mean) across depth offsets
+    surfD = nanmean(surfDstack, 4);   % same as your loop
+
+    surfData  = double(surfD);
+end
 end

@@ -24,6 +24,7 @@ imgDir = '/home/daisuke/tmp/CCFBL_400x300pix_8x7grid/';
 load(fullfile(imgDir, 'CCFBL_400x300pix_8x7grid_stereo'), 'imageStereo','bregma', 'MmPerPixel_img');
 
 %% convert stereo image into image for DMD
+%imageStereo(:,:,1) = 1;
 image4DMD = applyStereo2DMD(imageStereo(:,:,1), bregma, MmPerPixel_img, ...
     mrangle, tform, tform2, OIsize, MmPerPixel_oi, fullfile(regDir, subject));
 

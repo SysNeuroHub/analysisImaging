@@ -11,7 +11,7 @@ function TexVol = paintSurfaceToVolume(surfDepth, surfData, volSize)
 %   Output:
 %       TexVol    - 3D volume with surfData placed at [x, y, z = surfDepth(x,y)]
 
-if (volSize(1) ~= size(surfData,2)) || (volSize(3) ~= size(surfData,1))
+if (volSize(1) ~= size(surfData,1)) || (volSize(2) ~= size(surfData,2))
     error('volume size does not match image size');
 end
 
@@ -24,7 +24,8 @@ TexVol = zeros(volSize, 'like', surfData);
 % convert subscripts to linear indices
 iy = (1:rows)' * ones(1,cols);
 ix = ones(rows,1) * (1:cols);
-linIdx = sub2ind(volSize, ix(:), round(surfDepth(:)), iy(:));
+%linIdx = sub2ind(volSize, ix(:), round(surfDepth(:)), iy(:));
+linIdx = sub2ind(volSize, iy(:), ix(:), round(surfDepth(:)));
 
 % flatten everything
 linIdx = linIdx(:);
@@ -33,7 +34,7 @@ vals   = surfData(:);
 % remove invalid (zero or out-of-bounds) indices
 valid = linIdx > 0 & linIdx <= numel(TexVol) & surfDepth(:) > 0;
 TexVol(linIdx(valid)) = vals(valid);
-TexVol = flip(TexVol,3); %yes i need this
+%TexVol = flip(TexVol,3); %yes i need this
 end
 
 

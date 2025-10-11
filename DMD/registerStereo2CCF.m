@@ -1,4 +1,4 @@
-function [tform3, surfDepth, sizeVus, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel, ...
+function [tform3, surfDepth, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel, ...
     path2Brain_template, usFactor)
 
 
@@ -10,7 +10,7 @@ MmPerPixel_mr = 0.1; %[mm]
 
 
 %V = flip(niftiread(path2Brain_template)>0, 3);
-V = niftiread(path2Brain_template)>0;
+V = afterniftiread(niftiread(path2Brain_template)>0);
 V_info = niftiinfo(path2Brain_template);
 mrsize_xy = [size(V,3), size(V,1)]; %[x y]
 
@@ -27,10 +27,13 @@ refDMDbig.XWorldLimits = refDMD.XWorldLimits;
 refDMDbig.YWorldLimits = refDMD.YWorldLimits;
 
 
+% Vus = imresize3(V, usFactor, 'linear');
+% [surfDepth] = getSurfaceData(Vus, 'last', 0.5);
+
 V = smooth3(V, 'gaussian', [7 7 7], 3); %important for projection mapping
 Vus = imresize3(V, usFactor, 'linear');
-[surfDepth] = getSurfaceData3(Vus, 'last', 0.5);
-sizeVus = size(Vus);
+[surfDepth] = getSurfaceData(Vus, 'last', 0.5);
+%sizeVus = size(Vus);
 
 Vusinfo = V_info;
 Vusinfo.Datatype = 'double';
