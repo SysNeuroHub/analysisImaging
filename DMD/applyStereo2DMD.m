@@ -30,6 +30,7 @@ currentDir = pwd;
 cd(MROIDMDsubjectDir);
 
 surfaceT2 = Stereo2T2(ones(size(images(:,:,1))), bregma, usFactor, Vusinfo, tform3, surfDepth, mrangle);
+surfaceT2(abs(surfaceT2)<1e-1)=nan;
 
 TexImgwarpedtoDMD = zeros(DMDsize(1), DMDsize(2), nImages);
 for ii = 1:nImages
@@ -37,7 +38,8 @@ for ii = 1:nImages
 
     TexVol_T2 = Stereo2T2(images(:,:,ii), bregma, usFactor, Vusinfo, tform3, surfDepth, mrangle);
 
-   TexImg = squeeze(nansum(TexVol_T2.*(surfaceT2>0),3)); %only slightly better than one line below
+   %TexImg = squeeze(nansum(TexVol_T2.*(surfaceT2>0),3)); %only slightly better than one line below
+   TexImg = squeeze(nanmean(TexVol_T2./surfaceT2,3));
    %TexImg = squeeze(nansum(TexVol_T2,3));
     if verbose
         subplot(2,3,4); imagesc(TexImg);axis equal tight; 
@@ -61,6 +63,7 @@ for ii = 1:nImages
         subplot(2,3,6); imagesc(TexImgwarpedtoDMD);axis equal tight; 
         title('OI warped to DMD');
 
+        fig = gcf;
         caxes(fig, prctile(images(:), [0 100]));
     end
 end
