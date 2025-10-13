@@ -4,6 +4,8 @@ function saveEveryImages(imageStack, saveDir)
 %
 % TODO: save as a tiff stack?
 
+set(0, 'DefaultFigureVisible', 'off');
+
 width = size(imageStack,2);
 height = size(imageStack,1);
 nImages = size(imageStack, 3);
@@ -23,3 +25,5 @@ for ii = 1:nImages
         screen2png(fullfile(saveDir, thisName),f);
         close(f);
 end
+
+set(0, 'DefaultFigureVisible', 'on')

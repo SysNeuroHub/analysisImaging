@@ -32,4 +32,4 @@ antsApplyTransforms \
  -o $OUTDIR/$OUTPUTNII \
  -t Tem_to_T21Warp.nii.gz \
  -t Tem_to_T20GenericAffine.mat \
- --interpolation BSpline[3]
+ --interpolation BSpline[1]

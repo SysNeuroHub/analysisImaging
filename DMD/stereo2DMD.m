@@ -24,9 +24,10 @@ imgDir = '/home/daisuke/tmp/CCFBL_400x300pix_8x7grid/';
 load(fullfile(imgDir, 'CCFBL_400x300pix_8x7grid_stereo'), 'imageStereo','bregma', 'MmPerPixel_img');
 
 %% convert stereo image into image for DMD
-%imageStereo(:,:,1) = 1;
-image4DMD = applyStereo2DMD(imageStereo(:,:,1), bregma, MmPerPixel_img, ...
+
+image4DMD = applyStereo2DMD(imageStereo, bregma, MmPerPixel_img, ...
     mrangle, tform, tform2, OIsize, MmPerPixel_oi, fullfile(regDir, subject));
+%12s per image
 
 image4DMD = uint8(round(double(intmax("uint8"))*image4DMD));
 
@@ -34,4 +35,5 @@ mkdir(fullfile(imgDir, subject));
 save(fullfile(imgDir, ['CCFBL_400x300pix_8x7grid_' subject]), ...
     'image4DMD'); %what else to save?
 
-saveEveryImages(imageStack, fullfile(imgDir, subject)); %is this really needed?
+saveEveryImages(image4DMD, fullfile(imgDir, subject)); %is this really needed?
+
