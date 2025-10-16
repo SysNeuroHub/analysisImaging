@@ -1,6 +1,9 @@
 function [tform3, surfDepth, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel, ...
     path2Brain_template, usFactor)
-
+% [tform3, surfDepth, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel, ...
+%     path2Brain_template, usFactor)
+% computes 2D transformation from stereotaxi coordinate to CCF looked from
+% above, with upsampling factor usFactor
 
 if isempty(usFactor)
     usFactor = 5;

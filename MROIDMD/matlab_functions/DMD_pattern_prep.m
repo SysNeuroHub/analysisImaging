@@ -8,11 +8,15 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mra
 % image4, CCFBL_800x500_star.tif' (OI_ref.jpg): image taken by camera during
 %projection of image 3. Must be the same dimension to image 2
 
+%TODO: only extract pills not brain of OI image (image2) 
+
+
 autoTform = 1; %MR-OI
 autoTform2 = 1; %DMD
+image2th = 95;% [%]
 
 if size(image2) ~= size(image4)
-    error(['image2 size ' numstr(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
+    error(['image2 size ' num2str(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
 end
 
 %% Data load
@@ -45,7 +49,7 @@ aa_bead=permute(mr_bead,[1 3 2]);
 a1_bead=mean(aa_bead,3);
 
 Vesselness = vesselness3D(mr_brain, 1, .5,.5,5000); %porus
-[~,mrimg_brain] = getSurfaceData(Vesselness);
+[~,mrimg_brain] = getSurfaceData(afterniftiread(Vesselness));
 mrimg_brain = mrimg_brain/max(mrimg_brain(:));
 
 %b1=rgb2gray(imread('OI_bead.jpg'));
@@ -58,7 +62,8 @@ mrimg_bead(mrimg_bead>1) = 1; mrimg_bead(mrimg_bead<0)=0;
 
 figure;
 subplot(121);imshow(mrimg_bead);title('Original MR bead image')
-subplot(122);imagesc(log(borig)); axis equal tight; title('OI; draw brain boundary. Return to the first vertex then double click')
+subplot(122);imagesc(borig); clim(prctile(borig(:), [0 image2th]));
+axis equal tight; title('OI; draw brain boundary. Return to the first vertex then double click')
 %BW=roipoly;
 roiAhand = images.roi.AssistedFreehand;
 draw(roiAhand);
@@ -68,17 +73,22 @@ close all;
 
 disp('Computing transformation from MR to OI');
 if autoTform %SLOW AT IMREGTFORM
-    % tform = imregcorr(mrimg_bead, borig); %cannot be used for images with too different sizes
+    
     borig_th = borig;
-    borig_th(borig_th < prctile(borig_th(:), 70)) = 0;
-    % mrimg_bead_th = mrimg_bead;
-    % mrimg_bead_th(mrimg_bead_th > prctile(mrimg_bead_th(:),70)) = 1;
+    borig_th(borig_th < prctile(borig_th(:), image2th)) = 0; %70
+  
 
     [optimizer,metric] = imregconfig("multimodal");
     optimizer.MaximumIterations = 1e4;
     fixedRef  = imref2d(size(borig_th), 0.0104, 0.0104);  % example pixel sizes in mm
     movingRef = imref2d(size(mrimg_brain), 0.1, 0.1);
-    tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef,"similarity",optimizer, metric);
+
+    initialTform = affine2d([cosd(0) -sind(0) 0; sind(0) cosd(0) 0; 0 0 1]); % ~0° initial guess
+    tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef,"similarity",...
+        optimizer, metric, 'InitialTransformation', initialTform);
+    % beadwarpedCoarse = imwarp(mrimg_bead,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
+    % brainwarpedCoarse = imwarp(mrimg_brain,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
+
     tform = imregtform(mrimg_bead, movingRef, borig_th, fixedRef,"affine",optimizer, metric, ...
         'InitialTransformation', tformCoarse);
 

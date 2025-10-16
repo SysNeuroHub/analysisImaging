@@ -1,6 +1,7 @@
-function expt = grabLaserTimesWF(expt, TLDir, ISI,  verbose, AOTh, lsrTh)
-%times = getStimTimesWF
-%returns times of visual stimulus onset from Timeline data.
+function expt = grabLaserTimesWF(expt, timeline_filename, ISI,  verbose, AOTh, lsrTh)
+%times = getLaserTimesWF
+%returns times of laser onset from Timeline data (assumed to happen once
+%per trial)
 %note this function does not read protocol file, so the order of output
 %variables are not in the order stored in p-file
 %
@@ -32,16 +33,19 @@ if nargin < 3 || isempty(ISI)
     ISI = 1/5; %[s] inter-repeat interval
 end
 
-if nargin < 2 || isempty(TLDir)
+if nargin < 2 || isempty(timeline_filename)
     %thisDate = expt.expDate(1:10);
     %thisSeries = str2num(expt.expDate(12:end));
     %TLDir = fileparts(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'timeline','master'));
-    TLDir = '\\storage.erc.monash.edu.au\shares\MNHS-dshi0006\Subjects';
+    % TLDir = '\\storage.erc.monash.edu.au\shares\MNHS-dshi0006\Subjects';
+    thisDate = expt.expDate(1:10);
+    thisSeries = str2num(expt.expDate(12:end));
+    timeline_filename = dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'Timeline', 'master');
 end
 
 
-filename_TL = sprintf('%s_%d_%s_Timeline.mat',expt.expDate, expt.expNum, expt.subject);
-timeline_filename = fullfile(TLDir, expt.subject, expt.expDate, num2str(expt.expNum), filename_TL);
+% filename_TL = sprintf('%s_%d_%s_Timeline.mat',expt.expDate, expt.expNum, expt.subject);
+% timeline_filename = fullfile(TLDir, expt.subject, expt.expDate, num2str(expt.expNum), filename_TL);
 
 if ~exist(timeline_filename,'file')
     error([expt.subject ' ' expt.expDate ': no timeline']);
@@ -91,8 +95,8 @@ else
     
     
     %% AO trace
-    ao_idx = strcmp({Timeline.hw.inputs.name}, 'ao0');
-    %AOTh = mean(Timeline.rawDAQData(:,ao_idx)); %25/9/20
+    ao_idx = strcmp({Timeline.hw.inputs.name}, 'laserIn');%'ao0');
+    AOTh = mean(Timeline.rawDAQData(:,ao_idx)); %25/9/20
     ao_trace_raw = Timeline.rawDAQData(:,ao_idx)';
     ao_on = ao_trace_raw > AOTh;
     
@@ -178,8 +182,8 @@ else
             AOOn_times = ao_onsets(AO_on_idx);
             AOOff_times = ao_offsets(AO_off_idx);
             
-            laserOnIdx = min(find(tltime(laser_t) >= AOOn_times));
-            laserOffIdx = max(find(tltime(laser_t) <= AOOff_times));
+            laserOnIdx = min(find(tltime(laser_t) >= AOOn_times)); %assume single ON per condition
+            laserOffIdx = max(find(tltime(laser_t) <= AOOff_times));  %assume single ON per condition
             laserOn_times(tt) = tltime(laser_t(laserOnIdx)); %2/12/20
             laserOff_times(tt) = tltime(laser_t(laserOffIdx)); %2/12/20
             

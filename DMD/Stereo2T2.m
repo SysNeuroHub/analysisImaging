@@ -1,4 +1,6 @@
 function TexVol_T2 = Stereo2T2(imageStereo, usFactor, Vusinfo, tform3, surfDepth, mrangle)
+% TexVol_T2 = Stereo2T2(imageStereo, usFactor, Vusinfo, tform3, surfDepth, mrangle)
+% projectionmaps images defined in stereotaxic coordinates into CCF then to T2 space
 
 verbose = 0;
 sizeVus = Vusinfo.ImageSize;

@@ -10,6 +10,7 @@ width = size(imageStack,2);
 height = size(imageStack,1);
 nImages = size(imageStack, 3);
 for ii = 1:nImages
+    disp([num2str(ii) '/' num2str(nImages)]);
     f=figure;
         f.InnerPosition = [1 1  width height];
 
