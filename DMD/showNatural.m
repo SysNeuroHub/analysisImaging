@@ -15,7 +15,7 @@ spaceSampleFac = 2;
 
 %% parameter about stereotaxic coords
 scale = 1/3;
-width =  300;
+width =  400;
 height = 300;
 bregma = [scale*(380-20) width/2+1]+0.5; %[y x]
 lambda = [scale*(825-20) width/2+1]+0.5;
@@ -23,13 +23,14 @@ lambda = [scale*(825-20) width/2+1]+0.5;
 brainImage = zeros(height,width);
 MmPerPixel_img = 0.0104 / scale; %measured w scale 27/1/25 from getMmPerPix.m
 
+ioriMov = 2;%0;
+
 saveDir = '/home/daisuke/tmp/';
-saveName = sprintf('natural_%dx%dpix', width, height);
+saveName = sprintf('natural_%dx%dpix_%d', width, height, ioriMov);
 mkdir(fullfile(saveDir, saveName, 'stereo'));
 
 
 tic;
-ioriMov = 2;%0;
 for imov = 1%:nTotSnippets
 imageStereo = [];
 
@@ -38,7 +39,7 @@ imageStereo = [];
     % if nTotFrames <= imov*(1+dropFrames)*frameLength - (ioriMov-1)*nTotFrames
     %     ioriMov = ioriMov + 1;
         loadName = sprintf('mtrn0%02d_10min_re10sec.avi', ioriMov);
-    %     loadData = VideoReader(fullfile(movDir, loadName));
+        loadData = VideoReader(fullfile(movDir, loadName));
     % end
 
     % w = VideoWriter(saveName, saveFormat);
@@ -99,5 +100,5 @@ imageStereo = [];
     %     clear frames frames_m
     t = toc
 
-    save(fullfile(saveDir, saveName, [saveName '_' num2str(ioriMov) '_stereo']), 'imageStereo','bregma', 'MmPerPixel_img');
+    save(fullfile(saveDir, saveName, [saveName '_stereo']), 'imageStereo','bregma', 'MmPerPixel_img');
 end

@@ -1,13 +1,13 @@
 setPath_analysisImaging;
 
 %% image used for DMD
- load('/home/daisuke/tmp/CCFBL_400x300pix_8x7grid/CCFBL_400x300pix_8x7grid_tmpD.mat',...
+ load('/home/daisuke/tmp/CCFBL_400x300pix_8x7grid/CCFBL_400x300pix_8x7grid_tmpC.mat',...
      'image4OI');
 
 
 %% experiment
-expt.subject = 'mupi';
-expt.expDate = '2025-10-15_3';
+expt.subject = 'yamatotakeru';
+expt.expDate = '2025-10-16_2';
 expt.expNum = 2;
 bklightCtrl = 0;
 
@@ -17,12 +17,6 @@ nSV = 1000;
 %% analysis
 marginT = .5; %[s]
 resizeS = 1; %spatial rescaling factor
-
-
-resultSaveDir = fullfile('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\AnalysisResult\wf',...
-    [expt.subject '_' expt.expDate '_' num2str(expt.expNum)]);
-mkdir(resultSaveDir);
-
 
 %% data location
 thisDate = expt.expDate(1:10);

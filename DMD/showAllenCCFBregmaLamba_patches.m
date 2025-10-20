@@ -92,3 +92,29 @@ end
 save(fullfile(saveDir, [saveName '_stereo']), 'imageStereo','bregma','lambda', 'MmPerPixel_img');
 
 
+
+%% show only CCF without patches
+fpatch=figure;
+fpatch.InnerPosition = [1 1 width height];
+
+image(zeros(size(brainImage)));colormap(gray);
+addAllenCtxOutlines(bregma, lambda, 'w', MmPerPixel_img);%this looks at lambda and shrinks the CCF
+
+axis ij image off
+xlim([1 size(brainImage,2)]);
+ylim([1 size(brainImage,1)]);
+
+axpatch = gca;
+axpatch.Position = [0 0 1 1];
+
+thisName = ['CCF'];
+screen2png(fullfile(saveDir, 'stereo', thisName),fpatch);
+close(fpatch);
+
+
+imageLoaded = rgb2gray(imread(fullfile(saveDir, 'stereo', [thisName '.png'])));
+imageLoaded = double(imageLoaded/max(imageLoaded(:)));
+
+imageStereo_CCF = imageLoaded;
+
+save(fullfile(saveDir, [saveName '_stereo']), 'imageStereo_CCF','-append');

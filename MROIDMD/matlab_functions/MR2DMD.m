@@ -2,7 +2,7 @@
 % pills_labels.nii
 
 
-subjectName = 'tmpC';
+subjectName = 'tmpD';
 if ispc
     dataServer = 'M:/';
 else
@@ -60,7 +60,6 @@ end
 % image4 = double(imread('star_1080x1080.tif')); %dimension must be same as image2
 image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_1168x900.tif')); %dimension must be same as image2
 image4 = image4/max(image4(:));
-% image4 = image4(:,3:end-2); %hack to align pixel size to image2
 
 %% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
 cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' nii_ori ' ' fullfile(MRIdir, subjectName)];
@@ -95,6 +94,32 @@ ax(2)=subplot(122);imagesc(proj_anno_cortex); hold on; contour(proj_anno_cortex~
 colormap(gray);
 screen2png(['Atlas_T2_coreg_' subjectName]  );
 
+%% all warped to 2D OI space
+mr_brain = niftiread('T2w_brain.nii');
+mr_brain = imrotate3(mr_brain, mrangle(1), [1 0 0],'linear','crop'); %roll
+mr_brain = imrotate3(mr_brain, mrangle(2), [0 1 0],'linear','crop'); %pitch
+mr_brain = imrotate3(mr_brain, mrangle(3), [0 0 1],'linear','crop'); %yaw
+[mrimg_surf] = getSurfaceData(afterniftiread(mr_brain), 'last');
+
+    fixedRef  = imref2d(size(image2), 0.0104, 0.0104);  % example pixel sizes in mm
+movingRef = imref2d(size(mrimg_brain), 0.1, 0.1);
+beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef);
+surfwarped = imwarp(mrimg_surf,movingRef,tform,'cubic','OutputView',fixedRef);
+figure('position', [675         453        1240         413]);
+subplot(121);
+imagesc(image2);axis equal tight; hold on;
+clim(prctile(image2(:), [1 97]));
+contour(surfwarped>0, 'y'); contour(beadwarped>.5,'r');
+title('widefield image + brain in MR(y) + beads in MR(r)')
+subplot(122);
+imagesc(surfwarped+beadwarped);
+axis equal tight; hold on;
+contour(surfwarped>0, 'y'); contour(beadwarped>.5,'r');
+title('brain in MR(y) + beads in MR(r)');
+colormap(gray);
+screen2png(['warpedtoOI_' subjectName]);
+
+
 %% all warped to input image to DMD
 figure('Position',[ 71           1        1850         961]);
 ax(1)=subplot(221);imagesc(OIwarpedtoDMD);axis equal tight; grid minor; title('OIwarpedtoDMD');
@@ -105,3 +130,17 @@ ax(4)=subplot(224);imagesc(100*borigwarpedtoDMD);axis equal tight; grid minor;
 hold on; contour(mapconfwarpedtoDMD,1,'g'); contour(mrwarpedtoDMD>0,'r');
 title('borigwarpedtoDMD, mrwarpedtoDMD(r)');
 screen2png(['warpedtoDMD_' subjectName]);
+
+
+%% check stimuli after running stereo2DMD
+imgPrefix = 'CCFBL_400x300pix_8x7grid';
+imgDir = fullfile('/home/daisuke/tmp/',imgPrefix);
+load(fullfile(imgDir, [imgPrefix '_' subjectName]), ...
+    'image4DMD_CCF','image4OI_CCF');
+figure('position', [675         453        1240         413]);
+subplot(121);
+imagesc(image2);axis equal tight; hold on;
+clim(prctile(image2(:), [1 97]));
+contour(image4OI_CCF>.5, 'm');
+colormap(gray);
+screen2png(['CCFwarpedtoOI_' subjectName]);

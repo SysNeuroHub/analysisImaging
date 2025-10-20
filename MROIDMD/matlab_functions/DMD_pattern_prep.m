@@ -3,10 +3,9 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mra
 % supplied as .nii in future). Must be the same dimension to Atlas_anno_to_T2.nii,  CCF registered to individual MR (120x160 pixels)
 % image2, (OI_bead.jpg): image taken by camera that captures reference capsuls.
 % Must be from the same animal used for image 1
-% image3, CCFBL_800x500_star.png (DMD_ref.jpg) : reference DMD image. MUST be
-%800x500 pixels
-% image4, CCFBL_800x500_star.tif' (OI_ref.jpg): image taken by camera during
-%projection of image 3. Must be the same dimension to image 2
+% image3, reference DMD image. MUST be 800x500 pixels (DMD_ref.jpg)
+% image4, image taken by camera during projection of image 3. Must be the
+% same dimension to image 2  (OI_ref.jpg)
 
 %TODO: only extract pills not brain of OI image (image2) 
 
