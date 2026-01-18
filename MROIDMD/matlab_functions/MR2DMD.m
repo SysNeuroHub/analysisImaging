@@ -2,7 +2,6 @@
 % pills_labels.nii
 
 
-%addpath(genpath('~/Documents/MRI/app'))
 
 subjectName = 'WT79';
 if ispc
@@ -21,6 +20,12 @@ copyfile(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'), ...
     fullfile(MRIdir, subjectName,'Brain_template.nii'));
 copyfile(fullfile(MRIdir, 'matlab_functions/Allen_pills_mask.nii'), ...
     fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
+
+%% path setting for .sh scripts
+%setenv('PATH', [getenv('PATH')]);
+setenv('PATH',  '/home/daisuke/anaconda3/bin:/home/daisuke/anaconda3/condabin:/usr/local/freesurfer/8.0.0/bin:/usr/local/freesurfer/8.0.0/fsfast/bin:/usr/local/freesurfer/8.0.0/tktools:/home/daisuke/fsl/share/fsl/bin:/usr/local/freesurfer/8.0.0/mni/bin:/home/daisuke/fsl/share/fsl/bin:/home/daisuke/fsl/share/fsl/bin:/home/daisuke/.local/bin:/home/daisuke/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/daisuke/fsl/bin :~/bin :/home/daisuke/abin')
+%check
+system('which 3dcopy');
 
 %% subject-specific data
 if strcmp(subjectName, 'tmpB')
@@ -55,11 +60,19 @@ elseif strcmp(subjectName,'Nero')
     mrangle = [];
     %dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
     dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-02/1000x1600.TIF');
+elseif strcmp(subjectName, 'WT78')
+    %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    mrangle = [];
+    image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT78/amber_1184x900.TIF'));
+    image2 = image2-min(image2(:));
+    image2 = image2/max(image2(:));
 elseif strcmp(subjectName, 'WT79')
-     nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
-     mrangle = [];
-     image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT79/amber_1184x900.TIF'));
-      image2 = image2-min(image2(:));
+    %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    nii_ori = fullfile(dataServer, '/MRI/record/20260116_165900_MRA056_WT79_20260116_1_9/5/pdata/1/nifti/MRA056_WT79_20260116_5_1_1.nii');
+    mrangle = [];
+    image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT79/amber_1184x900.TIF'));
+    image2 = image2-min(image2(:));
     image2 = image2/max(image2(:));
 end
 
@@ -74,9 +87,6 @@ image4 = image4/max(image4(:));
 %% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
 cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' nii_ori ' ' fullfile(MRIdir, subjectName)];
 
-setenv('PATH', [getenv('PATH')]);
-%check
-%system('which 3dcopy');
 
 system(cmdStr); %calls FindPillsExp_Allen.py inside
 
