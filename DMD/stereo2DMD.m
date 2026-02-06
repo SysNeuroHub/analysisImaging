@@ -6,8 +6,8 @@ load(fullfile(regDir, subject, 'Atlas_reg_info.mat'), 'proj_brain','ROI_info',..
 OIsize = size(image2);
 MmPerPixel_oi = 0.0104;
 
-%% stereo image
-imgPrefix = 'CCFBL_584x450pix_9x8circle'; %  showAllenCCFBregmaLambda_patches
+%% image in stereotaxic coordinates
+imgPrefix = 'CCFBL_584x450pix_5x8circle_bk'; %  showAllenCCFBregmaLambda_patches
 %imgPrefix = 'natural_400x300pix_2'; %showNatural
 
 imgDir = fullfile('/home/daisuke/tmp/',imgPrefix);
@@ -22,17 +22,9 @@ load(fullfile(imgDir, [imgPrefix '_stereo']), 'imageStereo','camImg');
 
 image4DMD = uint8(round(double(intmax("uint8"))*image4DMD));
 
-mkdir(fullfile(imgDir, subject));
 save(fullfile(imgDir, [imgPrefix '_' subject]), ...
     'image4DMD','image4OI'); %what else to save?
 
 binary = 1;
-saveEveryImages(image4DMD, fullfile(imgDir, subject), binary); %is this really needed?
-
-%% convert stereo CCF image as a reference
-[image4DMD_CCF, image4OI_CCF] = applyStereo2DMD(imageStereo_CCF, bregma, MmPerPixel_img, ...
-    mrangle, tform, tform2, OIsize, MmPerPixel_oi, fullfile(regDir, subject));
-image4DMD_CCF = uint8(round(double(intmax("uint8"))*image4DMD_CCF));
-save(fullfile(imgDir, [imgPrefix '_' subject]), ...
-    'image4DMD_CCF','image4OI_CCF', '-append');
-
+mkdir(fullfile(imgDir, subject));
+saveEveryImages(image4DMD, fullfile(imgDir, subject), binary, [imgPrefix '_' subject]); %is this really needed?
