@@ -2,7 +2,8 @@
 % pills_labels.nii
 
 
-subjectName = 'tmpD';
+
+subjectName = 'WT79';
 if ispc
     dataServer = 'M:/';
 else
@@ -19,6 +20,12 @@ copyfile(fullfile(MRIdir, 'pattern_generation/Brain_template.nii'), ...
     fullfile(MRIdir, subjectName,'Brain_template.nii'));
 copyfile(fullfile(MRIdir, 'matlab_functions/Allen_pills_mask.nii'), ...
     fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
+
+%% path setting for .sh scripts
+%setenv('PATH', [getenv('PATH')]);
+setenv('PATH',  '/home/daisuke/anaconda3/bin:/home/daisuke/anaconda3/condabin:/usr/local/freesurfer/8.0.0/bin:/usr/local/freesurfer/8.0.0/fsfast/bin:/usr/local/freesurfer/8.0.0/tktools:/home/daisuke/fsl/share/fsl/bin:/usr/local/freesurfer/8.0.0/mni/bin:/home/daisuke/fsl/share/fsl/bin:/home/daisuke/fsl/share/fsl/bin:/home/daisuke/.local/bin:/home/daisuke/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/daisuke/fsl/bin :~/bin :/home/daisuke/abin')
+%check
+system('which 3dcopy');
 
 %% subject-specific data
 if strcmp(subjectName, 'tmpB')
@@ -48,21 +55,39 @@ elseif strcmp(subjectName, 'tmpD')
     image2 = image2/max(image2(:));
     %load('/mnt/dshi0006_market/Subjects/mupi/2025-05-05_1/4/dataSummary_amber.mat');
     %J=60;
-
 elseif strcmp(subjectName,'Nero')
     nii_ori = fullfile(dataServer, 'MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii');
     mrangle = [];
     %dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
     dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-02/1000x1600.TIF');
+elseif strcmp(subjectName, 'WT78')
+    %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    mrangle = [];
+    image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT78/amber_1184x900.TIF'));
+    image2 = image2-min(image2(:));
+    image2 = image2/max(image2(:));
+elseif strcmp(subjectName, 'WT79')
+    %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    nii_ori = fullfile(dataServer, '/MRI/record/20260116_165900_MRA056_WT79_20260116_1_9/5/pdata/1/nifti/MRA056_WT79_20260116_5_1_1.nii');
+    mrangle = [];
+    image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT79/amber_1184x900.TIF'));
+    image2 = image2-min(image2(:));
+    image2 = image2/max(image2(:));
 end
 
 %% load project DMD ref image captured by widefield camera
 % image4 = double(imread('star_1080x1080.tif')); %dimension must be same as image2
-image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_1168x900.tif')); %dimension must be same as image2
+% image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_1168x900.tif')); %dimension must be same as image2
+%image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900.tif')); %22/10/25
+% image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251027.tif')); %27/10/25
+image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251028.tif')); %28/10/25
 image4 = image4/max(image4(:));
 
 %% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
 cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' nii_ori ' ' fullfile(MRIdir, subjectName)];
+
+
 system(cmdStr); %calls FindPillsExp_Allen.py inside
 
 delete(fullfile(MRIdir, subjectName,'Allen_annotation_modified.nii'));
@@ -74,7 +99,7 @@ delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
 %% load DMD ref image 
 image3 = rgb2gray(imread('star_800x500.png')); %fixed
 
-
+ 
 %% register MR - OI - DMD
 load_mr_bead = niftiread('pills_labels.nii')>0;
 load_mr_brain = niftiread('T2w_brain.nii');

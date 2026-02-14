@@ -6,31 +6,36 @@ load(fullfile(regDir, subject, 'Atlas_reg_info.mat'), 'proj_brain','ROI_info',..
 OIsize = size(image2);
 MmPerPixel_oi = 0.0104;
 
-%% stereo image
-% imgPrefix = 'CCFBL_400x300pix_8x7grid'; %  showAllenCCFBregmaLambda_patches
-imgPrefix = 'natural_400x300pix_2'; %showNatural
+%% image in stereotaxic coordinates (common across subjects)
+imgPrefix = 'CCFBL_584x450pix_5x8circle_bk'; %  showAllenCCFBregmaLambda_patches
+%imgPrefix = 'natural_400x300pix_2'; %showNatural
 
 imgDir = fullfile('/home/daisuke/tmp/',imgPrefix);
-load(fullfile(imgDir, [imgPrefix '_stereo']), 'imageStereo','imageStereo_CCF','bregma', 'MmPerPixel_img');
+load(fullfile(imgDir, [imgPrefix '_stereo']), 'imageStereo','camImg');
+% load(fullfile(imgDir, [imgPrefix '_stereo']), 'imageStereo','imageStereo_CCF','bregma', 'MmPerPixel_img');
 
 
 %% convert stereo image into image for DMD
-[image4DMD, image4OI] = applyStereo2DMD(imageStereo, bregma, MmPerPixel_img, ...
+[image4DMD, image4OI] = applyStereo2DMD(double(imageStereo)/double(intmax("uint8")), camImg.bregmapix, camImg.MmPerPixel, ...
     mrangle, tform, tform2, OIsize, MmPerPixel_oi, fullfile(regDir, subject));
 %12s per image
 
 image4DMD = uint8(round(double(intmax("uint8"))*image4DMD));
 
-mkdir(fullfile(imgDir, subject));
+%% check if images are within the DMD projection zone
+%ideally this check should be done much earlier...
+% DMDprojectionZone = getDMDprojectionZone(camImg);
+% imagesc(imresize(sum(image4OI,3),.5))
+% hold on
+% contour(DMDprojectionZone,'r');
+% plot(camImg.bregmapix(2), camImg.bregmapix(1), 'yx')
+% plot(camImg.lambdapix(2), camImg.lambdapix(1), 'yx');
+% %< image4OI: why DMD ptn on the midline does not align bregma and lambda?
+% > because tmpD reference image was not aligned to the midline...
+
 save(fullfile(imgDir, [imgPrefix '_' subject]), ...
     'image4DMD','image4OI'); %what else to save?
 
-saveEveryImages(image4DMD, fullfile(imgDir, subject)); %is this really needed?
-
-%% convert stereo CCF image as a reference
-[image4DMD_CCF, image4OI_CCF] = applyStereo2DMD(imageStereo_CCF, bregma, MmPerPixel_img, ...
-    mrangle, tform, tform2, OIsize, MmPerPixel_oi, fullfile(regDir, subject));
-image4DMD_CCF = uint8(round(double(intmax("uint8"))*image4DMD_CCF));
-save(fullfile(imgDir, [imgPrefix '_' subject]), ...
-    'image4DMD_CCF','image4OI_CCF', '-append');
-
+binary = 1;
+mkdir(fullfile(imgDir, subject));
+saveEveryImages(image4DMD, fullfile(imgDir, subject), binary, [imgPrefix '_' subject]); %is this really needed?
