@@ -34,7 +34,8 @@ function pixelTuningCurveViewerSVD(U, V, t, eventTimes, eventLabels, calcWin, su
 % that makes up the roi), and roi.im (the first SVD with the ROI outlined)
 
 if nargin < 7 || isempty(subtractPre)
-    subtractPre = 1; %subtract by prestimulus in each condition
+    subtractPre = 0; %subtract by prestimulus in each condition
+    %6/2/26 NG
 end
 
 fprintf(1, 'pre-calculation...\n');
