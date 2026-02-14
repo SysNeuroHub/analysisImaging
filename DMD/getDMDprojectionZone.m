@@ -22,20 +22,13 @@ end
 DMDfullOn = imread(fullfile(imgDir, latestImageFile));
 % DMDfullOn=loadTiffStack('/DMDprojection20260209.tif','tiffobj',1);
 
-% camImg = cameraImageInfo([height width], bregma, lambda, MmPerPixel, binning, topLeftPix);
-
-resized = imresize(DMDfullOn, 1/camImg.binning);
-
-rowIdx = camImg.topLeftPix(1):camImg.topLeftPix(1)+camImg.imageSize(1)-1;
-colIdx = camImg.topLeftPix(2):camImg.topLeftPix(2)+camImg.imageSize(2)-1;
-
-cropped = resized(rowIdx, colIdx);
+cropped = resizeCropFullImg(DMDfullOn, camImg);
 
 DMDprojectionZone = (cropped>.5*median(cropped(:)));
 
 if showFigure
     figure;
-    imagesc(resized);hold on;
+    imagesc(imresize(DMDfullOn, 1/camImg.binning));hold on;
     rectangle('Position',[camImg.topLeftPix(2) camImg.topLeftPix(1) camImg.imageSize(2) camImg.imageSize(1)])
     axis equal tight; grid minor;
     title(latestImageFile);
