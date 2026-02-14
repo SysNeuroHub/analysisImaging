@@ -243,7 +243,10 @@ else
     if verbose
         figure;
         ax(1) = subplot(311);
-        plot(tltime, phd, photodiode_on_t, phd(photodiode_on));
+        yyaxis left
+        plot(tltime, phd);
+        yyaxis right
+        plot(photodiode_on_t, phd(photodiode_on));
         grid on;
         line(tltime([1 end]), [screenOnTh screenOnTh],'color','k')
         legend('raw PD', 'raw PD resample','th');

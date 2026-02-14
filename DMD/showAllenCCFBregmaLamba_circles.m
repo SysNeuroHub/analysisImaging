@@ -14,9 +14,9 @@ height = 900/binning;
 bregma = [360/binning width/binning+1];
 lambda = [805/binning width/binning+1];
 MmPerPixel = 0.0104 * binning; %measured w scale 27/1/25 from getMmPerPix.m
+topLeftPix = [270 186]; %9/2/26
 
-camImg = cameraImageInfo([height width], bregma, lambda, MmPerPixel);
-
+camImg = cameraImageInfo([height width], bregma, lambda, MmPerPixel,binning, topLeftPix);
 
 %% stimulus position
 xfrombregma = -4.5:1:-0.5; %[mm]
@@ -34,12 +34,7 @@ mkdir(saveDir);
 % screen2png(fullfile(saveDir, [saveName '_stereo']), f);
 % close(f);
 
-f=figure;
-image(zeros(camImg.imageSize));
-addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', MmPerPixel);%this looks at lambda and shrinks the CCF
-scatter(camImg.bregmapix(2), camImg.bregmapix(1), 600/binning,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
-scatter(camImg.lambdapix(2), camImg.lambdapix(1), 600/binning,'markerEdgecolor','w','MarkerFaceColor','w','marker','x');
-line([camImg.imageSize(2)/2-50/binning camImg.imageSize(2)/2-50/binning+1/MmPerPixel], [800 800]/binning,'linewidth',2,'color','w');
+f = showRefImg(camImg);
 exportPng4DMD(fullfile(saveDir, [saveName_s '_ref']), f, binarise);
 close(f);
 

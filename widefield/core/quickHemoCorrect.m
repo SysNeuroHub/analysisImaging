@@ -1,11 +1,11 @@
 function [Ub, Vcorr, tb, mimgB] = quickHemoCorrect(expPath, savePath, nSV, ...
     hemoFreq, pixSpace, suffix_fluo, suffix_hemo)
 % [Ub, Vcorr, tb, mimgB] = quickHemoCorrect(expPath, savePath, nSV, hemoFreq, pixSpace)
-% loads SVD of suffix_fluo(blue) and suffix_hemo(purple), 
+% loads SVD of suffix_fluo(blue) and suffix_hemo(purple),
 % transforms V of blue so that timestamp is common between blue and purple (alignTimeStamp.m),
-% transforms V of purple so that U is common between blue and purple (ChangeU.m), 
+% transforms V of purple so that U is common between blue and purple (ChangeU.m),
 % returns V of blue after hemodynamic correction (HemoCorrectLocal.m)
-% 
+%
 % Inputs:
 %   expPath: path to where original SVD is saved
 %   savePath: path to where created SVD will be saved
@@ -73,13 +73,22 @@ end
 
 Fs = 1/mean(diff(tb));
 
+yidx = 701:725;
+xidx = 301:325;
+roi = zeros(size(Ub,1), size(Ub,2), size(Ub,3));
+roi(yidx,xidx,:) = 1;
+
 if strcmp(hemoFreq,'auto')
-    ROItrace = squeeze(svdFrameReconstruct(mean(mean(Up)),Vp));
-    
+    ROItrace = squeeze(svdFrameReconstruct(mean(mean(Up.*roi)),Vp));
+
     L = length(ROItrace);
     NFFT = 2^nextpow2(L);
     [Pxx,F] = pwelch(ROItrace-mode(ROItrace),[],[],NFFT,Fs);
     %    plot(F, 10*log10(Pxx));
+
+    % rmpath(genpath('/home/daisuke/Documents/git/encoding'));
+    % f = fit(F,10*log10(Pxx),'exp1');
+    % plot(f,F,10*log10(Pxx));
     theseFreqInds = find(F>1);
     [~, maxInds] = max(Pxx(theseFreqInds));
     hemoFreq = [max(1,F(theseFreqInds(maxInds))-2) min(F(theseFreqInds(maxInds))+2, 0.99*Fs/2)];%15/10/20
@@ -88,19 +97,19 @@ end
 
 
 if detrendFilt
-    highpassCutoff = 0.01; 
+    highpassCutoff = 0.01;
     %11/6/20 cf AP_sparse_noise_retinotopy %this also removes heartbeat!
     %Vb = detrendAndFilt(Vb, Fs, highpassCutoff);
     %Vp = detrendAndFilt(Vp, Fs, highpassCutoff);
-    
-    %2/7/20 DS 
+
+    %2/7/20 DS
     [b100s, a100s] = butter(2, highpassCutoff/(Fs/2), 'high');
     Vp = detrend(Vp', 'linear')';
     Vpc = [fliplr(Vp) Vp fliplr(Vp)];
     Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
     Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
     Vp = Vpc(:,numel(tp)+1:2*numel(tp));
-    
+
     Vb = detrend(Vb', 'linear')';
     Vbc = [fliplr(Vb) Vb fliplr(Vb)];
     Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
@@ -114,7 +123,7 @@ end
 %Vbs = SubSampleShift(Vb,1,2); tb = tp;
 Vbs = alignTimeStamp(Vb, tb, tp, 'interp'); %10/6/20 as in mergeST.m
 
-        
+
 VpNewU = ChangeU(Up, Vp, Ub); % puts hemo-color V into signal-color U space
 [Vcorr,~,ScaleFactor] = HemoCorrectLocal(Ub, Vbs, VpNewU, Fs, hemoFreq, pixSpace); % correct for hemodynamics
 
@@ -126,59 +135,63 @@ VpNewU = ChangeU(Up, Vp, Ub); % puts hemo-color V into signal-color U space
 % screen2png(fullfile(saveVpath,'HemoCorrect_sanityCheckFigs'));
 
 
+ROItrace_b = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub.*roi)), Vb)); %squeeze(nanmean(nanmean(svdFrameReconstruct(Ub,Vb))));
+ROItrace_p = squeeze(svdFrameReconstruct(nanmean(nanmean(Up.*roi)), Vp));
+ROItrace_corr = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub.*roi)), Vcorr));
 
-ROItrace_b = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub)),Vb)); %squeeze(nanmean(nanmean(svdFrameReconstruct(Ub,Vb))));
-ROItrace_p = squeeze(svdFrameReconstruct(nanmean(nanmean(Up)),Vp));
-ROItrace_corr = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub)),Vcorr));
-
-%% test
-% ROItrace_b = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub(600:700,300:400,:))),Vb)); %squeeze(nanmean(nanmean(svdFrameReconstruct(Ub,Vb))));
-% ROItrace_p = squeeze(svdFrameReconstruct(nanmean(nanmean(Up(600:700,300:400,:))),Vp));
-% ROItrace_corr = squeeze(svdFrameReconstruct(nanmean(nanmean(Ub(600:700,300:400,:))),Vcorr));
-% figure;
-% ax(1)=subplot(211);
-% plot(tb, ROItrace_b,'color',[1 .5 0]);hold on;
-% plot(tp, ROItrace_corr,'k');grid minor; legend('amber','amber corrected');
-% ax(2)=subplot(212);
-% plot(tp, ROItrace_p,'r');grid minor; legend('red');
-% linkaxes(ax,'x');
 
 fig=figure('position',[0 0 1900 1200]);
-subplot(211);
-plot(tb, ROItrace_b, tp, ROItrace_p, tp, ROItrace_corr);
-ylabel('F avg trace');
-xlabel('time[s]');
-axis tight;
-marginplot;
+ax(1)=subplot(411);
+plot(tb, ROItrace_b, 'Color',[1 .5 0]); hold on;
+plot(tp, ROItrace_corr,'b');
+grid minor
+legend(suffix_fluo, [suffix_fluo ' corrected']);
+
+ax(2)=subplot(412);
+plot(tp, ROItrace_p, 'r');
+grid minor
+legend(suffix_hemo);
+linkaxes(ax,'x');
+xlim([10 40]);
 
 subplot(223);
 [Pxxb, Fb] = myTimePowerSpectrum(ROItrace_b, Fs);
 [Pxxp, Fp] = myTimePowerSpectrum(ROItrace_p, Fs);
 [Pxxcorr, Fcorr] = myTimePowerSpectrum(ROItrace_corr, Fs);
-h=plot(Fb, 10*log10(Pxxb), Fp, 10*log10(Pxxp), Fcorr, 10*log10(Pxxcorr));
+h=plot(Fb, 10*log10(Pxxb),'color',[1 .5 0]); hold on;
+plot(Fp, 10*log10(Pxxp),'r');
+plot(Fcorr, 10*log10(Pxxcorr),'b');
 xlabel('freq (hz)');
 ylabel('power');
 axis tight;
+grid minor
 marginplot;
-legend(h,suffix_fluo, suffix_hemo,[suffix_fluo ' corrected'])
 
 subplot(224);
-imagesc(ScaleFactor);
-caxis([-1 1]*max(abs(ScaleFactor(:))));
+imagesc(imresize(ScaleFactor, [size(Up,1), size(Up,2)]));
+hold on;
+% plot(xidx/pixSpace, yidx/pixSpace,'wo');
+contour(roi(:,:,1),[.5 .5],'w');
+clim([-1 1]*max(abs(ScaleFactor(:))));
 colormap(colormap_blueblackred);
 axis equal tight
 colorbar
 title('Correction Scale factor');
+
 screen2png(fullfile(savePath,['HemoCorrect_sanityCheckFigs_' num2str(round(hemoFreq)) ' Hz']));%19/11/20
 close(fig);
 
 % % Vcorrfilt = detrendAndFilt(Vcorr, Fs); %5/1/18
 % % svdViewer(Ub, DSb.Sv, Vcorrfilt, Fs) %blue  after filtering and detrending
 
-writeUVtoNPY([], Vcorr, [], fullfile(savePath, 'svdTemporalComponents_corr'));
+writeUVtoNPY([], Vcorr, [], fullfile(savePath, ['svdTemporalComponents_corr']));
 writeNPY(tb,  fullfile(savePath, 'svdTemporalComponents_corr.timestamps.npy'));
+end
+
 
 function [Pxx, F] = myTimePowerSpectrum(V, Fs)
 L = length(V);
 NFFT = 2^nextpow2(L);
 [Pxx,F] = pwelch(V,[],[],NFFT,Fs);
+end
+
