@@ -228,8 +228,13 @@ for v = 1:length(ops.vids)
     % dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master')
 
 
-    saveSVD(saveOps, U, V, results(v)); 
-    
+    try
+        saveSVD(saveOps, U, V, results(v));
+    catch err
+        saveSVD(saveOps, U, V, results(v),'local');
+        disp('saveSVD to data server failed. saved locally instead')
+    end
+
     results(v).U = U;
     results(v).V = V;
     
@@ -238,8 +243,14 @@ for v = 1:length(ops.vids)
 end
 
 inspectSVDresult(results); %15/5/20
-filePath = dat.expPath(saveOps.expRefs{1}, 'main', 'master');
-movefile('*.png', filePath);
+
+try
+    filePath = dat.expPath(saveOps.expRefs{1}, 'main', 'master');
+    movefile('*.png', filePath);
+catch err
+    filePath = dat.expPath(saveOps.expRefs{1}, 'main', 'local');
+    movefile('*.png', filePath);
+end
 
 %% save results.mat locally commented out 3/2/25
 % fprintf(1, 'saving all results locally at %s\n', fullfile(ops.localSavePath, 'results.mat'));

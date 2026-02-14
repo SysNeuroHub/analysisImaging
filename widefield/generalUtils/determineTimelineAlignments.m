@@ -1,5 +1,5 @@
 function [numExps, nFrPerExp, allT, existExps, alignmentWorked] ...
-    = determineTimelineAlignments(ops, nFrInV)
+    = determineTimelineAlignments(ops, nFrInV, TLdir)
 % Attempts to determine the timestamps of every movie frame in each
 % experiment, in Timeline coordinates. It will do this by finding the
 % timestamps of the camera exposure signals and seeing whether there are
@@ -28,7 +28,7 @@ function [numExps, nFrPerExp, allT, existExps, alignmentWorked] ...
 %   existExps: 1 x numExps, the number of each experiment (specifying the subfolder to save to)
 %   alignmentWorked: 1 x 1 logical, will determine whether it saves V to subfolders or not
 %
-TLdir = 'master'; %default is master
+% TLdir = 'master'; %default is master
 
 if ops.verbose
     fprintf(1, '  loading timeline files to determine alignments... \n');

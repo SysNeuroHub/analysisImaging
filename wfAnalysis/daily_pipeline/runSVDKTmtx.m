@@ -12,7 +12,7 @@
 
 % things to do before running this script:
 % 1, upload raw data to Market
-% 2, download the raw data under E:\Subjects
+% 2, download the raw data under E:\Subjects5
 
 clear all
 addpath 'C:\Documents\git\analysisImaging'
@@ -24,10 +24,10 @@ load('amberRedOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'test';%'susanoo';
-thisDate = '2025-08-14';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
-thisSeries = 1;
-expNums = [6];
+mouseName = 'test_stimTTLOsc';%'susanoo';
+thisDate = '2026-02-13';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+thisSeries = 2;
+expNums = [1];
 makeROI = -1;
 doRegistration = 0;
 hwbinning = 1; %automatically retrieve this from thorcam header??
@@ -37,7 +37,7 @@ if ispc
     cd('C:\Documents\git\analysisImaging\wfAnalysis\daily_pipeline');
 elseif isunix
     cd('/home/daisuke/Documents/git/analysisImaging/wfAnalysis/daily_pipeline');
-end
+end 
 
 rootDrive = 'D:\svdinput';
 rawDataDir = 'D:\Subjects'; %local temporary storage
@@ -73,7 +73,6 @@ ops.inclExpList = expNums;
 ops.fileBase = fullfile(rawDataDir, mouseName, thisDateSeries);
 ops.statusDestination = fopen('test.txt','w');
 ops.userName = 'Daisuke';
-ops = rmfield(ops,'emailAddress');
 ops.rigName = 'alloptrig';%'wfrig'; %used in determineTimelineAlignments
 ops.doRegistration = doRegistration;
 ops.useGPU = 1; %used only for registration?

@@ -1,4 +1,4 @@
-function saveSVD(ops, U, V, dataSummary)
+function saveSVD(ops, U, V, dataSummary, saveServer)
 % saveSVD(ops, U, V, dataSummary)
 % matches timestamps with Timeline, splits V into each exp, and upload to
 % dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master')
@@ -14,9 +14,14 @@ function saveSVD(ops, U, V, dataSummary)
 %        meanImage
 %        frameRecIndex, 1xN integers where N is the number of frames in V and the entries identify which recording (sequentially) that frame was part
 
+if nargin < 5 
+    saveServer = 'master'; %or 'local'
+end
 
-[numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineTimelineAlignments(ops, size(V,2));
-%[numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineOEphysAlignments(ops, size(V,2));
+[numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineTimelineAlignments(ops, size(V,2),'master');
+if alignmentWorked ~= 1
+    [numExps, nFrPerExp, allT, existExps, alignmentWorked] = determineTimelineAlignments(ops, size(V,2),'local');
+end
 
 if ops.verbose
     fprintf(1, 'saving SVD results to server... \n');
@@ -27,11 +32,10 @@ end
 % upload results to server
 thisDateStr = ops.thisDate(1:10); %8/5/20
 thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
-filePath = dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', 'master');
+filePath = dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, 1, 'main', saveServer);
 Upath = fileparts(filePath); % root for the date - we'll put U (etc) and data summary here
-% Upath = 'D:\Subjects\test\2025-06-18_2\3\';
-% filePath = Upath;
-if ~exist(Upath)
+
+if ~exist(Upath,'dir')
     mkdir(Upath);
 end
 
