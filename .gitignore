@@ -1,6 +1,5 @@
 *.asv
 *.m~
-*.mat
 *._*.m
 *._*.java
 *.eps
