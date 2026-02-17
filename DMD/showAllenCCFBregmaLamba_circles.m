@@ -6,26 +6,23 @@ addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 
 binarise = 1;
 th_coverage = 0.5; % minimu ratio of pixels that are actually on the cortex compared to the desired
+hemisphere = 'l';
+refdate = '20260214';
 
-%% camera image
-binning = 2; % scale = 1/binning
-width = 1168/binning;
-height = 900/binning;
-bregma = [360/binning width/binning+1];
-lambda = [805/binning width/binning+1];
-MmPerPixel = 0.0104 * binning; %measured w scale 27/1/25 from getMmPerPix.m
-topLeftPix = [270 186]; %9/2/26
-
-camImg = cameraImageInfo([height width], bregma, lambda, MmPerPixel,binning, topLeftPix);
+%% camera image info
+load(fullfile('/home/daisuke/Documents/git/analysisImaging/DMD/references', ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = -4.5:1:-0.5; %[mm]
-yfrombregma = -4:1:3; %A>0, P<0
-radiusmm = MmPerPixel*5; %[mm];
+xfrombregma = -3;%-4.5:1:-0.5; %[mm]
+if strcmp(hemisphere,'r')
+    xfrombregma = sort(abs(xfrombregma));
+end
+yfrombregma = [-3.6 -1.5 1.6];%-4:1:3; %A>0, P<0
+radiusmm = camImg.MmPerPixel*5; %[mm];
 
 
 %% save CCF image with bregma, lambda and scale
-saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix_' num2str(numel(xfrombregma)) 'x' num2str(numel(yfrombregma)) 'circle_bk'];
+saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix_' num2str(numel(xfrombregma)) 'x' num2str(numel(yfrombregma)) 'circle_' hemisphere];
 saveName_s = [saveName '_stereo'];
 saveServer = '~/tmp';
 saveDir = fullfile(saveServer, saveName);
@@ -34,35 +31,37 @@ mkdir(saveDir);
 % screen2png(fullfile(saveDir, [saveName '_stereo']), f);
 % close(f);
 
-f = showRefImg(camImg);
+f = showRefImg(camImg,fullfile(refDir, 'DMDprojectionZone'), ['DMDprojectionZone' refdate  '.tif']);
 exportPng4DMD(fullfile(saveDir, [saveName_s '_ref']), f, binarise);
 close(f);
+pz = getDMDprojectionZone(camImg, fullfile(refDir, 'DMDprojectionZone'), ['DMDprojectionZone' refdate  '.tif']);
+
 
 %% superimpose grid on CCF
 nPatches = numel(xfrombregma)*numel(yfrombregma);
 disp([num2str(nPatches) ' patches'])
 
-xfrombregmapix = 1/MmPerPixel * xfrombregma + camImg.bregmapix(2);
-yfrombregmapix = -1/MmPerPixel * yfrombregma + camImg.bregmapix(1);
-radiuspix = 1/MmPerPixel * radiusmm;
+xfrombregmapix = 1/camImg.MmPerPixel * xfrombregma + camImg.bregmapix(2);
+yfrombregmapix = -1/camImg.MmPerPixel * yfrombregma + camImg.bregmapix(1);
+radiuspix = 1/camImg.MmPerPixel * radiusmm;
 
 % grids on CCF ... sometimes it vanishes
-% f=figure;
-% image(zeros(camImg.imageSize));
-% addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', MmPerPixel);%this looks at lambda and shrinks the CCF
-% hline(yfrombregmapix, gca,'-','w');
-% vline(xfrombregmapix, gca,'-','w');
+f=figure;
+image(zeros(camImg.imageSize));
+addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
+hline(yfrombregmapix, gca,'-','w');
+vline(xfrombregmapix, gca,'-','w');
 % exportPng4DMD([saveName '_grid'], f, 1);
 
 
 %% check if stimulation is within the cortex
 f=figure;
 image(zeros(camImg.imageSize));
-addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', MmPerPixel);%this looks at lambda and shrinks the CCF
+addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
 exportPng4DMD(fullfile(saveDir, 'test'), f, 1);close(f);
 l=imread(fullfile(saveDir, 'test.png'));
 delete(fullfile(saveDir, 'test.png'));
-lf = imfill(l,'holes');
+ctx = imfill(l,'holes');
 
 
 %% show only patches along the grid
@@ -108,9 +107,10 @@ for yy = 1:numel(yfrombregma)
 
             exportPng4DMD(fullfile(saveDir, 'stereo', 'tmp'), fpatch, binarise);
             ltmp=imread(fullfile(saveDir, 'stereo','tmp.png'));
+            
 
-            %% check if the projected image is
-            if sum(ltmp.*lf) / sum(ltmp) < th_coverage continue; end
+            %% check if the projected image is within the cortex & DMD projection zone
+            if sum(ltmp.*ctx.*pz) / sum(ltmp) < th_coverage continue; end
 
 
             patchNumber = patchNumber + 1;
@@ -139,7 +139,7 @@ load(fullfile(saveDir, saveName_s), 'imageStereo');
 fpatch=figure;
 imagesc(sum(imageStereo,3));
 hold on;
-addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', MmPerPixel);%this looks at lambda and shrinks the CCF
+addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
 exportPng4DMD(fullfile(saveDir, [saveName_s '_all_wCCF' ]), fpatch, binarise);close(fpatch);
                 
 

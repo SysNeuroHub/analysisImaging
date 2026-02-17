@@ -23,3 +23,10 @@ registerStereo2CCF(bregma, MmPerPixel, path2Brain_template, usFactor): computes 
 getSurfaceData(mr_brain, direction, threshold, smoothSigma): Extracts a smooth surface map and intensity values from a 3D volume, using only voxel-based operations (no isosurface). (called in registerStereo2CCF)
 Stereo2T2(imageStereo, usFactor, Vusinfo, tform3, surfDepth, mrangle): projectionmaps images defined in stereotaxic coordinates into CCF then to T2 space (called in applyStreo2DMD)
 paintSurfaceToVolume(surfDepth, surfData, volSize): create 3D volume assigning surface data to detected surface voxels. (called in Stereo2T2)
+
+# Script to create reference images, to be run when OASIS macro hardward changes
+processReferences
+
+# Utility functions related to creating reference images
+getDMDprojectionZone
+resizeCropFullImg

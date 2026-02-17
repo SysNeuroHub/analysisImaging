@@ -3,13 +3,18 @@
 
 
 
-subjectName = 'WT79';
+subjectName = 'tmpD';
 if ispc
-    dataServer = 'M:/';
+    MRdataServer = 'M:/';
 else
-    dataServer = '/mnt/dshi0006_market';
+    MRdataServer = '/mnt/dshi0006_market';
+    MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
+    refDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references';
 end
-MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
+refdate = '20260214';
+
+%% camera image info
+load(fullfile(refDir, ['camImg_' refdate]),'camImg');
 
 addpath(genpath(MRIdir));
 mkdir(fullfile(MRIdir,subjectName));
@@ -29,7 +34,7 @@ system('which 3dcopy');
 
 %% subject-specific data
 if strcmp(subjectName, 'tmpB')
-    nii_ori = fullfile(dataServer, 'MRI/analysis/MRA056-selection/20250512-testB/20250512_152043_MRA056_test_20250512B_1_3/8/pdata/1/nifti/MRA056_test_20250512B_8_1_1.nii');
+    nii_ori = fullfile(MRdataServer, 'MRI/analysis/MRA056-selection/20250512-testB/20250512_152043_MRA056_test_20250512B_1_3/8/pdata/1/nifti/MRA056_test_20250512B_8_1_1.nii');
     mrangle = [0 -(90-79) 0]; %roll pitch yaw
     %load('/mnt/dshi0006_market/Subjects/robita/2025-03-29_1/5/dataSummary_amber.mat');
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/robita/2025-10-15/redamber_1168x900.tif'));
@@ -37,7 +42,7 @@ if strcmp(subjectName, 'tmpB')
     image2 = image2/max(image2(:));
     %J=60;
 elseif strcmp(subjectName, 'tmpC')
-    nii_ori = fullfile(dataServer,'MRI/analysis/MRA056-selection/20250512-testC/20250512_155921_MRA056_test_20250512C_1_4/6/pdata/1/nifti/MRA056_test_20250512C_6_1_1.nii');
+    nii_ori = fullfile(MRdataServer,'MRI/analysis/MRA056-selection/20250512-testC/20250512_155921_MRA056_test_20250512C_1_4/6/pdata/1/nifti/MRA056_test_20250512C_6_1_1.nii');
     mrangle = [0 -(90-85) 0]; %roll pitch yaw
     %load('/mnt/dshi0006_market/Subjects/yamatotakeru/2025-04-21_1/1/dataSummary_amber.mat');
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/yamatotakeru/2025-10-15/redamber_1168x900.tif'));
@@ -45,7 +50,7 @@ elseif strcmp(subjectName, 'tmpC')
     image2 = image2/max(image2(:));
     %J=60;
 elseif strcmp(subjectName, 'tmpD')
-    nii_ori = fullfile(dataServer,'MRI/analysis/MRA056-selection/20250512-testD/20250512_163121_MRA056_test_20250512D_1_5/7/pdata/1/nifti/MRA056_test_20250512D_7_1_1.nii');
+    nii_ori = fullfile(MRdataServer,'MRI/analysis/MRA056-selection/20250512-testD/20250512_163121_MRA056_test_20250512D_1_5/7/pdata/1/nifti/MRA056_test_20250512D_7_1_1.nii');
     mrangle = [0 -(90-84) 0]; %roll pitch yaw
     
     %% load widefield image w reference tubes
@@ -56,20 +61,20 @@ elseif strcmp(subjectName, 'tmpD')
     %load('/mnt/dshi0006_market/Subjects/mupi/2025-05-05_1/4/dataSummary_amber.mat');
     %J=60;
 elseif strcmp(subjectName,'Nero')
-    nii_ori = fullfile(dataServer, 'MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii');
+    nii_ori = fullfile(MRdataServer, 'MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii');
     mrangle = [];
     %dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
     dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-02/1000x1600.TIF');
 elseif strcmp(subjectName, 'WT78')
     %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
-    nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    nii_ori = fullfile(MRdataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
     mrangle = [];
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT78/amber_1184x900.TIF'));
     image2 = image2-min(image2(:));
     image2 = image2/max(image2(:));
 elseif strcmp(subjectName, 'WT79')
     %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
-    nii_ori = fullfile(dataServer, '/MRI/record/20260116_165900_MRA056_WT79_20260116_1_9/5/pdata/1/nifti/MRA056_WT79_20260116_5_1_1.nii');
+    nii_ori = fullfile(MRdataServer, '/MRI/record/20260116_165900_MRA056_WT79_20260116_1_9/5/pdata/1/nifti/MRA056_WT79_20260116_5_1_1.nii');
     mrangle = [];
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT79/amber_1184x900.TIF'));
     image2 = image2-min(image2(:));
@@ -81,8 +86,10 @@ end
 % image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_1168x900.tif')); %dimension must be same as image2
 %image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900.tif')); %22/10/25
 % image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251027.tif')); %27/10/25
-image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251028.tif')); %28/10/25
-image4 = image4/max(image4(:));
+%image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251028.tif')); %28/10/25
+image4_tmp = double(imread(fullfile(refDir, ['star_' refdate '.tif'])));
+image4_tmp = resizeCropFullImg(image4_tmp, camImg);
+image4_tmp = image4_tmp/max(image4_tmp(:));
 
 %% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
 cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' nii_ori ' ' fullfile(MRIdir, subjectName)];
@@ -97,7 +104,7 @@ delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
 
 
 %% load DMD ref image 
-image3 = rgb2gray(imread('star_800x500.png')); %fixed
+image3 = rgb2gray(imread(fullfile(MRIdir, 'matlab_functions','star_800x500.png')); %fixed
 
  
 %% register MR - OI - DMD
@@ -157,15 +164,15 @@ title('borigwarpedtoDMD, mrwarpedtoDMD(r)');
 screen2png(['warpedtoDMD_' subjectName]);
 
 
-%% check stimuli after running stereo2DMD
-imgPrefix = 'CCFBL_400x300pix_8x7grid';
-imgDir = fullfile('/home/daisuke/tmp/',imgPrefix);
-load(fullfile(imgDir, [imgPrefix '_' subjectName]), ...
-    'image4DMD_CCF','image4OI_CCF');
-figure('position', [675         453        1240         413]);
-subplot(121);
-imagesc(image2);axis equal tight; hold on;
-clim(prctile(image2(:), [1 97]));
-contour(image4OI_CCF>.5, 'm');
-colormap(gray);
-screen2png(['CCFwarpedtoOI_' subjectName]);
+% %% check stimuli after running stereo2DMD
+% imgPrefix = 'CCFBL_400x300pix_8x7grid';
+% imgDir = fullfile('/home/daisuke/tmp/',imgPrefix);
+% load(fullfile(imgDir, [imgPrefix '_' subjectName]), ...
+%     'image4DMD_CCF','image4OI_CCF');
+% figure('position', [675         453        1240         413]);
+% subplot(121);
+% imagesc(image2);axis equal tight; hold on;
+% clim(prctile(image2(:), [1 97]));
+% contour(image4OI_CCF>.5, 'm');
+% colormap(gray);
+% screen2png(['CCFwarpedtoOI_' subjectName]);
