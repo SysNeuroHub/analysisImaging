@@ -3,7 +3,6 @@
 *.mat
 *._*.m
 *._*.java
-*.png
 *.eps
 *.fig
 .ipynb_checkpoints/
