@@ -14,7 +14,7 @@
 % 1, upload raw data to Market
 % 2, download the raw data under E:\Subjects5
 
-clear all
+clear all; close all;
 addpath 'C:\Documents\git\analysisImaging'
 setPath_analysisImaging;
 
@@ -24,13 +24,13 @@ load('amberRedOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'test_stimTTLOsc';%'susanoo';
-thisDate = '2026-02-13';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
-thisSeries = 2;
-expNums = [1];
-makeROI = -1;
+mouseName = 'Leekuanyew';%'susanoo';
+thisDate = '2026-02-19';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+thisSeries = 1;
+expNums = [1:2];
+makeROI = 0;
 doRegistration = 0;
-hwbinning = 1; %automatically retrieve this from thorcam header??
+hwbinning = 2; %automatically retrieve this from thorcam header??
 magnification = .5; 
 
 if ispc
@@ -51,11 +51,6 @@ rawDataDir = 'D:\Subjects'; %local temporary storage
 
 
 %% modify ops for this experiment
-%hack for 9/6/20 phpL
-% ops.vids(1).frameMod = [2 0];
-% ops.vids(2).frameMod = [2 1];
-%ops.vids = ops.vids(1);%3/7/20
-
 thisDateSeries = [thisDate, '_' num2str(thisSeries)];
 if makeROI == 0
     if exist(fullfile(rawDataDir, mouseName,'thisROI.mat'),'file')
@@ -77,16 +72,23 @@ ops.rigName = 'alloptrig';%'wfrig'; %used in determineTimelineAlignments
 ops.doRegistration = doRegistration;
 ops.useGPU = 1; %used only for registration?
 ops.objectiveType = num2str(magnification); %0.5 / 0.8
-ops.pixelSizeUM = 5/str2num(ops.objectiveType)*hwbinning; %added 15/5/20
+%ops.pixelSizeUM = 5/str2num(ops.objectiveType)*hwbinning; %added 15/5/20
+load('C:\Documents\git\analysisImaging\DMD\references\camImg_20260214.mat');
+ops.pixelSizeUM = camImg.MmPerPixel*1000;
 ops.hasASCIIstamp = 0; %18/5/20
-
 
 for e = 1:length(expNums)
     expRefs{e} = dat.constructExpRef(mouseName, thisDate, thisSeries, expNums(e));    
 end
 ops.expRefs = expRefs;
 
-% retrieve camera sampling rate and expos   ure duration from Timeline
+
+%% test if timeline and tiff frames are identical
+% [nFr_tif, nFr_tl, status] = compareNFrames_tiff_tl(ops, expNums);
+% if numel(expNums) ~= sum(status); error('#frames do not match between timeline and tiff!!'); end
+
+
+%% retrieve camera sampling rate and expos   ure duration from Timeline
 timelinePath = dat.expFilePath(expRefs{1}, 'timeline', 'master');
 [~,timelineName] = fileparts(timelinePath);
 timelinePath = fullfile(ops.fileBase,num2str(expNums(1)),timelineName);

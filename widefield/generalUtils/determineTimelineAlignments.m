@@ -64,7 +64,9 @@ else
     else
         expRefs = {};
         for e = 1:length(expNums)
-            expRefs{e} = dat.constructExpRef(ops.mouseName, ops.thisDate, expNums(e));
+            thisDate = ops.thisDate(1:10);
+            thisSeries = ops.thisDate(12:end);
+            expRefs{e} = dat.constructExpRef(ops.mouseName, thisDate, thisSeries, expNums(e));
         end
     end
     

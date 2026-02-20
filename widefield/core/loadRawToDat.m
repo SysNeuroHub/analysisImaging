@@ -44,9 +44,6 @@ frameFileIndex = [];
 frameRecIndex = [];
 imageMeans = [];
 
-lastFilePrefix = []; %8/5/20
-lastFileSuffix = []; %8/5/20
-
 recIndex = 0;
 lastFrameNum = 0;
 total_nfr = 0;
@@ -84,36 +81,23 @@ try
         
         switch ops.rawDataType
             case {'tif', 'OI'} %rewritten for thorcam
-                %records = squeeze(imstack(1,1:14,:));
-                %[thisFN, thisTS] = timeFromPCOBinaryMulti(records);
-                %thisTS = thisTS*24*3600; % convert to seconds from days
-                
-                thisFN = 1:size(imstack,3); % + lastFrameNum??
-                thisTS =  thisFN + total_nfr; %assuming 1Hz frame rate, i.e. just telling the order
-                
-                %                     %artificially add 2s gap telling a new recording
-                %                      if (~strcmp(thisFilePrefix, lastFilePrefix)) && isempty(thisFileSuffix)
-                %                        thisTS = thisTS + 2;
-                %                      end
-                
+                records = squeeze(imstack(1,1:14,:));
+                [thisFN, thisTS] = timeFromPCOBinaryMulti(records);
+                thisTS = thisTS*24*3600; % convert to seconds from days
+                   
                 clear theseFrameNumbersWithinRec;
                 if fileInd==1
                     firstTS=thisTS(1);
                     thisTS = thisTS-firstTS;
-                    %frameDiffs = diff([-10 thisTS]);  % so first frame is a "new rec"
+                    frameDiffs = diff([-10 thisTS]);  % so first frame is a "new rec"
                 else
                     thisTS = thisTS-firstTS;
-                    %frameDiffs = diff([timeStampsFromStamp(end) thisTS]);
+                    frameDiffs = diff([timeStampsFromStamp(end) thisTS]);
                 end
                 
                 
                 
-                %newRecInds = find(frameDiffs>=2); % any 2-second gaps between frames indicate a new recording
-                if (~strcmp(thisFilePrefix, lastFilePrefix)) && isempty(thisFileSuffix)
-                    newRecInds = 1;
-                else
-                    newRecInds = [];
-                end
+                newRecInds = find(frameDiffs>=2); % any 2-second gaps between frames indicate a new recording
                 theseRecIndex = recIndex*ones(size(thisTS));       %default unless new recs present
                 theseFrameNumbersWithinRec = lastFrameNum+(1:length(thisTS)); %default unless new recs present
                 nFrThisFile = length(thisTS);
