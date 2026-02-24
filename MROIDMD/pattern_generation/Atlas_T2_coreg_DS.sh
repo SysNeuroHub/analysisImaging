@@ -118,22 +118,4 @@ if [ -f $OUTDIR/pills_labels_Allen.nii ]; then
     rm $OUTDIR/pills_labels_Allen.nii
 fi
 
-# Run the pill finding script in Allen space 
-python3 `dirname $0`/FindPillsExp_Allen.py $OUTDIR/input_swapped_m2k_Allen.nii.gz \
-    $OUTDIR/T2w_brain_mask_Allen.nii $OUTDIR/Allen_pills_mask.nii $OUTDIR/pills_labels_Allen.nii
 
-if [ -f $OUTDIR/pills_labels.nii ]; then
-    rm $OUTDIR/pills_labels.nii
-fi
-
-# Forward transform the pill labels back to the original T2w space
-antsApplyTransforms \
- -i pills_labels_Allen.nii \
- -r T2w_brain.nii \
- -o pills_labels.nii \
- -t Tem_to_T21Warp.nii.gz \
- -t Tem_to_T20GenericAffine.mat \
- -u uchar \
- -n GenericLabel \
-# -n NearestNeighbor \ #No difference
- 

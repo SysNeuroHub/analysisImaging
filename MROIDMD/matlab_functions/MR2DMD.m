@@ -3,7 +3,7 @@
 
 
 
-subjectName = 'tmpD';
+subjectName = 'Confucious';
 if ispc
     MRdataServer = 'M:/';
 else
@@ -34,7 +34,7 @@ system('which 3dcopy');
 
 %% subject-specific data
 if strcmp(subjectName, 'tmpB')
-    nii_ori = fullfile(MRdataServer, 'MRI/analysis/MRA056-selection/20250512-testB/20250512_152043_MRA056_test_20250512B_1_3/8/pdata/1/nifti/MRA056_test_20250512B_8_1_1.nii');
+    t2_nii = fullfile(MRdataServer, 'MRI/analysis/MRA056-selection/20250512-testB/20250512_152043_MRA056_test_20250512B_1_3/8/pdata/1/nifti/MRA056_test_20250512B_8_1_1.nii');
     mrangle = [0 -(90-79) 0]; %roll pitch yaw
     %load('/mnt/dshi0006_market/Subjects/robita/2025-03-29_1/5/dataSummary_amber.mat');
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/robita/2025-10-15/redamber_1168x900.tif'));
@@ -42,7 +42,7 @@ if strcmp(subjectName, 'tmpB')
     image2 = image2/max(image2(:));
     %J=60;
 elseif strcmp(subjectName, 'tmpC')
-    nii_ori = fullfile(MRdataServer,'MRI/analysis/MRA056-selection/20250512-testC/20250512_155921_MRA056_test_20250512C_1_4/6/pdata/1/nifti/MRA056_test_20250512C_6_1_1.nii');
+    t2_nii = fullfile(MRdataServer,'MRI/analysis/MRA056-selection/20250512-testC/20250512_155921_MRA056_test_20250512C_1_4/6/pdata/1/nifti/MRA056_test_20250512C_6_1_1.nii');
     mrangle = [0 -(90-85) 0]; %roll pitch yaw
     %load('/mnt/dshi0006_market/Subjects/yamatotakeru/2025-04-21_1/1/dataSummary_amber.mat');
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/yamatotakeru/2025-10-15/redamber_1168x900.tif'));
@@ -50,7 +50,7 @@ elseif strcmp(subjectName, 'tmpC')
     image2 = image2/max(image2(:));
     %J=60;
 elseif strcmp(subjectName, 'tmpD')
-    nii_ori = fullfile(MRdataServer,'MRI/analysis/MRA056-selection/20250512-testD/20250512_163121_MRA056_test_20250512D_1_5/7/pdata/1/nifti/MRA056_test_20250512D_7_1_1.nii');
+    t2_nii = fullfile(MRdataServer,'MRI/analysis/MRA056-selection/20250512-testD/20250512_163121_MRA056_test_20250512D_1_5/7/pdata/1/nifti/MRA056_test_20250512D_7_1_1.nii');
     mrangle = [0 -(90-84) 0]; %roll pitch yaw
     
     %% load widefield image w reference tubes
@@ -61,24 +61,38 @@ elseif strcmp(subjectName, 'tmpD')
     %load('/mnt/dshi0006_market/Subjects/mupi/2025-05-05_1/4/dataSummary_amber.mat');
     %J=60;
 elseif strcmp(subjectName,'Nero')
-    nii_ori = fullfile(MRdataServer, 'MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii');
+    t2_nii = fullfile(MRdataServer, 'MRI/record/20251001-Nero/20251001_141337_MRA056_Nero_20251001_1_7/11/pdata/1/nifti/MRA056_Nero_20251001_11_1_1.nii');
     mrangle = [];
     %dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-01_1/amber.tif');
     dataSummary.meanImage = imread('/mnt/dshi0006_vault/Subjects/Nero/2025-10-02/1000x1600.TIF');
 elseif strcmp(subjectName, 'WT78')
-    %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
-    nii_ori = fullfile(MRdataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    %t2_nii = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    t2_nii = fullfile(MRdataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
     mrangle = [];
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT78/amber_1184x900.TIF'));
     image2 = image2-min(image2(:));
     image2 = image2/max(image2(:));
 elseif strcmp(subjectName, 'WT79')
-    %nii_ori = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
-    nii_ori = fullfile(MRdataServer, '/MRI/record/20260116_165900_MRA056_WT79_20260116_1_9/5/pdata/1/nifti/MRA056_WT79_20260116_5_1_1.nii');
+    %t2_nii = fullfile(dataServer, '/MRI/record/20260116_151643_MRA056_WT78_20260116_1_8/21/pdata/1/nifti/MRA056_WT78_20260116_21_1_1.nii');
+    t2_nii = fullfile(MRdataServer, '/MRI/record/20260116_165900_MRA056_WT79_20260116_1_9/5/pdata/1/nifti/MRA056_WT79_20260116_5_1_1.nii');
     mrangle = [];
     image2 = double(imread('/mnt/dshi0006_vault/Subjects/WT79/amber_1184x900.TIF'));
     image2 = image2-min(image2(:));
     image2 = image2/max(image2(:));
+elseif strcmp(subjectName, 'Confucious')
+    MRI_ID = 'MRA056_61_20260217';
+    rootDir = ['/mnt/dshi0006_market/MRI/record/20260217_111219_' MRI_ID '_1_11'];
+    nE_T2 = 4;
+    nE_UTE = 3;
+    ute_nii = fullfile(rootDir, num2str(nE_UTE), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_UTE) '_1_1.nii']);
+    t2_nii = fullfile(rootDir, num2str(nE_T2), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_T2) '_1_1.nii']);
+    % pill_in_allen = 'ute_in_allen.nii.gz';
+    mrangle = [];
+    image2 = (double(readNPY('/mnt/dshi0006_market/Subjects/Confucious/2026-02-20_1/meanImage_amber.npy')));
+    image2 = image2-min(image2(:));
+    image2 = image2/max(image2(:));
+    %image2(300:380,10:40)=0; %hack to delete reflection
+    autoTform = 1;
 end
 
 %% load project DMD ref image captured by widefield camera
@@ -87,24 +101,33 @@ end
 %image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900.tif')); %22/10/25
 % image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251027.tif')); %27/10/25
 %image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251028.tif')); %28/10/25
-image4_tmp = double(imread(fullfile(refDir, ['star_' refdate '.tif'])));
+image4_tmp = double(imread(fullfile(refDir, 'star',['star' refdate '.tif'])));
 image4_tmp = resizeCropFullImg(image4_tmp, camImg);
-image4_tmp = image4_tmp/max(image4_tmp(:));
-
-%% prepare Atlas_anno_to_T2.nii & T2w_resample.nii (takes ~5min)
-cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' nii_ori ' ' fullfile(MRIdir, subjectName)];
+image4 = image4_tmp/max(image4_tmp(:));
 
 
+%% prepare Atlas_anno_to_T2.nii (takes ~5min)
+cmdStr = [fullfile(MRIdir,'pattern_generation/Atlas_T2_coreg_DS.sh') ' ' t2_nii ' ' fullfile(MRIdir, subjectName)];
+system(cmdStr); 
+
+
+%% align UTE to T2 and to Allen space (optional)
+if exist(ute_nii, 'var')
+    cmdStr = [fullfile(MRIdir,'pattern_generation/align_UTE_to_Allen.sh') ' ' ute_nii ' ' t2_nii ' ' fullfile(MRIdir, subjectName)];
+    system(cmdStr);
+end
+
+
+%% prepare pills in T2* space
+cmdStr = [fullfile(MRIdir,'pattern_generation/Find_register_pills_T2.sh') ' ' fullfile(MRIdir, subjectName)];% ' ' pill_in_allen ];
 system(cmdStr); %calls FindPillsExp_Allen.py inside
 
-delete(fullfile(MRIdir, subjectName,'Allen_annotation_modified.nii'));
-delete(fullfile(MRIdir, subjectName,'Brain_template.nii'));
 delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
 
 
 
 %% load DMD ref image 
-image3 = rgb2gray(imread(fullfile(MRIdir, 'matlab_functions','star_800x500.png')); %fixed
+image3 = rgb2gray(imread(fullfile(MRIdir, 'matlab_functions','star_800x500.png'))); %fixed
 
  
 %% register MR - OI - DMD
@@ -113,9 +136,11 @@ load_mr_brain = niftiread('T2w_brain.nii');
 load_anno = niftiread('Atlas_anno_to_T2.nii');
 
 %Atlas_reg_info = 
-DMD_pattern_prep(load_mr_bead, load_mr_brain, load_anno, image2, image3, image4, mrangle);
-%save Atlas_reg_info.mat
-
+DMD_pattern_prep(load_mr_bead, load_mr_brain, load_anno, image2, image3, image4, mrangle, autoTform, camImg.MmPerPixel);
+%save Atlas_reg_info.mat, containing:
+% 'ROI_info','proj_brain','TotalBrainImage','tform','tform2','mapconfwarpedtoDMD',...
+%     'mrwarpedtoDMD',"OIwarpedtoDMD",'borigwarpedtoDMD','mrimg_bead','mrimg_brain',...
+%     'image2','image3','image4','proj_anno_cortex','mrwarped','mrangle'
 
 %% sanity check
 load('Atlas_reg_info.mat');
@@ -128,15 +153,23 @@ screen2png(['Atlas_T2_coreg_' subjectName]  );
 
 %% all warped to 2D OI space
 mr_brain = niftiread('T2w_brain.nii');
-mr_brain = imrotate3(mr_brain, mrangle(1), [1 0 0],'linear','crop'); %roll
-mr_brain = imrotate3(mr_brain, mrangle(2), [0 1 0],'linear','crop'); %pitch
-mr_brain = imrotate3(mr_brain, mrangle(3), [0 0 1],'linear','crop'); %yaw
+if ~isempty(mrangle)
+    mr_brain = imrotate3(mr_brain, mrangle(1), [1 0 0],'linear','crop'); %roll
+    mr_brain = imrotate3(mr_brain, mrangle(2), [0 1 0],'linear','crop'); %pitch
+    mr_brain = imrotate3(mr_brain, mrangle(3), [0 0 1],'linear','crop'); %yaw
+end
 [mrimg_surf] = getSurfaceData(afterniftiread(mr_brain), 'last');
 
-    fixedRef  = imref2d(size(image2), 0.0104, 0.0104);  % example pixel sizes in mm
+fixedRef  = imref2d(size(image2), camImg.MmPerPixel, camImg.MmPerPixel);
 movingRef = imref2d(size(mrimg_brain), 0.1, 0.1);
-beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef);
-surfwarped = imwarp(mrimg_surf,movingRef,tform,'cubic','OutputView',fixedRef);
+
+if autoTform == 0
+    beadwarped = imwarp(mrimg_bead,tform,'cubic','OutputView',imref2d(size(image2)));
+    surfwarped = imwarp(mrimg_surf,tform,'cubic','OutputView',imref2d(size(image2)));
+else
+    beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef); %NG
+    surfwarped = imwarp(mrimg_surf,movingRef,tform,'cubic','OutputView',fixedRef); %NG
+end
 figure('position', [675         453        1240         413]);
 subplot(121);
 imagesc(image2);axis equal tight; hold on;
@@ -176,3 +209,6 @@ screen2png(['warpedtoDMD_' subjectName]);
 % contour(image4OI_CCF>.5, 'm');
 % colormap(gray);
 % screen2png(['CCFwarpedtoOI_' subjectName]);
+
+%% upload results to market
+movefile(fullfile(MRIdir, subjectName), fullfile(MRdataServer, 'Subjects', subjectName, 'MR2DMDresult'));

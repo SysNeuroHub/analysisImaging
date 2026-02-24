@@ -1,4 +1,4 @@
-function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mrangle)
+function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mrangle, autoTform, camMmPerPix)
 % image1, mrimg (T2w_resample.nii): MRI image including reference capsuls, projected to x-y plane (will be
 % supplied as .nii in future). Must be the same dimension to Atlas_anno_to_T2.nii,  CCF registered to individual MR (120x160 pixels)
 % image2, (OI_bead.jpg): image taken by camera that captures reference capsuls.
@@ -9,10 +9,12 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mra
 
 %TODO: only extract pills not brain of OI image (image2) 
 
-
-autoTform = 1; %MR-OI
+if nargin <8
+    autoTform = 0; %MR-OI
+end
 autoTform2 = 1; %DMD
 image2th = 95;% [%]
+MRMmPerVox = 0.1;
 
 if size(image2) ~= size(image4)
     error(['image2 size ' num2str(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
@@ -70,8 +72,8 @@ BW = createMask(roiAhand);
 mapconf=edge(double(BW));
 close all;
 
-disp('Computing transformation from MR to OI');
 if autoTform %SLOW AT IMREGTFORM
+disp('Computing transformation from MR to OI automatically');
     
     borig_th = borig;
     borig_th(borig_th < prctile(borig_th(:), image2th)) = 0; %70
@@ -79,8 +81,8 @@ if autoTform %SLOW AT IMREGTFORM
 
     [optimizer,metric] = imregconfig("multimodal");
     optimizer.MaximumIterations = 1e4;
-    fixedRef  = imref2d(size(borig_th), 0.0104, 0.0104);  % example pixel sizes in mm
-    movingRef = imref2d(size(mrimg_brain), 0.1, 0.1);
+    fixedRef  = imref2d(size(borig_th), camMmPerPix,camMmPerPix);  % example pixel sizes in mm
+    movingRef = imref2d(size(mrimg_brain), MRMmPerVox, MRMmPerVox);
 
     initialTform = affine2d([cosd(0) -sind(0) 0; sind(0) cosd(0) 0; 0 0 1]); % ~0° initial guess
     tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef,"similarity",...
@@ -95,6 +97,7 @@ if autoTform %SLOW AT IMREGTFORM
     beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef);
     brainwarped = imwarp(mrimg_brain,movingRef,tform,'cubic','OutputView',fixedRef);
 else
+disp('Computing transformation from MR to OI with landmarks');
     fprintf('Mark movingPoints and fixedPoints...\n')
     [movingPoints,fixedPoints] = cpselect(mrimg_bead,borig,'Wait',true);
     tform = fitgeotrans(movingPoints,fixedPoints,TF);
@@ -107,8 +110,8 @@ disp('...done');
 
 % figure;imshow(borig);hold on;h=imshow(cat(3,ones(size(borig)),zeros(size(borig)), ...
 % zeros(size(borig))));hold off;set(h,'AlphaData',beadwarped);title('Warped bead laid over OI')
-figure; image(cat(3,borig,brainwarped, beadwarped) );axis equal tight off;
-title('OI space');
+figure; image(cat(3,borig,brainwarped, beadwarped) );axis equal tight;
+title('OI space. R: OI, G: MR warped to OI, B: bead warped to OI');
 
 %% Transform to DMD
 
@@ -161,6 +164,7 @@ ImageTotal=sum(ImageRow,3);
 jetkey=jet(400);
 
 figure;imagesc(ImageTotal+mapconfwarpedtoDMD);colormap([[1 1 1];jetkey]);title('Stimulation pattern')
+axis equal tight; grid on;
 
 fid=fopen('ROI_information.txt','w');
 fprintf(fid,sprintf('Index  Abbr   Name   #Pixel (Image size:%d X %d) \n\n',size(proj_brain,1),size(proj_brain,2)));

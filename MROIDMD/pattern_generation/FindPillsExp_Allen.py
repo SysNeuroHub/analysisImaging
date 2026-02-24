@@ -29,7 +29,10 @@ head, tail = os.path.split(OutSegImage)
 
 ALLENSpaceNII = nibabel.load(ALLENSpaceImage)
 ALLENSpaceIMG = numpy.single(ALLENSpaceNII.get_fdata())
-ALLENSpaceIMGFlat = numpy.reshape(ALLENSpaceIMG, [numpy.prod(ALLENSpaceIMG.shape[0:3]), ALLENSpaceIMG.shape[3]], order='F')
+if ALLENSpaceIMG.ndim == 4:
+    ALLENSpaceIMGFlat = numpy.reshape(ALLENSpaceIMG, [numpy.prod(ALLENSpaceIMG.shape[0:3]), ALLENSpaceIMG.shape[3]], order='F')
+if ALLENSpaceIMG.ndim == 3:
+    ALLENSpaceIMGFlat = numpy.reshape(ALLENSpaceIMG, [numpy.prod(ALLENSpaceIMG.shape[0:2]), ALLENSpaceIMG.shape[2]], order='F')
 
 PillMaskNII = nibabel.load(PillMaskImage)
 PillMaskIMG = numpy.uint8(PillMaskNII.dataobj)

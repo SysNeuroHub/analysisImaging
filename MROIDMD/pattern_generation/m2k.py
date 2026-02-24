@@ -27,8 +27,13 @@ C[3, 3] = 1.0
 # Equivalent to MATLAB operations: rot90(permute(rot90(v,1),[2 3 1]),2)
 # rot90(v, 1): rotate 90 degrees counterclockwise in the first two axes
 v1 = numpy.rot90(IMG, k=1, axes=(0, 1))
-# permute axes [2, 3, 1] in MATLAB is [1, 2, 0] in Python (0-based)
-v2 = numpy.transpose(v1, (1, 2, 0, 3))
+
+if IMG.ndim == 4:
+    # permute axes [2, 3, 1] in MATLAB is [1, 2, 0] in Python (0-based)
+    v2 = numpy.transpose(v1, (1, 2, 0, 3))
+if IMG.ndim == 3:
+    v2 = numpy.transpose(v1, (1, 2, 0))
+
 # rot90(..., 2): rotate 180 degrees counterclockwise in the first two axes
 IMG_M2K = numpy.rot90(v2, k=2, axes=(0, 1))
     
