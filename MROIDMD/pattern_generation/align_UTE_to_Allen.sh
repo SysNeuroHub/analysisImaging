@@ -18,14 +18,14 @@ OUTDIR=$3
 echo "Running rigid registration with FLIRT..."
 
 # minimization ... NOT VERY ACCURATE
-#flirt \
-#  -in $UTE \
-#  -ref $T2 \
-#  -out $OUTDIR/ute_in_t2\
-#  -dof 6 \
-#  -cost mutualinfo \
-#  -interp trilinear \
-#  -setbackground 0
+flirt \
+  -in $UTE \
+  -ref $T2 \
+  -out $OUTDIR/ute_in_t2\
+  -dof 6 \
+  -cost mutualinfo \
+  -interp trilinear \
+  -setbackground 0
 
 echo "UTE aligned to T2"
 
