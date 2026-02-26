@@ -3,7 +3,7 @@
 
 
 
-subjectName = 'Confucious';
+subjectName = 'Suntzu';
 if ispc
     MRdataServer = 'M:/';
 else
@@ -93,6 +93,19 @@ elseif strcmp(subjectName, 'Confucious')
     image2 = image2/max(image2(:));
     %image2(300:380,10:40)=0; %hack to delete reflection
     autoTform = 1;
+elseif strcmp(subjectName, 'Suntzu')
+    MRI_ID = 'MRA056_71_20260217';
+    rootDir = fullfile( MRdataServer, 'Subjects', subjectName, ['20260217_122942_' MRI_ID '_1_12']);
+    nE_T2 = 5;
+    nE_UTE = 2;
+    ute_nii = fullfile(rootDir, num2str(nE_UTE), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_UTE) '_1_1.nii']);
+    t2_nii = fullfile(rootDir, num2str(nE_T2), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_T2) '_1_1.nii']);
+    % pill_in_allen = 'ute_in_allen.nii.gz';
+    mrangle = [];
+    image2 = double(readNPY(fullfile( MRdataServer, 'Subjects', subjectName, '2026-02-21_1/meanImage_amber.npy')));
+    image2 = image2-min(image2(:));
+    image2 = image2/max(image2(:));
+    autoTform = 1;
 end
 
 %% load project DMD ref image captured by widefield camera
@@ -112,18 +125,18 @@ system(cmdStr);
 
 
 %% align UTE to T2 and to Allen space (optional)
-if exist(ute_nii, 'var')
+if exist(ute_nii, 'file')
     cmdStr = [fullfile(MRIdir,'pattern_generation/align_UTE_to_Allen.sh') ' ' ute_nii ' ' t2_nii ' ' fullfile(MRIdir, subjectName)];
     system(cmdStr);
+
+    create_pills_labels_manual(subjectName, MRIdir);
+else
+    %% prepare pills in T2* space
+    cmdStr = [fullfile(MRIdir,'pattern_generation/Find_register_pills_T2.sh') ' ' fullfile(MRIdir, subjectName)];% ' ' pill_in_allen ];
+    system(cmdStr); %calls FindPillsExp_Allen.py inside
+
+    delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
 end
-
-
-%% prepare pills in T2* space
-cmdStr = [fullfile(MRIdir,'pattern_generation/Find_register_pills_T2.sh') ' ' fullfile(MRIdir, subjectName)];% ' ' pill_in_allen ];
-system(cmdStr); %calls FindPillsExp_Allen.py inside
-
-delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
-
 
 
 %% load DMD ref image 
@@ -134,6 +147,8 @@ image3 = rgb2gray(imread(fullfile(MRIdir, 'matlab_functions','star_800x500.png')
 load_mr_bead = niftiread('pills_labels.nii')>0;
 load_mr_brain = niftiread('T2w_brain.nii');
 load_anno = niftiread('Atlas_anno_to_T2.nii');
+
+load_mr_bead(:,:,120:end)=0; %hack
 
 %Atlas_reg_info = 
 DMD_pattern_prep(load_mr_bead, load_mr_brain, load_anno, image2, image3, image4, mrangle, autoTform, camImg.MmPerPixel);

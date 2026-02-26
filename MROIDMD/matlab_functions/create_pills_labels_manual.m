@@ -1,5 +1,6 @@
-subjectName = 'Confucious';
-MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
+function create_pills_labels_manual(subjectName, MRIdir)
+% subjectName = 'Confucious';
+% MRIdir = '/home/daisuke/Documents/git/analysisImaging/MROIDMD';
 
 
 % load result of pattern_generation/align_UTE_to_Allen.sh

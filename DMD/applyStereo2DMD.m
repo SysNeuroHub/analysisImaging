@@ -1,9 +1,14 @@
 function [TexImgwarpedtoDMD, TexImgwarped] = applyStereo2DMD(images, bregma, MmPerPixel_img, ...
-    mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir)
+    mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir, autoTform)
 % TexImgwarpedtoDMD = applyStereo2DMD(images, bregma, MmPerPixel_img, ...
 %     mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir)
 % transforms images defined in stereotaxic coordinates to DMD space
+% input must be [0 1]
+%
 
+if nargin < 10
+    autoTform = 1;
+end
 if nargin < 8
     MmPerPixel_oi = [];
 end
@@ -17,15 +22,23 @@ MmPerPixel_mr = 0.1; %[mm]
 usFactor = 5;
 path2Brain_template =  '/home/daisuke/Documents/git/analysisImaging/MROIDMD/pattern_generation/Brain_template.nii';
 
+tform_T2OI_us = tform_T2OI;
+tform_T2OI_us.Scale = tform_T2OI.Scale/usFactor;
+
 if isempty(MmPerPixel_oi)
     MmPerPixel_oi = MmPerPixel_img;
 end
 
-if max(images(:)>1)||min(images(:)<0) 
+if islogical(images)
+    error('Input image must be numeric, not logical');
+end
+
+if max(images(:)>1)||min(images(:)<0)
     error('Input image must be [0 1]');
 end
 nImages = size(images,3);
 
+disp('Running registerStereo2CCF...');
 [tform3, surfDepth, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel_img, ...
     path2Brain_template, usFactor);
 
@@ -35,6 +48,7 @@ niftiwrite_us(fullfile(MROIDMDsubjectDir,'T2w_brain.nii'), usFactor);
 currentDir = pwd;
 cd(MROIDMDsubjectDir);
 
+disp('Running Stereo2T2...');
 surfaceT2 = Stereo2T2(ones(size(images(:,:,1))), usFactor, Vusinfo, tform3, surfDepth, mrangle);
 %surfaceT2(abs(surfaceT2)<1e-1)=nan;
 
@@ -53,9 +67,13 @@ for ii = 1:nImages
     end
 
     %% project to OI
-    fixedRef  = imref2d(OIsize, MmPerPixel_oi, MmPerPixel_oi);  % example pixel sizes in mm
-    movingRef = imref2d(size(TexImg), MmPerPixel_mr/usFactor,  MmPerPixel_mr/usFactor);
-    TexImgwarped(:,:,ii) = imwarp(TexImg,movingRef,tform_T2OI,'linear','OutputView',fixedRef);
+    if autoTform
+        fixedRef  = imref2d(OIsize, MmPerPixel_oi, MmPerPixel_oi);  % example pixel sizes in mm
+        movingRef = imref2d(size(TexImg), MmPerPixel_mr/usFactor,  MmPerPixel_mr/usFactor);
+        TexImgwarped(:,:,ii) = imwarp(TexImg,movingRef,tform_T2OI_us,'linear','OutputView',fixedRef);
+    else
+        TexImgwarped(:,:,ii) = imwarp(TexImg,tform_T2OI_us,'linear','OutputView',imref2d(OIsize));
+    end
 
     if verbose
         subplot(1,3,2); imagesc(TexImgwarped(:,:,ii) );axis equal tight; 
@@ -75,3 +93,4 @@ for ii = 1:nImages
 end
 delete('TexVol.nii', 'TexVol_T2.nii');
 cd(currentDir);
+

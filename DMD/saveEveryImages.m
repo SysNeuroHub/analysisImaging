@@ -1,6 +1,7 @@
 function saveEveryImages(imageStack, saveDir, binary, imgSuffix)
 %saveEveryImages(imageStack, saveDir)
 %saves every images in imageStack as individual png files
+% if binary and imageStack is [0 1], it will be expanded to [0 255]
 %
 % TODO: save as a tiff stack?
 % 4/2/26 now use exportPng4DMD
@@ -11,6 +12,10 @@ if nargin < 4
 end
 if nargin < 3
     binary = 0;
+end
+
+if binary && max(imageStack(:)) <= 1
+    imageStack = uint8(round(double(intmax("uint8"))*imageStack));
 end
 
 set(0, 'DefaultFigureVisible', 'off');
@@ -28,18 +33,7 @@ for ii = 1:nImages
     image(squeeze(imageStack(:,:,ii)));colormap(gray);
 
     exportPng4DMD(fullfile(saveDir, thisName), f, binary);
-    
-    % axis ij image off
-    % xlim([1 width]);
-    % ylim([1 height]);
-    % 
-    % axpatch = gca;
-    % axpatch.Position = [0 0 1 1];
-    % 
-     % thisName = [num2str(ii)];
-    % screen2png(fullfile(saveDir, thisName),f);
     close(f);
-
 end
 
 set(0, 'DefaultFigureVisible', 'on')

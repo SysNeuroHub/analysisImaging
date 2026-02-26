@@ -14,4 +14,8 @@ info.PixelDimensions = info.PixelDimensions/scaleFactor;
 info.Transform.T(1:3,1:3) = info.Transform.T(1:3,1:3)/scaleFactor;
 info.ImageSize = size(V);
 
+if exist([filename(1:end-4) '_us.nii'],'file')
+    delete([filename(1:end-4) '_us.nii']);
+end
+
 niftiwrite(V, [filename(1:end-4) '_us.nii'], info);

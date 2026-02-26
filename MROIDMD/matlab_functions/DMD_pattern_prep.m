@@ -15,6 +15,8 @@ end
 autoTform2 = 1; %DMD
 image2th = 95;% [%]
 MRMmPerVox = 0.1;
+TF = 'similarity'; %'affine'
+
 
 if size(image2) ~= size(image4)
     error(['image2 size ' num2str(size(image2)) ' does not match image 4 size ' num2str(size(image4))]);
@@ -49,8 +51,10 @@ aa_bead=permute(mr_bead,[1 3 2]);
 % a1=max(aa_brain(:,:,J:end),[],3);
 a1_bead=mean(aa_bead,3);
 
-Vesselness = vesselness3D(mr_brain, 1, .5,.5,5000); %porus
-[~,mrimg_brain] = getSurfaceData(afterniftiread(Vesselness));
+% Vesselness = vesselness3D(mr_brain, 1, .5,.5,5000); %NOT GOOD AT ALL
+% [~,mrimg_brain] = getSurfaceData(afterniftiread(Vesselness));
+
+[~,mrimg_brain] = getSurfaceData(afterniftiread(mr_brain),'last'); %COMPROMISE FOR NOW
 mrimg_brain = mrimg_brain/max(mrimg_brain(:));
 
 %b1=rgb2gray(imread('OI_bead.jpg'));
@@ -61,16 +65,16 @@ mrimg_bead =  mrimg_bead-prctile(mrimg_bead(:),5);
 mrimg_bead = mrimg_bead./max(mrimg_bead(:));
 mrimg_bead(mrimg_bead>1) = 1; mrimg_bead(mrimg_bead<0)=0;
 
-figure;
-subplot(121);imshow(mrimg_bead);title('Original MR bead image')
-subplot(122);imagesc(borig); clim(prctile(borig(:), [0 image2th]));
-axis equal tight; title('OI; draw brain boundary. Return to the first vertex then double click')
-%BW=roipoly;
-roiAhand = images.roi.AssistedFreehand;
-draw(roiAhand);
-BW = createMask(roiAhand);
-mapconf=edge(double(BW));
-close all;
+% figure;
+% subplot(121);imshow(mrimg_bead);title('Original MR bead image')
+% subplot(122);imagesc(borig); clim(prctile(borig(:), [0 image2th]));
+% axis equal tight; title('OI; draw brain boundary. Return to the first vertex then double click')
+% %BW=roipoly;
+% roiAhand = images.roi.AssistedFreehand;
+% draw(roiAhand);
+% BW = createMask(roiAhand);
+% mapconf=edge(double(BW));
+% close all;
 
 if autoTform %SLOW AT IMREGTFORM
 disp('Computing transformation from MR to OI automatically');
@@ -81,16 +85,16 @@ disp('Computing transformation from MR to OI automatically');
 
     [optimizer,metric] = imregconfig("multimodal");
     optimizer.MaximumIterations = 1e4;
-    fixedRef  = imref2d(size(borig_th), camMmPerPix,camMmPerPix);  % example pixel sizes in mm
+    fixedRef  = imref2d(size(borig), camMmPerPix,camMmPerPix);  % example pixel sizes in mm
     movingRef = imref2d(size(mrimg_brain), MRMmPerVox, MRMmPerVox);
 
     initialTform = affine2d([cosd(0) -sind(0) 0; sind(0) cosd(0) 0; 0 0 1]); % ~0° initial guess
-    tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef,"similarity",...
+    tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef, TF,...
         optimizer, metric, 'InitialTransformation', initialTform);
     % beadwarpedCoarse = imwarp(mrimg_bead,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
     % brainwarpedCoarse = imwarp(mrimg_brain,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
 
-    tform = imregtform(mrimg_bead, movingRef, borig_th, fixedRef,"affine",optimizer, metric, ...
+    tform = imregtform(mrimg_bead, movingRef, borig_th, fixedRef, TF, optimizer, metric, ...
         'InitialTransformation', tformCoarse);
 
     mrwarped = imwarp(proj_anno_cortex,movingRef,tform,'nearest','OutputView',fixedRef);
@@ -100,7 +104,7 @@ else
 disp('Computing transformation from MR to OI with landmarks');
     fprintf('Mark movingPoints and fixedPoints...\n')
     [movingPoints,fixedPoints] = cpselect(mrimg_bead,borig,'Wait',true);
-    tform = fitgeotrans(movingPoints,fixedPoints,TF);
+    tform = fitgeotform2d(movingPoints,fixedPoints,TF); %fitgeotrans
 
     mrwarped = imwarp(proj_anno_cortex,tform,'nearest','OutputView',imref2d(size(borig)));
     beadwarped = imwarp(mrimg_bead,tform,'cubic','OutputView',imref2d(size(borig)));
@@ -138,7 +142,7 @@ OIwarpedtoDMD = imwarp(a1,tform2,'cubic','OutputView',imref2d(size(b1)));
 % beadwarped2=[zeros(size(beadwarped,1),floor((size(borig,2)-size(beadwarped,2))/2)) beadwarped zeros(size(beadwarped,1),ceil((size(borig,2)-size(beadwarped,2))/2))];
 % beadwarped3=[zeros(floor((size(borig,1)-size(beadwarped2,1))/2),size(beadwarped2,2));beadwarped2;zeros(ceil((size(borig,1)-size(beadwarped2,1))/2),size(beadwarped2,2))];
 
-mapconfwarpedtoDMD = 100*imwarp(mapconf,tform2,'cubic','OutputView',imref2d(size(b1)));
+%mapconfwarpedtoDMD = 100*imwarp(mapconf,tform2,'cubic','OutputView',imref2d(size(b1)));
 borigwarpedtoDMD = imwarp(borig, tform2,'cubic','OutputView',imref2d(size(b1)));
 
 %%
@@ -163,7 +167,7 @@ ImageTotal=sum(ImageRow,3);
 
 jetkey=jet(400);
 
-figure;imagesc(ImageTotal+mapconfwarpedtoDMD);colormap([[1 1 1];jetkey]);title('Stimulation pattern')
+figure;imagesc(ImageTotal);colormap([[1 1 1];jetkey]);title('Stimulation pattern')
 axis equal tight; grid on;
 
 fid=fopen('ROI_information.txt','w');
@@ -175,7 +179,7 @@ fclose(fid);
 
 TotalBrainImage=ImageTotal;
 
-save('Atlas_reg_info.mat','ROI_info','proj_brain','TotalBrainImage','tform','tform2','mapconfwarpedtoDMD',...
+save('Atlas_reg_info.mat','ROI_info','proj_brain','TotalBrainImage','tform','tform2',... %.'mapconfwarpedtoDMD',...
     'mrwarpedtoDMD',"OIwarpedtoDMD",'borigwarpedtoDMD','mrimg_bead','mrimg_brain',...
-    'image2','image3','image4','proj_anno_cortex','mrwarped','mrangle');
+    'image2','image3','image4','proj_anno_cortex','mrwarped','mrangle','autoTform');
 fprintf('Done! Execute DMD_pattern_generation([ROI indices])...\n')

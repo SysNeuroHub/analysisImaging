@@ -7,7 +7,6 @@ source /etc/profile.d/modules.sh
 # Initialize conda for the shell
 source /home/daisuke/anaconda3/etc/profile.d/conda.sh
 
-# Activate your environment (replace antsenv with your env name)
 conda activate antsenv
 
 UTE=$1

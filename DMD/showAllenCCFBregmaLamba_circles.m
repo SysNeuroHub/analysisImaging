@@ -13,11 +13,11 @@ refdate = '20260214';
 load(fullfile('/home/daisuke/Documents/git/analysisImaging/DMD/references', ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = -3;%-4.5:1:-0.5; %[mm]
+xfrombregma = [-4 -1];%-3; %[mm]
 if strcmp(hemisphere,'r')
     xfrombregma = sort(abs(xfrombregma));
 end
-yfrombregma = [-3.6 -1.5 1.6];%-4:1:3; %A>0, P<0
+yfrombregma = 0;%[-3.6 -1.5 1.6];%-4:1:3; %A>0, P<0
 radiusmm = camImg.MmPerPixel*5; %[mm];
 
 
@@ -61,7 +61,7 @@ addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);
 exportPng4DMD(fullfile(saveDir, 'test'), f, 1);close(f);
 l=imread(fullfile(saveDir, 'test.png'));
 delete(fullfile(saveDir, 'test.png'));
-ctx = imfill(l,'holes');
+ctx = logical(imfill(l,'holes'));
 
 
 %% show only patches along the grid
@@ -106,7 +106,7 @@ for yy = 1:numel(yfrombregma)
 
 
             exportPng4DMD(fullfile(saveDir, 'stereo', 'tmp'), fpatch, binarise);
-            ltmp=imread(fullfile(saveDir, 'stereo','tmp.png'));
+            ltmp=logical(imread(fullfile(saveDir, 'stereo','tmp.png')));
             
 
             %% check if the projected image is within the cortex & DMD projection zone

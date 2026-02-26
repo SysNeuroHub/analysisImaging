@@ -49,14 +49,15 @@ sizeVus = Vusinfo.ImageSize;
 
     %% project back from 3D to 2D
     TexVol_T2 = niftiread('TexVol_T2.nii');
-    if mrangle(1)~=0
-        TexVol_T2 = imrotate3(TexVol_T2, mrangle(1), [1 0 0],'linear','crop','fillvalues',nan); %roll
+    if ~isempty(mrangle)
+        if mrangle(1)~=0
+            TexVol_T2 = imrotate3(TexVol_T2, mrangle(1), [1 0 0],'linear','crop','fillvalues',nan); %roll
+        end
+        if mrangle(2)~=0
+            TexVol_T2 = imrotate3(TexVol_T2, mrangle(2), [0 1 0],'linear','crop','fillvalues',nan); %pitch
+        end
+        if mrangle(3)~=0
+            TexVol_T2 = imrotate3(TexVol_T2, mrangle(3), [0 0 1],'linear','crop','fillvalues',nan); %yaw
+        end
     end
-    if mrangle(2)~=0
-        TexVol_T2 = imrotate3(TexVol_T2, mrangle(2), [0 1 0],'linear','crop','fillvalues',nan); %pitch
-    end
-    if mrangle(3)~=0
-        TexVol_T2 = imrotate3(TexVol_T2, mrangle(3), [0 0 1],'linear','crop','fillvalues',nan); %yaw
-    end
-    
     TexVol_T2 = afterniftiread(TexVol_T2);
