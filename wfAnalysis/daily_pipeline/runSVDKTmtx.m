@@ -28,10 +28,23 @@ mouseName = 'Leekuanyew';%'susanoo';
 thisDate = '2026-02-19';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
 expNums = [1:2];
+seqFiles = {'2x1 Suntzu l.seq'};
 makeROI = 0;
 doRegistration = 0;
 hwbinning = 2; %automatically retrieve this from thorcam header??
 magnification = .5; 
+
+%% upload DMD png files to Market
+if ~isempty(seqfiles)
+    expt.subject = mouseName;
+    expt.expDate = [thisDate '_' thisSeries];
+    expt.expNum = expNums(iexp);
+
+    seqDir = 'D:\PolyScan\DMD\20250617_Daisuke_Shimaoka\Most Recent Settings';
+
+    uploadSeqPng(seqFiles{iexp}, expt);
+end
+
 
 if ispc
     cd('C:\Documents\git\analysisImaging\wfAnalysis\daily_pipeline');
