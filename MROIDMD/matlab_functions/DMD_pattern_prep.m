@@ -13,7 +13,7 @@ if nargin <8
     autoTform = 0; %MR-OI
 end
 autoTform2 = 1; %DMD
-image2th = 95;% [%]
+% image2th = 95;% [%]
 MRMmPerVox = 0.1;
 TF = 'similarity'; %'affine'
 
@@ -75,6 +75,9 @@ mrimg_bead(mrimg_bead>1) = 1; mrimg_bead(mrimg_bead<0)=0;
 % BW = createMask(roiAhand);
 % mapconf=edge(double(BW));
 % close all;
+
+disp('Adjust top slider to define threshold value for fluor tube');
+image2th = imageContrastPercentileGUI(borig);
 
 if autoTform %SLOW AT IMREGTFORM
 disp('Computing transformation from MR to OI automatically');
