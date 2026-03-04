@@ -5,6 +5,11 @@ function [TexImgwarpedtoDMD, TexImgwarped] = applyStereo2DMD(images, bregma, MmP
 % transforms images defined in stereotaxic coordinates to DMD space
 % input must be [0 1]
 %
+% need
+% TexVol_T2.nii (in Stereo2T2.m)
+% TexVol.nii (in Stereo2T2.m)
+% Brain_template.nii
+% T2w_brain.nii
 
 if nargin < 10
     autoTform = 1;
@@ -20,10 +25,12 @@ verbose = 0;
 DMDsize = [500 800]; %[y x]
 MmPerPixel_mr = 0.1; %[mm]
 usFactor = 5;
-path2Brain_template =  '/home/daisuke/Documents/git/analysisImaging/MROIDMD/pattern_generation/Brain_template.nii';
+path2Brain_template =  fullfile(MROIDMDsubjectDir,'Brain_template.nii');
 
 tform_T2OI_us = tform_T2OI;
-tform_T2OI_us.Scale = tform_T2OI.Scale/usFactor;
+if isfield(tform_T2OI, 'Scale')
+    tform_T2OI_us.Scale = tform_T2OI.Scale/usFactor;
+end
 
 if isempty(MmPerPixel_oi)
     MmPerPixel_oi = MmPerPixel_img;
