@@ -8,7 +8,8 @@ source /home/daisuke/anaconda3/etc/profile.d/conda.sh
 conda activate antsenv
 
 INPUTNII=$1
-OUTDIR=$2
+T2WNII=$2
+OUTDIR=$3
 
 cd $OUTDIR
 
@@ -28,7 +29,7 @@ OUTPUTNII="${basename}_T2.nii"
 # forward transform from CCF to T2
 antsApplyTransforms \
  -i $OUTDIR/$INPUTNII \
- -r T2w_brain_us.nii \
+ -r $T2WNII \
  -o $OUTDIR/$OUTPUTNII \
  -t Tem_to_T21Warp.nii.gz \
  -t Tem_to_T20GenericAffine.mat \
