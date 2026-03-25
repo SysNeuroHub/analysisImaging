@@ -6,14 +6,15 @@ addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 
 binarise = 1;
 th_coverage = 0.5; % minimu ratio of pixels that are actually on the cortex compared to the desired
-hemisphere = 'l';
+hemisphere = 'r';
+refDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references';
 refdate = '20260214';
 
 %% camera image info
-load(fullfile('/home/daisuke/Documents/git/analysisImaging/DMD/references', ['camImg_' refdate]),'camImg');
+load(fullfile(refDir, ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = [-4 -1];%-3; %[mm]
+xfrombregma = -3; %[mm]
 if strcmp(hemisphere,'r')
     xfrombregma = sort(abs(xfrombregma));
 end
@@ -71,24 +72,25 @@ mkdir(fullfile(saveDir,'stereo'));
 patchNumber = 1;
 imageName = cell(1);
 position = [];
+imageStereo = [];
 
-%% initial image = blank
-fpatch=figure;
-image(zeros(camImg.imageSize));%colormap(gray);
-
-thisName = [num2str(patchNumber) ];
-exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
-close(fpatch);
-
-imageStereo = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
-imageName{patchNumber} = thisName;
-position(1,1:4) = nan;
+% %% initial image = blank
+% fpatch=figure;
+% image(zeros(camImg.imageSize));%colormap(gray);
+% 
+% thisName = [num2str(patchNumber) ];
+% exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
+% close(fpatch);
+% 
+% imageStereo = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
+% imageName{patchNumber} = thisName;
+% position(1,1:4) = nan;
 
 for yy = 1:numel(yfrombregma)
     for xx = 1:numel(xfrombregma)
         for rr = 1:numel(radiusmm)
 
-            disp([num2str(patchNumber) '/' num2str(nPatches+1)]);
+            disp([num2str(patchNumber) '/' num2str(nPatches)]);
 
 
             xval = xfrombregmapix(xx);
@@ -113,7 +115,6 @@ for yy = 1:numel(yfrombregma)
             if sum(ltmp.*ctx.*pz) / sum(ltmp) < th_coverage continue; end
 
 
-            patchNumber = patchNumber + 1;
             thisName = [num2str(patchNumber) ];
             exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
             close(fpatch);
@@ -124,6 +125,9 @@ for yy = 1:numel(yfrombregma)
             imageStereo = cat(3, imageStereo, imageLoaded);
             imageName{patchNumber} = thisName;
             position(patchNumber, :) = thisPosition;
+
+             patchNumber = patchNumber + 1;
+           
         end
     end
 end
@@ -142,4 +146,5 @@ hold on;
 addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
 exportPng4DMD(fullfile(saveDir, [saveName_s '_all_wCCF' ]), fpatch, binarise);close(fpatch);
                 
-
+%% do not upload the result to server YET
+%instead upload after running stereo2DMD

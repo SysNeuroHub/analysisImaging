@@ -1,4 +1,4 @@
-function uploadSeqPng(seqFile, expt)
+function uploadSeqPng(seqFileFullpath, expt)
 %uploadSeqPng(seqFile, expt)
 % find png files specified in seqFile, then upload to the market server
 % png files and seqFile are supposed to be saved in the same directory (seqFolder)
@@ -7,22 +7,23 @@ function uploadSeqPng(seqFile, expt)
 % expt.expDate = '2025-11-14_2';
 % expt.expNum = 3;
 
-seqFile = char(seqFile);
-if ~strcmp(seqFile(end-4:end), '.seq')
-    seqFile = [seqFile '.seq'];
+seqFileFullpath = char(seqFileFullpath);
+if ~strcmp(seqFileFullpath(end-3:end), '.seq')
+    seqFileFullpath = [seqFileFullpath '.seq'];
 end
-if ~isfile(seqFile)
-    error('SEQ file not found: %s', seqFile);
+if ~isfile(seqFileFullpath)
+    error('SEQ file not found: %s', seqFileFullpath);
 end
 
-info = read_polyscan_seq_pngs(seqFile);
+info = read_polyscan_seq_pngs(seqFileFullpath);
 %   info.pngNames        - PNG filenames in sequence order
 %   info.found           - logical array (true if resolved)
 %   info.fullPaths       - resolved full paths ('' if not found)
 %   info.seqFolder       - folder containing the .seq file
 %   info.missingNames    - filenames not found on disk
 
-seqFolder = fileparts(seqFile);
+[seqFolder, seqFileName, seqFileExt] = fileparts(seqFileFullpath);
+disp(['Found ' num2str(numel(info.fullPaths)) ' files in ' seqFileName]);
 if isempty(seqFolder)
     seqFolder = pwd;
 end
@@ -35,19 +36,19 @@ if ~exist(destination, 'dir')
 end
 
 
-success_seqFile = copyfile(fullfile(seqFolder, seqFile), fullfile(destination, seqFile));
+success_seqFile = copyfile(seqFileFullpath, fullfile(destination, [seqFileName seqFileExt]));
 if success_seqFile
-    disp([seqFile ' was successfully copied']);
+    disp([seqFileFullpath ' was successfully uploaded']);
 else
-    disp([seqFile ' was Failed to copy']);
+    disp([seqFileFullpath ' was failed to upload']);
 end
 
 nPng = numel(info.pngNames);
 for ip = 1:nPng
-    copyfile(info.fullPaths{ip}, fullfile(destination, info.pngNames{ip}));
-    if success_seqFile
-        disp([info.pngNames{ip} ' was successfully copied']);
+    success_pngFile = copyfile(info.fullPaths{ip}, fullfile(destination, info.pngNames{ip}));
+    if success_pngFile
+        disp([info.pngNames{ip} ' was successfully uploaded']);
     else
-        disp([info.pngNames{ip} ' was Failed to copy']);
+        disp([info.pngNames{ip} ' was failed to upload']);
     end
 end
