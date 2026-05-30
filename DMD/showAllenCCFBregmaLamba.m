@@ -10,20 +10,24 @@ hemisphere = 'l';
 refDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references';
 refdate = '20260214';
 
+shape = 'patch'; %circle
+
 %% camera image info
 load(fullfile(refDir, ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = -4.5:1:-0.5; %[mm]
+xfrombregma = -4.5:0.25:-0.5; %[mm]
 if strcmp(hemisphere,'r')
     xfrombregma = sort(abs(xfrombregma));
 end
-yfrombregma = -4:1:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
-radiusmm = camImg.MmPerPixel*5; %[mm];
+yfrombregma = -4:0.25:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
 
+if strcmp(shape,'circle')
+    radiusmm = camImg.MmPerPixel*5; %[mm];
+end
 
 %% save CCF image with bregma, lambda and scale
-saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix_' num2str(numel(xfrombregma)) 'x' num2str(numel(yfrombregma)) 'circle_' hemisphere];
+saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix_' num2str(numel(xfrombregma)) 'x' num2str(numel(yfrombregma)) shape '_' hemisphere];
 saveName_s = [saveName '_stereo'];
 saveServer = '~/tmp';
 saveDir = fullfile(saveServer, saveName);
@@ -44,7 +48,9 @@ disp([num2str(nPatches) ' patches'])
 
 xfrombregmapix = 1/camImg.MmPerPixel * xfrombregma + camImg.bregmapix(2);
 yfrombregmapix = -1/camImg.MmPerPixel * yfrombregma + camImg.bregmapix(1);
-radiuspix = 1/camImg.MmPerPixel * radiusmm;
+if strcmp(shape,'circle')
+    radiuspix = 1/camImg.MmPerPixel * radiusmm;
+end
 
 % grids on CCF ... sometimes it vanishes
 f=figure;
@@ -86,6 +92,12 @@ imageStereo = [];
 % imageName{patchNumber} = thisName;
 % position(1,1:4) = nan;
 
+if strcmp(shape, 'circle')
+    curvature = [1 1];
+elseif strcmp(shape, 'patch')
+    curvature = [0 0];
+end
+
 for yy = 1:numel(yfrombregma)
     for xx = 1:numel(xfrombregma)
         for rr = 1:numel(radiusmm)
@@ -95,15 +107,19 @@ for yy = 1:numel(yfrombregma)
 
             xval = xfrombregmapix(xx);
             yval = yfrombregmapix(yy);
+            if strcmp(shape, 'circle')
             rval = radiuspix(rr);
             thisPosition = [xval-rval yval-rval 2*rval 2*rval];
-
+            elseif strcmp(shape, 'patch')
+                xdiff = abs(mean(diff(xfrombregmapix)));
+                ydiff = abs(mean(diff(yfrombregmapix)));
+                thisPosition = [xval-0.5*xdiff yval-0.5*ydiff xdiff ydiff];
+            end            
             fpatch=figure;
             image(zeros(camImg.imageSize));%colormap(gray);
 
             hold on;
-            %         viscircles([xfrombregmapix(xx) yfrombregmapix(yy)], radiuspix(rr), 'color','w');
-            rectangle('position',thisPosition ,'curvature',[1 1], 'facecolor','w');
+            rectangle('position',thisPosition ,'curvature',curvature, 'facecolor','w');
 
 
 

@@ -8,8 +8,8 @@ eigenmodeMask2DMD: wrapper to convert nodes defined in CCF volume to images suit
 imupdatepair(referenceImage, imageFolder): compare reference image with a latest image in imageFolder
 
 # Scripts to create projection images in Stereotaxic coordinates:
-showAllenCCFBregmaLambda_patches: square patches on CCF 
-(showAllenCCFBregmaLambda_circles: circles on CCF)
+showAllenCCFBregmaLambda: rectangle or circle patches on CCF 
+(showAllenCCFBregmaLambda_circles: circles on CCF (obsolete))
 (showAllenCCFBreagmaLambda: square patches on CCF (obsolete))
 (showAllenCCFBreagmaLambda_star: stars on CCF)
 showNatural: natural movies

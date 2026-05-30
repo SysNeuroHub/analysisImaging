@@ -7,8 +7,6 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mra
 % image4, image taken by camera during projection of image 3. Must be the
 % same dimension to image 2  (OI_ref.jpg)
 
-%TODO: only extract pills not brain of OI image (image2) 
-
 if nargin <8
     autoTform = 0; %MR-OI
 end
