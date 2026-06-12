@@ -1,12 +1,3 @@
-# Script to perform conversion of images from stereo to DMD
-Stereo2DMD: wrapper to convert images defined in stereotaxic coordinates to images suited for DMD projection
-(showCCFindividual): create DMD images for individual cortical areas (from Kim 2023 Neuron)
-eigenmode2DMD: wrapper to convert eigenmodes defined in CCF volume to images suited for DMD projections
-eigenmodeMask2DMD: wrapper to convert nodes defined in CCF volume to images suited for DMD projections
-
-# Function to run during imaging experiment
-imupdatepair(referenceImage, imageFolder): compare reference image with a latest image in imageFolder
-
 # Scripts to create projection images in Stereotaxic coordinates:
 showAllenCCFBregmaLambda: rectangle or circle patches on CCF 
 (showAllenCCFBregmaLambda_circles: circles on CCF (obsolete))
@@ -14,6 +5,15 @@ showAllenCCFBregmaLambda: rectangle or circle patches on CCF
 (showAllenCCFBreagmaLambda_star: stars on CCF)
 showNatural: natural movies
 showStar: create a png with a giant star and a cross hair for a reference image (star_800x500.png)
+
+# Scripts to perform conversion of images from stereo to DMD (using result of scripts like showAllenCCFBregmaLambda.m)
+Stereo2DMD: wrapper to convert images defined in stereotaxic coordinates to images suited for DMD projection
+(showCCFindividual): create DMD images for individual cortical areas (from Kim 2023 Neuron)
+eigenmode2DMD: wrapper to convert eigenmodes defined in CCF volume to images suited for DMD projections
+eigenmodeMask2DMD: wrapper to convert nodes defined in CCF volume to images suited for DMD projections
+
+# Function to run during imaging experiment
+imupdatepair(referenceImage, imageFolder): compare reference image with a latest image in imageFolder
 
 # Functions to convert Stereotaxic images to individual brains
 applyStereo2DMD(images, bregma, MmPerPixel_img, mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir):  transforms images defined in stereotaxic coordinates to DMD space (500x800 pix)

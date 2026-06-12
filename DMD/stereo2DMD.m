@@ -16,7 +16,7 @@ OIsize = size(image2);
 % imgPrefix = 'CCFBL_584x450pix_1x3circle_l'; %  showAllenCCFBregmaLambda_patches
 % imgPrefix = 'CCFBL_584x450pix_5x8circle_l'; %  showAllenCCFBregmaLambda_patches
 %imgPrefix = 'natural_400x300pix_2'; %showNatural
-imgPrefix = 'CCFBL_584x450pix_17x29patch_l'; %  showAllenCCFBregmaLambda_patches
+imgPrefix = 'CCFBL_584x450pix';%_17x29patch_r'; %  showAllenCCFBregmaLambda_patches
 
 % imgDir = fullfile('/mnt/dshi0006_market/DMD images/',imgPrefix); %unstable in reading nifti ... better to use a local directory
 imgDir = fullfile('~/tmp',imgPrefix);

@@ -1,4 +1,5 @@
 % created from stereo2DMD
+addpath(genpath('/home/daisuke/Documents/git/analysisImaging'));
 
 resultServer = '/mnt/dshi0006_market';
 
@@ -31,9 +32,12 @@ for ii =1:numel(modeIdx)
     %% convert stereo image into image for DMD
     [image4DMD_ori, image4OI_ori] = applyCCF2DMD(Vmode, tform, tform2, OIsize, MmPerPixel_oi, regDir, autoTform, extractSurface);
 
+    DMDprojectionZone = getDMDprojectionZone(camImg);
+    %TODO convert to DMD space
+
     %% separate into positive and negative nodes
-    image4OI(:,:,1) = image4OI_ori.*(image4OI_ori>0); %positive nodes
-    image4OI(:,:,2) = -image4OI_ori.*(image4OI_ori<0); %negative nodes
+    image4OI(:,:,1) = image4OI_ori.*(image4OI_ori>0) .*DMDprojectionZone; %positive nodes
+    image4OI(:,:,2) = -image4OI_ori.*(image4OI_ori<0) .*DMDprojectionZone; %negative nodes
 
     image4DMD(:,:,1) = image4DMD_ori.*(image4DMD_ori>0);  %positive nodes
     image4DMD(:,:,2) = -image4DMD_ori.*(image4DMD_ori<0); %negative nodes

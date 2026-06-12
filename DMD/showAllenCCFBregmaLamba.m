@@ -6,7 +6,7 @@ addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 
 binarise = 1;
 th_coverage = 0.5; % minimu ratio of pixels that are actually on the cortex compared to the desired
-hemisphere = 'l';
+hemisphere = 'r';
 refDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references';
 refdate = '20260214';
 
@@ -16,18 +16,26 @@ shape = 'patch'; %circle
 load(fullfile(refDir, ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = -4.5:0.25:-0.5; %[mm]
+xfrombregma = [];%-4.5:0.25:-0.5; %[mm]
 if strcmp(hemisphere,'r')
     xfrombregma = sort(abs(xfrombregma));
 end
-yfrombregma = -4:0.25:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
+yfrombregma = [];%-4:0.25:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
 
 if strcmp(shape,'circle')
     radiusmm = camImg.MmPerPixel*5; %[mm];
+    nSize = numel(radiusmm);
+else
+    nSize = 1;
 end
 
 %% save CCF image with bregma, lambda and scale
-saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix_' num2str(numel(xfrombregma)) 'x' num2str(numel(yfrombregma)) shape '_' hemisphere];
+if isempty(xfrombregma) && isempty(yfrombregma)
+    saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix'];
+else
+    saveName = ['CCFBL_' num2str(camImg.imageSize(2)) 'x' num2str(camImg.imageSize(1)) 'pix_' num2str(numel(xfrombregma)) 'x' num2str(numel(yfrombregma)) shape '_' hemisphere];
+end
+
 saveName_s = [saveName '_stereo'];
 saveServer = '~/tmp';
 saveDir = fullfile(saveServer, saveName);
@@ -52,101 +60,120 @@ if strcmp(shape,'circle')
     radiuspix = 1/camImg.MmPerPixel * radiusmm;
 end
 
-% grids on CCF ... sometimes it vanishes
-f=figure;
-image(zeros(camImg.imageSize));
-addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
-hline(yfrombregmapix, gca,'-','w');
-vline(xfrombregmapix, gca,'-','w');
-% exportPng4DMD([saveName '_grid'], f, 1);
-
-
-%% check if stimulation is within the cortex
-f=figure;
-image(zeros(camImg.imageSize));
-addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
-exportPng4DMD(fullfile(saveDir, 'test'), f, 1);close(f);
-l=imread(fullfile(saveDir, 'test.png'));
-delete(fullfile(saveDir, 'test.png'));
-ctx = logical(imfill(l,'holes'));
-
-
-%% show only patches along the grid
 set(0, 'DefaultFigureVisible', 'off');
 mkdir(fullfile(saveDir,'stereo'));
 
-patchNumber = 1;
-imageName = cell(1);
-position = [];
-imageStereo = [];
-
-% %% initial image = blank
-% fpatch=figure;
-% image(zeros(camImg.imageSize));%colormap(gray);
-% 
-% thisName = [num2str(patchNumber) ];
-% exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
-% close(fpatch);
-% 
-% imageStereo = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
-% imageName{patchNumber} = thisName;
-% position(1,1:4) = nan;
-
-if strcmp(shape, 'circle')
-    curvature = [1 1];
-elseif strcmp(shape, 'patch')
-    curvature = [0 0];
-end
-
-for yy = 1:numel(yfrombregma)
-    for xx = 1:numel(xfrombregma)
-        for rr = 1:numel(radiusmm)
-
-            disp([num2str(patchNumber) '/' num2str(nPatches)]);
+if nPatches > 0
+    % grids on CCF ... sometimes it vanishes
+    f=figure;
+    image(zeros(camImg.imageSize));
+    addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
+    hline(yfrombregmapix, gca,'-','w');
+    vline(xfrombregmapix, gca,'-','w');
+    % exportPng4DMD([saveName '_grid'], f, 1);
 
 
-            xval = xfrombregmapix(xx);
-            yval = yfrombregmapix(yy);
-            if strcmp(shape, 'circle')
-            rval = radiuspix(rr);
-            thisPosition = [xval-rval yval-rval 2*rval 2*rval];
-            elseif strcmp(shape, 'patch')
-                xdiff = abs(mean(diff(xfrombregmapix)));
-                ydiff = abs(mean(diff(yfrombregmapix)));
-                thisPosition = [xval-0.5*xdiff yval-0.5*ydiff xdiff ydiff];
-            end            
-            fpatch=figure;
-            image(zeros(camImg.imageSize));%colormap(gray);
-
-            hold on;
-            rectangle('position',thisPosition ,'curvature',curvature, 'facecolor','w');
+    %% check if stimulation is within the cortex
+    f=figure;
+    image(zeros(camImg.imageSize));
+    addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
+    exportPng4DMD(fullfile(saveDir, 'test'), f, 1);close(f);
+    l=imread(fullfile(saveDir, 'test.png'));
+    delete(fullfile(saveDir, 'test.png'));
+    ctx = logical(imfill(l,'holes'));
 
 
+    %% show only patches along the grid
 
-            exportPng4DMD(fullfile(saveDir, 'stereo', 'tmp'), fpatch, binarise);
-            ltmp=logical(imread(fullfile(saveDir, 'stereo','tmp.png')));
-            
+    patchNumber = 1;
+    imageName = cell(1);
+    position = [];
+    imageStereo = [];
 
-            %% check if the projected image is within the cortex & DMD projection zone
-            if sum(ltmp.*ctx.*pz) / sum(ltmp) < th_coverage continue; end
+    % %% initial image = blank
+    % fpatch=figure;
+    % image(zeros(camImg.imageSize));%colormap(gray);
+    %
+    % thisName = [num2str(patchNumber) ];
+    % exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
+    % close(fpatch);
+    %
+    % imageStereo = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
+    % imageName{patchNumber} = thisName;
+    % position(1,1:4) = nan;
+
+    if strcmp(shape, 'circle')
+        curvature = [1 1];
+    elseif strcmp(shape, 'patch')
+        curvature = [0 0];
+    end
+
+    for yy = 1:numel(yfrombregma)
+        for xx = 1:numel(xfrombregma)
+            for rr = 1:nSize
+
+                disp([num2str(patchNumber) '/' num2str(nPatches)]);
 
 
-            thisName = [num2str(patchNumber) ];
-            exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
-            close(fpatch);
+                xval = xfrombregmapix(xx);
+                yval = yfrombregmapix(yy);
+                if strcmp(shape, 'circle')
+                    rval = radiuspix(rr);
+                    thisPosition = [xval-rval yval-rval 2*rval 2*rval];
+                elseif strcmp(shape, 'patch')
+                    xdiff = abs(mean(diff(xfrombregmapix)));
+                    ydiff = abs(mean(diff(yfrombregmapix)));
+                    thisPosition = [xval-0.5*xdiff yval-0.5*ydiff xdiff ydiff];
+                end
+                fpatch=figure;
+                image(zeros(camImg.imageSize));%colormap(gray);
 
-            %% load
-            imageLoaded = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
+                hold on;
+                rectangle('position',thisPosition ,'curvature',curvature, 'facecolor','w');
 
-            imageStereo = cat(3, imageStereo, imageLoaded);
-            imageName{patchNumber} = thisName;
-            position(patchNumber, :) = thisPosition;
 
-             patchNumber = patchNumber + 1;
-           
+
+                exportPng4DMD(fullfile(saveDir, 'stereo', 'tmp'), fpatch, binarise);
+                ltmp=logical(imread(fullfile(saveDir, 'stereo','tmp.png')));
+
+
+                %% check if the projected image is within the cortex & DMD projection zone
+                if sum(ltmp.*ctx.*pz) / sum(ltmp) < th_coverage continue; end
+
+
+                thisName = [num2str(patchNumber) ];
+                exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
+                close(fpatch);
+
+                %% load
+                imageLoaded = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
+
+                imageStereo = cat(3, imageStereo, imageLoaded);
+                imageName{patchNumber} = thisName;
+                position(patchNumber, :) = thisPosition;
+
+                patchNumber = patchNumber + 1;
+
+            end
         end
     end
+
+elseif nPatches == 0
+    fpatch=figure;
+    image(zeros(camImg.imageSize));colormap(gray);
+
+    exportPng4DMD(fullfile(saveDir, 'stereo', 'tmp'), fpatch, binarise);
+    ltmp=logical(imread(fullfile(saveDir, 'stereo','tmp.png')));
+
+    exportPng4DMD(fullfile(saveDir, 'stereo', saveName_s), fpatch, binarise);
+    close(fpatch);
+
+    %% load
+    imageStereo = imread(fullfile(saveDir, 'stereo', [saveName_s '.png']));
+    % imageName{patchNumber} = thisName;
+    position = [];
 end
+
 
 %% save everything in one file
 save(fullfile(saveDir, saveName_s), 'imageStereo','camImg','position');
@@ -157,10 +184,11 @@ set(0, 'DefaultFigureVisible', 'on');
 %% stimulus positions w CCF
 load(fullfile(saveDir, saveName_s), 'imageStereo');
 fpatch=figure;
-imagesc(sum(imageStereo,3));
+imagesc(sum(imageStereo,3)); 
+clim([0 1]);%12/6/26
 hold on;
 addAllenCtxOutlines(camImg.bregmapix, camImg.lambdapix, 'w', camImg.MmPerPixel);%this looks at lambda and shrinks the CCF
 exportPng4DMD(fullfile(saveDir, [saveName_s '_all_wCCF' ]), fpatch, binarise);close(fpatch);
-                
+
 %% do not upload the result to server YET
 %instead upload after running stereo2DMD
