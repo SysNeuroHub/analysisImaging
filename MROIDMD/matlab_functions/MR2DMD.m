@@ -3,7 +3,7 @@
 
 
 
-subjectName = 'Suntzu';
+subjectName = 'Confucious';
 if ispc
     MRdataServer = 'M:/';
 else
@@ -88,17 +88,18 @@ elseif strcmp(subjectName, 'Confucious')
     t2_nii = fullfile(rootDir, num2str(nE_T2), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_T2) '_1_1.nii']);
     % pill_in_allen = 'ute_in_allen.nii.gz';
     mrangle = [];
-    image2 = (double(readNPY('/mnt/dshi0006_market/Subjects/Confucious/2026-02-20_1/meanImage_amber.npy')));
-    image2 = image2-min(image2(:));
-    image2 = image2/max(image2(:));
-    %image2(300:380,10:40)=0; %hack to delete reflection
+    % image2 = (double(readNPY('/mnt/dshi0006_market/Subjects/Confucious/2026-02-20_1/meanImage_amber.npy')));
+    % image2 = image2-min(image2(:));
+    % image2 = image2/max(image2(:));
+    % %image2(300:380,10:40)=0; %hack to delete reflection
+    image2 = (double(readNPY('/mnt/dshi0006_market/Subjects/Confucious/2026-02-27_3/meanImage_amber.npy')));
     autoTform = 1;
 elseif strcmp(subjectName, 'Suntzu')
     MRI_ID = 'MRA056_71_20260217';
     rootDir = fullfile( MRdataServer, 'Subjects', subjectName, ['20260217_122942_' MRI_ID '_1_12']);
     nE_T2 = 5;
     nE_UTE = 2;
-    ute_nii = fullfile(rootDir, num2str(nE_UTE), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_UTE) '_1_1.nii']);
+    ute_nii = [];%fullfile(rootDir, num2str(nE_UTE), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_UTE) '_1_1.nii']);
     t2_nii = fullfile(rootDir, num2str(nE_T2), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_T2) '_1_1.nii']);
     % pill_in_allen = 'ute_in_allen.nii.gz';
     mrangle = [];
@@ -131,7 +132,7 @@ if exist(ute_nii, 'file')
 
     create_pills_labels_manual(subjectName, MRIdir);
 else
-    %% prepare pills in T2* space
+    %% prepare pills in T2* space (pills_labels.nii)
     cmdStr = [fullfile(MRIdir,'pattern_generation/Find_register_pills_T2.sh') ' ' fullfile(MRIdir, subjectName)];% ' ' pill_in_allen ];
     system(cmdStr); %calls FindPillsExp_Allen.py inside
 
@@ -147,8 +148,6 @@ image3 = rgb2gray(imread(fullfile(MRIdir, 'matlab_functions','star_800x500.png')
 load_mr_bead = niftiread('pills_labels.nii')>0;
 load_mr_brain = niftiread('T2w_brain.nii');
 load_anno = niftiread('Atlas_anno_to_T2.nii');
-
-load_mr_bead(:,:,120:end)=0; %hack
 
 %Atlas_reg_info = 
 DMD_pattern_prep(load_mr_bead, load_mr_brain, load_anno, image2, image3, image4, mrangle, autoTform, camImg.MmPerPixel);
@@ -185,18 +184,21 @@ else
     beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef); %NG
     surfwarped = imwarp(mrimg_surf,movingRef,tform,'cubic','OutputView',fixedRef); %NG
 end
-figure('position', [675         453        1240         413]);
-subplot(121);
-imagesc(image2);axis equal tight; hold on;
-clim(prctile(image2(:), [1 97]));
-contour(surfwarped>0, 'y'); contour(beadwarped>.5,'r');
-title('widefield image + brain in MR(y) + beads in MR(r)')
-subplot(122);
+figure('position', [675         453        1440         413]);
+subplot(131);
+imagesc(image2);axis equal tight; hold on; grid on;
+clim(prctile(image2(:), [10 image2th]));
+contour(surfwarped>0, 'g'); contour(beadwarped>.5,'g');
+title('widefield image,  G: brain in MR + beads in MR')
+subplot(132);
 imagesc(surfwarped+beadwarped);
-axis equal tight; hold on;
-contour(surfwarped>0, 'y'); contour(beadwarped>.5,'r');
-title('brain in MR(y) + beads in MR(r)');
+axis equal tight; hold on; grid on;
+contour(surfwarped>0, 'g'); contour(beadwarped>.5,'g');
+title('G: brain in MR + beads in MR');
 colormap(gray);
+subplot(133);
+imshowpair(surfwarped+beadwarped*max(surfwarped(:)), normalize_prctile(image2,[1 90])); grid on
+title('G: MR, R: widefield');
 screen2png(['warpedtoOI_' subjectName]);
 
 
@@ -207,7 +209,7 @@ ax(2)=subplot(222);imshowpair(image3,OIwarpedtoDMD);axis equal tight; grid minor
 ax(3)=subplot(223);imagesc(mrwarpedtoDMD);axis equal tight; grid minor;
 hold on; contour(mrwarpedtoDMD>0,'r'); title('mrwarpedtoDMD');
 ax(4)=subplot(224);imagesc(100*borigwarpedtoDMD);axis equal tight; grid minor;
-hold on; contour(mapconfwarpedtoDMD,1,'g'); contour(mrwarpedtoDMD>0,'r');
+contour(mrwarpedtoDMD>0,'r');
 title('borigwarpedtoDMD, mrwarpedtoDMD(r)');
 screen2png(['warpedtoDMD_' subjectName]);
 
@@ -225,5 +227,7 @@ screen2png(['warpedtoDMD_' subjectName]);
 % colormap(gray);
 % screen2png(['CCFwarpedtoOI_' subjectName]);
 
-%% upload results to market
-movefile(fullfile(MRIdir, subjectName), fullfile(MRdataServer, 'Subjects', subjectName, 'MR2DMDresult'));
+%% copy results to market
+ copyfile(fullfile(MRIdir, subjectName), fullfile(MRdataServer, 'Subjects', subjectName, 'MR2DMDresult'));
+
+ % NEXT STEP: /DMD/Stereo2DMD.m

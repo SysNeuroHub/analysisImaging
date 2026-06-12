@@ -14,7 +14,7 @@ if nargin < 3
     binary = 0;
 end
 
-if max(imageStack(:)) <= 1 % && binary
+if round(max(imageStack(:))) <= 1 % && binary
     imageStack = uint8(round(double(intmax("uint8"))*imageStack));
 end
 

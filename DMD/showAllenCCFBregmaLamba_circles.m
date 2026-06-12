@@ -6,7 +6,7 @@ addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 
 binarise = 1;
 th_coverage = 0.5; % minimu ratio of pixels that are actually on the cortex compared to the desired
-hemisphere = 'r';
+hemisphere = 'l';
 refDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references';
 refdate = '20260214';
 
@@ -14,11 +14,11 @@ refdate = '20260214';
 load(fullfile(refDir, ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = -3; %[mm]
+xfrombregma = -4.5:1:-0.5; %[mm]
 if strcmp(hemisphere,'r')
     xfrombregma = sort(abs(xfrombregma));
 end
-yfrombregma = 0;%[-3.6 -1.5 1.6];%-4:1:3; %A>0, P<0
+yfrombregma = -4:1:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
 radiusmm = camImg.MmPerPixel*5; %[mm];
 
 
