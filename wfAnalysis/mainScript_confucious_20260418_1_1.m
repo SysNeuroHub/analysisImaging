@@ -11,12 +11,12 @@ setPath_analysisImaging;
 
 %% experiment
 expt.subject = 'Confucious';
-expt.expDate = '2026-03-19_2';
-expt.expNum = 2;
+expt.expDate = '2026-04-18_1';
+expt.expNum = 1;
 bklightCtrl = 0;
 
 %% SVD
-nSV = 2000;%1000;
+nSV = 1000;%1000;
 params.movieSuffix = 'amber';%'amber';% 'purple'
 params.useCorrected = 0;
 
@@ -45,7 +45,7 @@ expPath = fileparts(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.exp
 saveVpath = expPath;
 mpepDir = dat.reposPath('main', 'master');
 
-load(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'Timeline', 'master'));
+% load(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'Timeline', 'master'));
 
 
 %% load wf data
@@ -58,9 +58,8 @@ disp('Loading widefield data');
 disp(expt)
 [U, V, t, mimg, mask] = quickLoadUVt(expPath, nSV, saveVpath, params);
 if isempty(t) %HACK when timeline strobes did not align with tiff frames
-    [strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimes(Timeline, 'alloptrig');
-    t = strobeOnTimes;
-    t = t(1:size(V,2));
+    %[strobeOnTimes, strobeOffTimes, strobeDurs] = getStrobeTimes(Timeline, 'alloptrig');
+    t = 1/30*(1:size(V,2));
 end
 
 Fs = 1/median(diff(t));

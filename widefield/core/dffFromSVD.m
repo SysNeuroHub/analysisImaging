@@ -7,9 +7,12 @@ function [newU, newV] = dffFromSVD(U, V, meanImage)
 % TODO
 % compute baseline F not from meanImage but when calcium activity is low
 % (eg. 15% prcentile)
+simplerWay = false; 
 
 assert(nargout==2, 'behavior of dffFromSVD has changed, you must take new U and new V\n');
    
+
+meanImage(isnan(meanImage))=nanmean(meanImage(:));
 
 [nX, nY, nSVD] = size(U);
 flatU = reshape(U, nX*nY,nSVD);
@@ -23,7 +26,7 @@ newV= bsxfun(@minus,V,mean(V,2));
 % way" produces just a new V that keeps the old U. We've decided that the
 % cleverer way generally adds more noise than you'd like to an
 % already-noise-amplifying computation. 
-simplerWay = true; 
+
 if simplerWay
         
     newU = reshape(bsxfun(@rdivide,flatU,(flatU*V0)), [nX nY nSVD]);
@@ -35,6 +38,6 @@ else
     test(isnan(test(:))) = 0; %DS
     normalizeMat = test'*flatU;
     newV = normalizeMat*newV;
-    %newU = U;
+    newU = U;
     
 end

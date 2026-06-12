@@ -13,7 +13,7 @@ setPath_analysisImaging;
 
 expt.subject = 'Confucious';
 expt.expDate = '2026-03-24_1';
-expt.expNum = 2;
+expt.expNum = 5;
 bklightCtrl = 0;
 
 %% SVD
@@ -69,7 +69,7 @@ Uy = size(U,1);
 [newU, newV] = dffFromSVD(U, V, mimg);
 
 %% temporal filtering V
-fV = filtV(V, Fs, 0.01, 5);
+% fV = filtV(V, Fs, 0.01, 5);
 
 %% load mpep data
 p = ProtocolLoad_wf(expt.subject,expt.expDate,expt.expNum); %3/6/20
@@ -91,7 +91,7 @@ if ~isfield(p,'pfiledurs')
     p.pfiledurs = p.pars(1,:)/10;
 end
 
-respWin = [-marginT min(p.pfiledurs)+marginT]; %31/3/20
+respWin = [-marginT 2*min(p.pfiledurs)+marginT]; 
 
 
 %% detect onset of each stimulation in Timeline time using photodiode signal
@@ -170,3 +170,39 @@ vline([stimOn stimOff]);
 mcolorbar;
 
 
+%% avg map across repeats
+[avgPeriEventV, winSamps, periEventV] = ...
+    eventLockedAvg(V, t, expt.stimTimes.onset, stimSequence.seq, respWin);
+
+preIdx = find(winSamps<0);
+[~,postIdx] = min(abs(winSamps - min(p.pfiledurs)));%to examine laser artifact
+%      postIdx = intersect(find(winSamps>1), find(winSamps < 2));%min(p.pfiledurs)));
+
+%subtract by prestimulus in each condition
+tavgRespV = mean(avgPeriEventV(:,:,postIdx),3) - mean(avgPeriEventV(:,:,preIdx),3);
+%condition x nSV
+
+tavgResp = svdFrameReconstruct(U, tavgRespV');
+%tavgResp = tavgResp - tavgResp(:,:,p.blankstims);%still blood vessel remains...
+
+range_c = 100*squeeze(tavgResp./mimg);
+crange = max(abs(prctile(range_c(:),[1 99.99])));
+
+nRows            = 1;%ceil(sqrt(p.nstim));
+nCols = p.nstim;%ceil(p.nstim/nRows);
+figure('position',[0 0 1900 400]);
+panel = [];
+for istim = 1:p.nstim
+    panel(istim) = subplot(nRows,nCols,istim);
+    imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
+    axis equal tight;
+    title(stimSequence.labels{istim});
+    caxis([-crange crange]);
+    [h,g]=mcolorbar;
+end
+linkaxes(panel);
+%     xlim([40 110]); ylim([140 220])
+g.YLabel.String='dF/F [%]';
+screen2png(fullfile(resultSaveDir,figname));
+
+imshowpair(tavgResp(:,:,istim), image4OI(:,:,1))

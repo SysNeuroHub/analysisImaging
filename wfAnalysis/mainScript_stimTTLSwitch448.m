@@ -10,27 +10,22 @@
 setPath_analysisImaging;
 
 %% experiment
+
 expt.subject = 'Confucious';
-expt.expDate = '2026-03-19_2';
+expt.expDate = '2026-06-01_1';
 expt.expNum = 2;
 bklightCtrl = 0;
 
-%% SVD
-nSV = 2000;%1000;
-params.movieSuffix = 'amber';%'amber';% 'purple'
+params.movieSuffix = 'amber';
 params.useCorrected = 0;
 
+%% SVD
+nSV = 2000;
 
 %% analysis
-marginT = .5; %[s]
-resizeS = 0.25; %spatial rescaling factor
+marginT = 1; %[s]
+resizeS = 0.5; %spatial rescaling factor
 
-
-
-%for estimation of preferred stim
-n_boot = 10;%1 to see retinotopy only, 10 to compute VFS
-use_method = 'max'; % max or com
-screen_resize_scale = 3; %3 if max method
 
 
 resultSaveDir = fullfile('\\ad.monash.edu\home\User006\dshi0006\Documents\MATLAB\AnalysisResult\wf',...
@@ -72,7 +67,7 @@ Ux = size(U,2);
 Uy = size(U,1);
 
 %% dF/F NG
-[newU, newV] = dffFromSVD(U, V, mimg);
+[newU, newV] = dffFromSVD(U, V, mimg); %NG
 
 %% temporal filtering V
 fV = filtV(V, Fs, 0.01, 5);
@@ -102,13 +97,38 @@ respWin = [-marginT min(p.pfiledurs)+marginT]; %31/3/20
 
 %% detect onset of each stimulation in Timeline time using photodiode signal
 expt = grabStimTimesWF(expt, 0, [], [], bklightCtrl,0);
-% expt.stimTimes.onset
-% expt.stimTimes.offset
-% expt.stimTimes.frameTimes
-%laserTh = 0.1;
-%expt = grabLaserTimesWF(expt,[],[],[],laserTh);
+laserTh = 1; %[V]
+expt = grabLaserTimesWF(expt,[],laserTh);
+
+%% DMD pattern index at the time of laser onset
+nPtn = p.pars(2);
+[DMDIn_state, DMDOut_state] = getDMDState(Timeline, nPtn);
+tidx = [];
+for itr = 1:numel(expt.laserTimes.onset)
+    [~,tidx(itr)] = min(abs(expt.laserTimes.onset(itr) - Timeline.rawDAQTimestamps));
+end
+DMDPtnIdx = DMDOut_state(tidx);
 
 
+%     laserInch = find(strcmp({Timeline.hw.inputs.name}, 'laserIn'));
+%     laserIn_raw= Timeline.rawDAQData(:,laserInch);
+%     laserIn = laserIn_raw > 1;
+% 
+% 
+%     figure('position',[0 0 1500 500]);
+%     plot(Timeline.rawDAQTimestamps, laserIn.*DMDIn_state);hold on
+%     plot(Timeline.rawDAQTimestamps, laserIn.*DMDOut_state);hold on
+%     axis padded
+% 
+%     laserIn_event=trace2Event(laserIn);
+%     vbox(Timeline.rawDAQTimestamps(laserIn_event(:,1)), Timeline.rawDAQTimestamps(laserIn_event(:,2)),gca,[.5 .5 1 .2])
+% 
+%     legend('DMD state IN','DMD state OUT');
+%     xlabel('time [s]');
+%     ylabel('DMD pattern ID');
+% 
+%     screen2png([tname '_DMD_ptn_idx']);
+    
 
 %check number of stimulation
 if length(expt.stimTimes.onset) ~= p.nstim * p.nrepeats
@@ -116,36 +136,19 @@ if length(expt.stimTimes.onset) ~= p.nstim * p.nrepeats
 end
 
 %% stimulus triggered movie
- pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respWin,1);
+pixelTuningCurveViewerSVD(U, fV, t, expt.laserTimes.onset, stimSequence.seq, respWin, 0);
 title(tname);
 
-%% single trial traces
-    yy=94; xx = 104;
-    icond = 3;
-    these = find(stimSequence.seq == icond);
-    trace = [];
-    for ii = 1:numel(these)
-        trace(:,ii)=svdFrameReconstruct(U(yy,xx,:),squeeze(periEventV(these(ii),:,:)));
-    end
-    subplot(121);
-    imagesc(winSamps, 1:numel(these), trace');vline(0);
-    title('F')
-    mcolorbar(gca, .5);
-    xlabel('Time from laser onset [s]');
-    ylabel('trial');
 
-    subplot(122);
-    imagesc(winSamps, 1:numel(these), trace'-mean(trace(preIdx,:))');vline(0);
-    title('F-F0')
-    mcolorbar(gca, .5);
 
 %% time-avg response & stimulus preference map
-[avgPeriEventV, winSamps, periEventV] = ...
-    eventLockedAvg(V, t, expt.stimTimes.onset, stimSequence.seq, respWin);
+for ii = 1:5
+[avgPeriEventV, winSamps, periEventV, sortLabels] = ...
+    eventLockedAvg(V, t, expt.stimTimes.onset(1:ii*10*6), stimSequence.seq(1:ii*10*6), respWin);
 
 preIdx = find(winSamps<0);
-[~,postIdx] = min(abs(winSamps - min(p.pfiledurs)));%to examine laser artifact
-%      postIdx = intersect(find(winSamps>1), find(winSamps < 2));%min(p.pfiledurs)));
+%[~,postIdx] = min(abs(winSamps - 0.65));%to examine laser artifact
+postIdx = intersect(find(winSamps>0), find(winSamps < 1));%min(p.pfiledurs)));
 
 %subtract by prestimulus in each condition
 tavgRespV = mean(avgPeriEventV(:,:,postIdx),3) - mean(avgPeriEventV(:,:,preIdx),3);
@@ -154,36 +157,71 @@ tavgRespV = mean(avgPeriEventV(:,:,postIdx),3) - mean(avgPeriEventV(:,:,preIdx),
 tavgResp = svdFrameReconstruct(U, tavgRespV');
 %tavgResp = tavgResp - tavgResp(:,:,p.blankstims);%still blood vessel remains...
 
-range_c = 100*squeeze(tavgResp./mimg);
-crange = max(abs(prctile(range_c(:),[1 99.99])));
 
+
+%% single trial traces
+% figure;
+%     yy=100; xx = 215;
+%     icond = 6;
+%     these = find(sortLabels == icond);
+%     trace = [];
+%     for ii = 1:numel(these)
+%         trace(:,ii)=svdFrameReconstruct(U(yy,xx,:),squeeze(periEventV(these(ii),:,:)));
+%     end
+%     subplot(121);
+%     imagesc(winSamps, 1:numel(these), trace');vline(0);
+%     title('F')
+%     caxis([-27*3 34*3])
+%     mcolorbar(gca, .5);
+%     xlabel('Time from laser onset [s]');
+%     ylabel('trial');
+% 
+%     subplot(122);
+%     imagesc(winSamps, 1:numel(these), trace'-mean(trace(preIdx,:))');vline(0);
+%     title('F-F0')
+%     caxis([-27*3 34*3])
+%     mcolorbar(gca, .5);
+
+    
+%% avg Resp in dF/F    
+range_c = 100*squeeze(tavgResp./mimg);
+% crange = max(abs(prctile(range_c(:),[1 99.99])));
+crange = [1];
+
+showImage = 1;
 nRows            = 1;%ceil(sqrt(p.nstim));
 nCols = p.nstim;%ceil(p.nstim/nRows);
-figure('position',[0 0 1900 400]);
+figure('position',[0 0 1900 900]);
 panel = [];
 for istim = 1:p.nstim
     panel(istim) = subplot(nRows,nCols,istim);
-    imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
-    axis equal tight;
-    title(stimSequence.labels{istim});
-    caxis([-crange crange]);
-    [h,g]=mcolorbar;
+    if showImage
+        imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
+        axis equal tight off;
+    else
+        avgResp = svdFrameReconstruct(U,  squeeze(avgPeriEventV(istim,:,:)));
+        savgResp = squeeze(mean(mean(avgResp(171:190, 61:80,:)./mimg(171:190, 61:80),1),2));
+        plot(winSamps, 100*squeeze(savgResp))
+    end
+    ptnIdx = p.pars(3,istim);
+    mV = p.pars(4,istim);
+    stimDurms = p.pars(6,istim) - p.pars(5,istim);
+    title(sprintf('ptn %d\ninput %d[mV]\nstimDur %d[ms]',ptnIdx,mV,stimDurms));
+    
+    if showImage
+        caxis([-crange crange]);
+    else
+        ylim([-crange crange]);
+        vbox(0, 1e-3*stimDurms);
+    end
 end
-linkaxes(panel);
+[h,g]=mcolorbar(gca,.5);
+%linkaxes(panel);
 %     xlim([40 110]); ylim([140 220])
 g.YLabel.String='dF/F [%]';
-screen2png(fullfile(resultSaveDir,figname));
+screen2png(fullfile(resultSaveDir,[figname '_' num2str(10*ii) 'repeats']));
 close;
+end
 
 
 
-
-% traces = prepareTimelineTraces(Timeline);
-% movieWithTracesSVD(U, fV, t, traces);
-
-% figure;
-% imagesc(mimg);
-% axis equal tight; colorbar;
-% colormap(gray);
-% caxis(prctile(mimg(:),[1 95]));
-% title([expt.subject ' ' expt.expDate ' ' params.movieSuffix]);

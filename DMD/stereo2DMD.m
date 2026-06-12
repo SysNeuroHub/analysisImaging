@@ -14,7 +14,7 @@ OIsize = size(image2);
 
 %% image in stereotaxic coordinates (common across subjects)
 % imgPrefix = 'CCFBL_584x450pix_1x3circle_l'; %  showAllenCCFBregmaLambda_patches
-% imgPrefix = 'CCFBL_584x450pix_5x8circle_l'; %  showAllenCCFBregmaLambda_patches
+imgPrefix = 'CCFBL_584x450pix';%_1x1circle_r'; %  showAllenCCFBregmaLambda_patches
 %imgPrefix = 'natural_400x300pix_2'; %showNatural
 imgPrefix = 'CCFBL_584x450pix';%_17x29patch_r'; %  showAllenCCFBregmaLambda_patches
 
