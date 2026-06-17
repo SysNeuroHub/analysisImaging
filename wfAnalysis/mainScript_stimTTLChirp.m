@@ -107,8 +107,9 @@ nPtn = 2;%TODO: read from .seq file
 
 
 %% sanity check DMD pattern idx
-[f_sanitycheck, NG_min] = DMD_ptn_sanityCheck(expt, Timeline, stimSequence, DMDIn_state, DMDOut_state);
+[f_sanitycheck, NG_min] = DMD_ptn_sanityCheck(p.xfile, expt, Timeline, stimSequence, DMDIn_state, DMDOut_state);
 screen2png([figname '_DMD_ptn_sanityCheck'], f_sanitycheck);
+
 
 %check number of stimulation
 if length(expt.stimTimes.onset) ~= p.nstim * p.nrepeats

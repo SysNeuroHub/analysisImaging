@@ -83,10 +83,10 @@ else
 
 
     %% laser trace
-    lsr_idx = strcmp({Timeline.hw.inputs.name}, 'laserIn');
+    photodiode_idx = strcmp({Timeline.hw.inputs.name}, 'laserIn');
     %laserTh = 0;
 
-    laser_raw = Timeline.rawDAQData(:,lsr_idx)'; %[V]
+    laser_raw = Timeline.rawDAQData(:,photodiode_idx)'; %[V]
   
     if nargin <3 || isempty(lsrTh)
         laser_tmp = laser_raw;
@@ -99,35 +99,16 @@ else
     %laser(ao_trace==0) = 0;
     laser_tidx = find(laser);
 
-%     ntrials = length(syncSquare_white_start_t);
-%     laserOn_times = nan(ntrials,1);
-%     laserOff_times = nan(ntrials,1);
-%     for tt = 1:ntrials
-%         idx_thisTrial = find((tltime(laser_tidx)>= syncSquare_white_start_t(tt)).*(tltime(laser_tidx)<= syncSquare_white_end_t(tt)));
-%         if ~isempty(idx_thisTrial)
-%             laserOn_times(tt) = min(tltime(laser_tidx(idx_thisTrial)));
-%             laserOff_times(tt) = max(tltime(laser_tidx(idx_thisTrial)));
-%         end
-%     end
-laserTimes = tltime(laser_tidx);
-
-ntrials = numel(syncSquare_white_start_t);
-
-laserOn_times  = nan(ntrials,1);
-laserOff_times = nan(ntrials,1);
-
-edges = [syncSquare_white_start_t(:); syncSquare_white_end_t(end)];
-trialIdx = discretize(laserTimes, edges);
-
-valid = ~isnan(trialIdx) & laserTimes <= syncSquare_white_end_t(trialIdx);
-
-if any(valid)
-    laserOn_times  = accumarray(trialIdx(valid), laserTimes(valid), ...
-        [ntrials 1], @min, NaN);
-    laserOff_times = accumarray(trialIdx(valid), laserTimes(valid), ...
-        [ntrials 1], @max, NaN);
-end
-
+    ntrials = length(syncSquare_white_start_t);
+    laserOn_times = nan(ntrials,1);
+    laserOff_times = nan(ntrials,1);
+    for tt = 1:ntrials
+        idx_thisTrial = find((tltime(laser_tidx)>= syncSquare_white_start_t(tt)).*(tltime(laser_tidx)<= syncSquare_white_end_t(tt)));
+        if ~isempty(idx_thisTrial)
+            laserOn_times(tt) = min(tltime(laser_tidx(idx_thisTrial)));
+            laserOff_times(tt) = max(tltime(laser_tidx(idx_thisTrial)));
+        end
+    end
     expt.laserTimes.trialOn = syncSquare_white_start_t;
     expt.laserTimes.onset = laserOn_times;
     expt.laserTimes.offset = laserOff_times;

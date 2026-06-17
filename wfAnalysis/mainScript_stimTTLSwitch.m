@@ -12,8 +12,8 @@ setPath_analysisImaging;
 %% experiment
 
 expt.subject = 'Confucious';
-expt.expDate = '2026-05-21_1';
-expt.expNum = 2;
+expt.expDate = '2026-06-01_1';
+expt.expNum = 1;
 bklightCtrl = 0;
 polyScanPro = false;
 
@@ -119,9 +119,10 @@ end
 % title(tname);
 
 %% save optogen triggered stim and response 
+load('M:\DMD images\CCFBL_584x450pix_17x29patch_r\CCFBL_584x450pix_17x29patch_r_Confucious.mat')
 % load('M:\DMD images\CCFBL_584x450pix_5x8circle_l\CCFBL_584x450pix_5x8circle_l_Confucious.mat'); %TMP
-load('M:\DMD images\CCFBL_584x450pix_1x1circle_r\CCFBL_584x450pix_1x1circle_r_Confucious.mat',...
-    'image4OI','image4OI_all_wCCF')
+% load('M:\DMD images\CCFBL_584x450pix_1x1circle_r\CCFBL_584x450pix_1x1circle_r_Confucious.mat',...
+%     'image4OI','image4OI_all_wCCF')
 image4OI = cat(3, image4OI, zeros(size(image4OI,1),size(image4OI,2))); %HACK to add blank stimuli
 
 if ~polyScanPro
@@ -173,7 +174,7 @@ delete(ha([2 3 6 11 40]));
 position = [36:39 31:35 26:30 21:25 16:20 12:15 7:10 4:5 1];
 for istim = 1:p.nstim
     inout{istim} = svdFrameReconstruct(U, squeeze(avgPeriEventV(istim,:,:)));
-    ax(istim) = ha(position(istim));%subplot(8,5,position(istim));
+    %ax(istim) = ha(position(istim));%subplot(8,5,position(istim));
 end
 inout = circshift(inout,1);
 ax = circshift(ax,1);
