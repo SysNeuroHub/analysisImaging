@@ -24,11 +24,13 @@
 % ops.rigName = 'alloptrig';%'wfrig'; %used in determineTimelineAlignments
 
 function [nFr_tif, nFr_tl, status] = compareNFrames_tiff_tl(ops, expNums)
-% ops.mouseName = mouseName;
-% ops.thisDate = thisDateSeries;
-% ops.fileBase = fullfile(rawDataDir, mouseName, thisDateSeries);
+% ops.mouseName = 'test';
+% ops.thisDate = '2026-06-24_1';
+% ops.fileBase = fullfile('D:\Subjects\test', ops.mouseName, ops.thisDate);
 % ops.statusDestination = fopen('test.txt','w');
 % ops.rigName = 'alloptrig';%'wfrig'; %used in determineTimelineAlignments
+% ops.verbose = 1;
+% ops.rawDataType = 'tif';
 
 thisDate = ops.thisDate(1:10); %8/5/20
 thisSeries = ops.thisDate(12:end); %8/5/20
