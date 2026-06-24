@@ -11,9 +11,9 @@ setPath_analysisImaging;
 
 %% experiment
 
-expt.subject = 'test_stimTTLOsc';
-expt.expDate = '2026-02-13_2';
-expt.expNum = 1;
+expt.subject = 'Confucious';
+expt.expDate = '2026-03-24_1';
+expt.expNum = 5;
 bklightCtrl = 0;
 
 %% SVD
@@ -42,19 +42,7 @@ load(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'Timeline'
 
 
 %% load wf data
-% for icolor = 2
-%
-%     switch icolor
-%         case 1
-%             params.movieSuffix = 'red';
-%             params.useCorrected = 0;
-%         case 2
-%             params.movieSuffix = 'amber';
-%             params.useCorrected = 0;
-%         case 3
-%             params.movieSuffix = 'amber';
-%             params.useCorrected = 1;
-%     end
+
 tname = params.movieSuffix;
 if params.useCorrected
     tname = [tname '-corrected'];
@@ -81,7 +69,7 @@ Uy = size(U,1);
 [newU, newV] = dffFromSVD(U, V, mimg);
 
 %% temporal filtering V
-fV = filtV(V, Fs, 0.01, 5);
+% fV = filtV(V, Fs, 0.01, 5);
 
 %% load mpep data
 p = ProtocolLoad_wf(expt.subject,expt.expDate,expt.expNum); %3/6/20
@@ -103,7 +91,7 @@ if ~isfield(p,'pfiledurs')
     p.pfiledurs = p.pars(1,:)/10;
 end
 
-respWin = [-marginT min(p.pfiledurs)+marginT]; %31/3/20
+respWin = [-marginT 2*min(p.pfiledurs)+marginT]; 
 
 
 %% detect onset of each stimulation in Timeline time using photodiode signal
@@ -119,7 +107,7 @@ if length(expt.stimTimes.onset) ~= p.nstim * p.nrepeats
 end
 
 %% stimulus triggered movie
-pixelTuningCurveViewerSVD(U, V, t, expt.stimTimes.onset, stimSequence.seq, respWin, 0);
+pixelTuningCurveViewerSVD(U, V, t, expt.laserTimes.onset, stimSequence.seq, respWin, 1);
 title(tname);
 
 
@@ -128,28 +116,93 @@ title(tname);
 ComplexMap = []; AbsMap = []; AngleMap = [];
 for icond = 1:p.nstim
     these = find(stimSequence.seq == icond);
-    stimFreq = 2*p.pars(5,icond)/10; %TEMP
-    stimOn = p.pars(3,icond)*1e-3;
-    stimOff = p.pars(4,icond)*1e-3;
-    
-    [avgPeriEventV, winSamps, periEventV, sortLabels] = ...
-        eventLockedAvg(V, t, expt.stimTimes.onset(these), ...
-        stimSequence.seq(these), [stimOn stimOff]);
-    
-    [ComplexMap(:,:,icond), AbsMap(:,:,icond), AngleMap(:,:,icond)] = ...
-        FourierMapSVD(U, squeeze(avgPeriEventV), winSamps, stimFreq);
+    stimFreq = 2*p.pars(5,icond)/1000;
+
+    for iphase = 1:3
+        switch iphase
+            case 1
+                On = 0;
+                Off = p.pars(3,icond)*1e-3;
+            case 2
+                On = p.pars(3,icond)*1e-3;
+                Off = p.pars(4,icond)*1e-3;
+            case 3
+                On = p.pars(4,icond)*1e-3;
+                Off = p.pars(1,icond)*1e-1;
+        end
+        [avgPeriEventV, winSamps, periEventV, sortLabels] = ...
+            eventLockedAvg(V, t, expt.stimTimes.onset(these), ...
+            stimSequence.seq(these), [On Off]);
+
+        [ComplexMap(:,:,icond,iphase), AbsMap(:,:,icond,iphase), AngleMap(:,:,icond,iphase)] = ...
+            FourierMapSVD(U, squeeze(avgPeriEventV), winSamps, stimFreq);
+    end
+
+    subplot(p.nstim, 2, 2*icond-1);imagesc(AbsMap(:,:,icond,2)./AbsMap(:,:,icond,1)); clim([0 2]); axis equal tight 
+    if icond==1; title('amplitude during stimulation/prestim'); end
+    ylabel(['icond' num2str(icond) ', ' num2str(stimFreq) ' Hz']);
+    subplot(p.nstim, 2, 2*icond);imagesc(AbsMap(:,:,icond,3)./AbsMap(:,:,icond,1)); clim([0 2]); axis equal tight; mcolorbar
+    if icond==1; title('amplitude during poststim/prestim'); end
 end
 
-images(AbsMaps);
-
 %% single trial traces
-%     yy=189; xx = 177;
-%     icond = 17;
-%     these = find(sortLabels == icond);
-%     trace = [];
-%     for ii = 1:numel(these)
-%         trace(:,ii)=svdFrameReconstruct(U(yy,xx,:),squeeze(periEventV(these(ii),:,:)));
-%     end
-%     imagesc(winSamps, 1:numel(these), trace');
+icond = 3;
+these = find(stimSequence.seq == icond);
+stimFreq = p.pars(5,icond)/1000;
+dur = p.pars(1,icond)*1e-1;
+stimOn = p.pars(3,icond)*1e-3;
+stimOff = p.pars(4,icond)*1e-3;
+
+[avgPeriEventV, winSamps, periEventV, sortLabels] = ...
+    eventLockedAvg(V, t, expt.stimTimes.onset(these), ...
+    stimSequence.seq(these), [0 dur]);
+
+yy=171; xx = 131;
+trace = [];
+for ii = 1:numel(these)
+    trace(:,ii)=svdFrameReconstruct(U(yy,xx,:),squeeze(periEventV(ii,:,:)));
+end
+imagesc(winSamps, 1:numel(these), trace');
+xlabel('time [s]');
+ylabel('trial ID');
+title(['yy=' num2str(yy) ', xx=' num2str(xx) ', stimulus frequency ' num2str(stimFreq)  ' [Hz]']);
+vline([stimOn stimOff]);
+mcolorbar;
 
 
+%% avg map across repeats
+[avgPeriEventV, winSamps, periEventV] = ...
+    eventLockedAvg(V, t, expt.stimTimes.onset, stimSequence.seq, respWin);
+
+preIdx = find(winSamps<0);
+[~,postIdx] = min(abs(winSamps - min(p.pfiledurs)));%to examine laser artifact
+%      postIdx = intersect(find(winSamps>1), find(winSamps < 2));%min(p.pfiledurs)));
+
+%subtract by prestimulus in each condition
+tavgRespV = mean(avgPeriEventV(:,:,postIdx),3) - mean(avgPeriEventV(:,:,preIdx),3);
+%condition x nSV
+
+tavgResp = svdFrameReconstruct(U, tavgRespV');
+%tavgResp = tavgResp - tavgResp(:,:,p.blankstims);%still blood vessel remains...
+
+range_c = 100*squeeze(tavgResp./mimg);
+crange = max(abs(prctile(range_c(:),[1 99.99])));
+
+nRows            = 1;%ceil(sqrt(p.nstim));
+nCols = p.nstim;%ceil(p.nstim/nRows);
+figure('position',[0 0 1900 400]);
+panel = [];
+for istim = 1:p.nstim
+    panel(istim) = subplot(nRows,nCols,istim);
+    imagesc(100*squeeze(tavgResp(:,:,istim)./mimg),'alphadata',mask);
+    axis equal tight;
+    title(stimSequence.labels{istim});
+    caxis([-crange crange]);
+    [h,g]=mcolorbar;
+end
+linkaxes(panel);
+%     xlim([40 110]); ylim([140 220])
+g.YLabel.String='dF/F [%]';
+screen2png(fullfile(resultSaveDir,figname));
+
+imshowpair(tavgResp(:,:,istim), image4OI(:,:,1))

@@ -23,8 +23,8 @@ for ss = 1:length(results)
     
     %% load cam2or1 SVD
     %load( [thisPath '\dataSummary_cam' num2str(cc) suffix{ss} '.mat'] );
-    %Fs = 1/median(diff(dataSummary.timeStampsFromStamp)); %FIX THIS
-    Fs = 15;
+    Fs = 1/median(diff(dataSummary.timeStampsFromStamp)); %FIX THIS
+    %Fs = 15;
     %U_sm = readNPY([thisPath '\svdSpatialComponents_cam' num2str(cc) suffix{ss} '.npy']);
     %         try
     %             V = readNPY([thisPath '\' num2str(Exps.iexp) '\svdTemporalComponents_cam' num2str(cc) suffix{ss} '.npy']);

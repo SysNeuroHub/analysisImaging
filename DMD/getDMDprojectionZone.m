@@ -5,7 +5,7 @@ if nargin < 4
     showFigure = 0;
 end
 if nargin < 2 || isempty(imgDir)
-    imgDir = '/mnt/dshi0006_market/DMDprojectionZone';
+    imgDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references/DMDprojectionZone';
 end
 if nargin < 1
     camImg = cameraImageInfo; %'default' position

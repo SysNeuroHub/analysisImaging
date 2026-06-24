@@ -1,6 +1,9 @@
 function exportPng4DMD(saveName, fig, binary)
-% export a figure with the original image resolution in fig
+% exportPng4DMD(saveName, fig, binary)
+% exports a figure with the original image resolution in fig
 % created from showAllenCCFBregmaLambda
+% if binary, the resulting image would be 0/255 so png image is readily visible
+
 if nargin < 3
     binary = 0;
 end
@@ -26,8 +29,9 @@ screen2png(saveName,f); %saved as color
 
 
 C = imread([saveName '.png']);
+C(1,:) = 0; C(end,:) = 0; %HACK
 if binary
-    imwrite(im2bw(C),[saveName '.png'],'png');
+    imwrite(intmax("uint8")*uint8(imbinarize(sum(C,3))),[saveName '.png'],'png');
 else
     imwrite(im2gray(C),[saveName '.png'],'png');
 end

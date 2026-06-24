@@ -12,9 +12,9 @@
 setPath_analysisImaging;
 
 %% experiment info
-expt.subject = 'hercules';
-expt.expDate = '2025-05-29_1';%'2020-06-25_1';%'2020-06-16_1';
-expt.expNum = 5;%9;
+expt.subject = 'Confucious';
+expt.expDate = '2026-03-04_2';%'2020-06-25_1';%'2020-06-16_1';
+expt.expNum = 3;%9;
 bklightCtrl = 0; %6/11/20
 
 pixies = [50 50];%selected pixels to show RF [
@@ -23,9 +23,9 @@ pixies = [50 50];%selected pixels to show RF [
 
 %% analysis info
 nSV=1000;
-params.movieSuffix = 'red';% 'purple''corr_dFF'; %'blue'  %U for corr_dFF can have NANs..
+params.movieSuffix = 'amber';% 'purple''corr_dFF'; %'blue'  %U for corr_dFF can have NANs..
 params.useCorrected = 0;
-respWin = [0.1 0.5];
+respWin = [0.05 0.3];
 %AP: 6s = [0.05 0.2], 6f = [0 0.18];
 %SF: 6s = [0.1,0.5], 6f = [0.05,0.2]
 %blWin = [-1 0]; %SF
