@@ -19,6 +19,10 @@ function [frameTimes, tl_flag] = getEyeFrameTimes(varargin)
 %
 %this code relies on time difference of the same UDP events recorded in eyeLog and Timeline
 
+useVideoTimeStamp = 0; 
+%if 1, use time stamps in video as frameTimes
+%if 0, use camStrobe in Timeline as frameTimes
+
 if nargin == 3
     animal = varargin{1};
     series = varargin{2};
@@ -66,9 +70,9 @@ elseif nargin == 0
 end
     
 vReader = VideoReader(fullfile(eyeFolder, eyeLog.loggerInfo.Filename));
-nFrames = vReader.NumFrames; %NumberOfFrames
+nFrames_vid = vReader.NumFrames; %NumberOfFrames
 nFrames_log = length(eyeLog.TriggerData);
-fprintf('There are %d frames in the video file\n', nFrames);
+fprintf('There are %d frames in the video file\n', nFrames_vid);
 fprintf('There are %d timestamps in the log file\n', nFrames_log);
 
 % find the last ExpStart-ExpEnd pair
@@ -108,13 +112,13 @@ eyeTimes = nan(nEvents, 1);
 for iEvent=1:nEvents
     eyeTimes(iEvent) = datenum(udpEventTimes{iEvent})*(24*60*60);
 end
-frameTimes = nan(nFrames, 1);
-for iFrame = 1:nFrames
+frameTimes_vid = nan(nFrames_vid, 1);
+for iFrame = 1:nFrames_vid
     if iFrame<=length(eyeLog.TriggerData)
-        frameTimes(iFrame) = datenum(eyeLog.TriggerData(iFrame).AbsTime)*(24*60*60);
+        frameTimes_vid(iFrame) = datenum(eyeLog.TriggerData(iFrame).AbsTime)*(24*60*60);
         %        frameTimes(iFrame) = datetime(eyeLog.TriggerData(iFrame).AbsTime)*(24*60*60);
     else
-        frameTimes(iFrame)=NaN;
+        frameTimes_vid(iFrame)=NaN;
     end
 end
 
@@ -123,7 +127,7 @@ if tl_flag
     nEvents2Discard = 2; % the first few event timing is unreliable
     idx = nEvents2Discard+1:nEvents;
     timeDiff = median(eyeTimes(idx)) - median(tlTimes(idx));
-    frameTimes = frameTimes - timeDiff;    
+    frameTimes_vid = frameTimes_vid - timeDiff;    
     
     %% timestamps recorded in timeline
     strobetime = Timeline.rawDAQTimestamps';
@@ -133,20 +137,32 @@ if tl_flag
     camStrobe_th = max(Timeline.rawDAQData(:,camStrobe_idx))/2;
     camStrobe_on = Timeline.rawDAQData(:,camStrobe_idx) < camStrobe_th; %[0 1]
     camStrobeEv = trace2Event(camStrobe_on, strobetime);
-    camStrobeTimes = mean(camStrobeEv,2);
-    nFrames_tl = numel(camStrobeTimes);
+    frameTimes_tl = mean(camStrobeEv,2);
+    nFrames_tl = numel(frameTimes_tl);
     fprintf('There are %d frames in Timeline (camStrobe) \n', nFrames_tl);%23/6/26
-
 end
 
-if nFrames ~= nFrames_tl
+if nFrames_vid == nFrames_tl+1
+    frameTimes_vid = frameTimes_vid(2:end);
+    nFrames_vid = nFrames_vid - 1;
+    disp('the first frame in eye video removed');
+end
+
+if nFrames_vid ~= nFrames_tl
+    disp('#frames in eye video does NOT match #strobes in Timeline')
     %DO SOMETHING HERE
 end
 if nFrames_tl ~= nFrames_log
     %DO SOMETHING HERE
 end
-if nFrames ~= nFrames_log
-    %DO SOMETHING HERE
+if nFrames_vid ~= nFrames_log
+    %seems like this never happens
+end
+
+if useVideoTimeStamp
+    frameTimes = frameTimes_vid;
+else
+    frameTimes = frameTimes_tl;
 end
 
 return;
