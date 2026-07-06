@@ -74,37 +74,48 @@ mrimg_bead(mrimg_bead>1) = 1; mrimg_bead(mrimg_bead<0)=0;
 % mapconf=edge(double(BW));
 % close all;
 
-disp('Adjust top slider to define threshold value for fluor tube');
-image2th = imageContrastPercentileGUI(borig);
 
 if autoTform %SLOW AT IMREGTFORM
-disp('Computing transformation from MR to OI automatically');
-    
+    disp('Adjust top slider to define threshold value for fluor tube');
+    image2th = imageContrastPercentileGUI(borig);
     borig_th = borig;
     borig_th(borig_th < prctile(borig_th(:), image2th)) = 0; %70
-  
 
+    disp('Computing transformation from MR to OI automatically');
     [optimizer,metric] = imregconfig("multimodal");
     optimizer.MaximumIterations = 1e4;
-    fixedRef  = imref2d(size(borig), camMmPerPix,camMmPerPix);  % example pixel sizes in mm
-    movingRef = imref2d(size(mrimg_brain), MRMmPerVox, MRMmPerVox);
+    fixedRef  = imref2d(size(borig), camMmPerPix*[-size(borig,2)/2 size(borig,2)/2], camMmPerPix*[-size(borig,1)/2 size(borig,1)/2]);%camMmPerPix,camMmPerPix);  % example pixel sizes in mm
+    movingRef = imref2d(size(mrimg_brain), MRMmPerVox*[-size(mrimg_brain,2)/2 size(mrimg_brain,2)/2], MRMmPerVox*[-size(mrimg_brain,1)/2 size(mrimg_brain,1)/2]);%MRMmPerVox, MRMmPerVox);
 
-    initialTform = affine2d([cosd(0) -sind(0) 0; sind(0) cosd(0) 0; 0 0 1]); % ~0° initial guess
-    tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef, TF,...
-        optimizer, metric, 'InitialTransformation', initialTform);
-    % beadwarpedCoarse = imwarp(mrimg_bead,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
-    % brainwarpedCoarse = imwarp(mrimg_brain,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
+    initialTform = affine2d([cosd(0) sind(0) 0; sind(0) cosd(0) 0; 0 0 1]);%
+    
+    success = false;
+    while ~success
+        tformCoarse = imregtform(mrimg_bead, movingRef, borig_th, fixedRef, TF,...
+            optimizer, metric, 'InitialTransformation', initialTform);
+        % beadwarpedCoarse = imwarp(mrimg_bead,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
+        % brainwarpedCoarse = imwarp(mrimg_brain,movingRef,tformCoarse,'cubic','OutputView',fixedRef);
+        lastwarn('');   % Clear previous warning
+        [msg, id] = lastwarn;
+
+        if isempty(msg)
+            success = true;
+        elseif ~isempty(msg)
+            optimizer.InitialRadius= optimizer.InitialRadius/5;
+            optimizer.MaximumIterations = optimizer.MaximumIterations*5;
+        end
+    end
 
     tform = imregtform(mrimg_bead, movingRef, borig_th, fixedRef, TF, optimizer, metric, ...
         'InitialTransformation', tformCoarse);
-
+    
     mrwarped = imwarp(proj_anno_cortex,movingRef,tform,'nearest','OutputView',fixedRef);
     beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef);
     brainwarped = imwarp(mrimg_brain,movingRef,tform,'cubic','OutputView',fixedRef);
 else
 disp('Computing transformation from MR to OI with landmarks');
     fprintf('Mark movingPoints and fixedPoints...\n')
-    [movingPoints,fixedPoints] = cpselect(mrimg_bead,borig,'Wait',true);
+    [movingPoints,fixedPoints] = cpselect(mrimg_bead, borig./max(borig(:)), 'Wait',true);
     tform = fitgeotform2d(movingPoints,fixedPoints,TF); %fitgeotrans
 
     mrwarped = imwarp(proj_anno_cortex,tform,'nearest','OutputView',imref2d(size(borig)));
@@ -182,5 +193,5 @@ TotalBrainImage=ImageTotal;
 
 save('Atlas_reg_info.mat','ROI_info','proj_brain','TotalBrainImage','tform','tform2',... %.'mapconfwarpedtoDMD',...
     'mrwarpedtoDMD',"OIwarpedtoDMD",'borigwarpedtoDMD','mrimg_bead','mrimg_brain',...
-    'image2','image3','image4','proj_anno_cortex','mrwarped','mrangle','autoTform');
-fprintf('Done! Execute DMD_pattern_generation([ROI indices])...\n')
+    'image2','image3','image4','proj_anno_cortex','mrwarped','mrangle','autoTform');%,'image2th'
+%fprintf('Done! Execute DMD_pattern_generation([ROI indices])...\n')

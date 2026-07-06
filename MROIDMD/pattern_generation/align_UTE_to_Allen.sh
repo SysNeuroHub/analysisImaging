@@ -3,6 +3,11 @@
 # Usage:
 # ./align_UTE_to_Allen.sh UTE.nii.gz T2.nii.gz output_directory
 
+# intermediate files
+#ute_in_t2.nii.gz ... align to T2 space ... most vulnerable
+#ute_in_t2_int16 ... convert to int16
+#ute_in_t2_m2k.nii.gz
+
 source /etc/profile.d/modules.sh  
 # Initialize conda for the shell
 source /home/daisuke/anaconda3/etc/profile.d/conda.sh
@@ -14,6 +19,13 @@ T2=$2
 OUTDIR=$3
 
 
+if [ -f r_ute_in_t2_m2k.nii.gz ]; then
+    rm r_ute_in_t2_m2k.nii.gz
+fi
+if [ -f ute_in_t2_m2k.nii.gz ]; then
+    rm ute_in_t2_m2k.nii.gz
+fi
+
 echo "Running rigid registration with FLIRT..."
 
 # minimization ... NOT VERY ACCURATE
@@ -21,11 +33,13 @@ flirt \
   -in $UTE \
   -ref $T2 \
   -out $OUTDIR/ute_in_t2\
+  -init UTE2T2Init.mat \
+  -nosearch \
   -dof 6 \
   -cost mutualinfo \
   -interp trilinear \
   -setbackground 0
-
+  
 echo "UTE aligned to T2"
 
 module load freesurfer
@@ -56,7 +70,8 @@ cd $OUTDIR
 
 3drefit -xyzscale 10.0 ute_in_t2_m2k.nii.gz
 
- 3dresample -dxyz 1 1 1 -rmode Cubic -inset ute_in_t2_m2k.nii -prefix r_ute_in_t2_m2k.nii.gz
+3dresample -dxyz 1 1 1 -rmode Cubic -inset ute_in_t2_m2k.nii -prefix r_ute_in_t2_m2k.nii.gz
+
 
 antsApplyTransforms \
   -i r_ute_in_t2_m2k.nii.gz \
