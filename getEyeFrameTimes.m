@@ -148,16 +148,30 @@ if nFrames_vid == nFrames_tl+1
     disp('the first frame in eye video removed');
 end
 
-if nFrames_vid ~= nFrames_tl
-    disp('#frames in eye video does NOT match #strobes in Timeline')
-    %DO SOMETHING HERE
+while nFrames_vid < nFrames_tl %HACK
+    diff_tl_vid = diff(frameTimes_tl(1:nFrames_vid)-frameTimes_vid);
+    diff_tl_vid_m = mean(diff_tl_vid);
+    [~,ngIdx] = max(abs(diff_tl_vid - diff_tl_vid_m));
+    frameTimes_tl(ngIdx+1)=[];
+    nFrames_tl = numel(frameTimes_tl);
+    fprintf('[ADJUSTED] There are %d frames in Timeline (camStrobe) \n', nFrames_tl);%23/6/26
 end
-if nFrames_tl ~= nFrames_log
-    %DO SOMETHING HERE
-end
-if nFrames_vid ~= nFrames_log
-    %seems like this never happens
-end
+% NG
+% idx = interp1(frameTimes_tl, 1:numel(frameTimes_tl), ...
+%               frameTimes_vid, 'nearest', 'extrap');
+% frameTimes = frameTimes_tl(idx); %rely on strobe times stored in timeline
+
+% if nFrames_vid < nFrames_tl
+%     %disp('#frames in eye video does NOT match #strobes in Timeline')
+% elseif nFrames_vid > nFrames_tl
+%     %DO SOMETHING HERE
+% end
+% if nFrames_tl ~= nFrames_log
+%     %DO SOMETHING HERE
+% end
+% if nFrames_vid ~= nFrames_log
+%     %seems like this never happens
+% end
 
 if useVideoTimeStamp
     frameTimes = frameTimes_vid;
