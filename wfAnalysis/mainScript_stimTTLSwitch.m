@@ -11,8 +11,8 @@ setPath_analysisImaging;
 
 %% experiment
 
-expt.subject = 'Confucious';
-expt.expDate = '2026-06-01_1';
+expt.subject = 'Gaius';
+expt.expDate = '2026-07-07_1';
 expt.expNum = 1;
 bklightCtrl = 0;
 polyScanPro = false;
@@ -105,7 +105,7 @@ expt = grabLaserTimesWF(expt,[],laserTh);
 nPtn = p.pars(2);
 [DMDIn_state, DMDOut_state] = getDMDState(Timeline, nPtn);
 %% sanity check DMD pattern idx
-[f_sanitycheck, NG_min] = DMD_ptn_sanityCheck(expt, Timeline, stimSequence, DMDIn_state, DMDOut_state);
+[f_sanitycheck, NG_min] = DMD_ptn_sanityCheck(p.xfile, expt, Timeline, stimSequence, DMDIn_state, DMDOut_state);
 screen2png([figname '_DMD_ptn_sanityCheck'], f_sanitycheck);
     
 
@@ -115,15 +115,36 @@ if length(expt.stimTimes.onset) ~= p.nstim * p.nrepeats
 end
 
 %% stimulus triggered movie
-% pixelTuningCurveViewerSVD(U, V, t, expt.laserTimes.onset, stimSequence.seq, respWin, 1);
-% title(tname);
+ pixelTuningCurveViewerSVD(U, V, t, expt.laserTimes.onset, stimSequence.seq, respWin, 1);
+ title(tname);
 
 %% save optogen triggered stim and response 
-load('M:\DMD images\CCFBL_584x450pix_17x29patch_r\CCFBL_584x450pix_17x29patch_r_Confucious.mat')
-% load('M:\DMD images\CCFBL_584x450pix_5x8circle_l\CCFBL_584x450pix_5x8circle_l_Confucious.mat'); %TMP
-% load('M:\DMD images\CCFBL_584x450pix_1x1circle_r\CCFBL_584x450pix_1x1circle_r_Confucious.mat',...
-%     'image4OI','image4OI_all_wCCF')
-image4OI = cat(3, image4OI, zeros(size(image4OI,1),size(image4OI,2))); %HACK to add blank stimuli
+% load('M:\DMD images\CCFBL_584x450pix_17x29patch_r\CCFBL_584x450pix_17x29patch_r_Confucious.mat')
+% % load('M:\DMD images\CCFBL_584x450pix_5x8circle_l\CCFBL_584x450pix_5x8circle_l_Confucious.mat'); %TMP
+% % load('M:\DMD images\CCFBL_584x450pix_1x1circle_r\CCFBL_584x450pix_1x1circle_r_Confucious.mat',...
+% %     'image4OI','image4OI_all_wCCF')
+% image4OI = cat(3, image4OI, zeros(size(image4OI,1),size(image4OI,2))); %HACK to add blank stimuli
+
+%% retrieve DMD images uploaded by uploadSeqPng.m
+DMDfiles = dir(fullfile(expPath,'DMD', '*.png'));
+DMDfileNames = {DMDfiles.name};
+prefixNum = cellfun(@(x) sscanf(x, '%d', 1), DMDfileNames);
+% Sort by the numeric prefix
+[~, idx] = sort(prefixNum);
+DMDFileNames_sorted = DMDfileNames(idx);
+image4DMD = [];
+for ifile = 1:numel(DMDFileNames_sorted)
+   image4DMD(:,:,ifile) =  imread(fullfile(expPath,'DMD',DMDFileNames_sorted{ifile}));
+end
+
+%% warp from DMD to OI space
+% regDir =fullfile('/home/daisuke/Documents/git/analysisImaging/MROIDMD', subject);
+regDir = fullfile(fileparts(fileparts(expPath)), 'MR2DMDresult');
+load(fullfile(regDir, 'Atlas_reg_info.mat'), 'tform2', 'image2');
+
+OIsize = size(image2);
+image4OI = DMD2OI(image4DMD, tform2, OIsize);
+
 
 if ~polyScanPro
     image4OI = round(image4OI);
