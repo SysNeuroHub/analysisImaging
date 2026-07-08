@@ -8,12 +8,12 @@ ute = niftiread(fullfile(MRIdir, subjectName,'ute_in_t2_m2k.nii.gz'));
 
 pills = zeros(size(ute));
 
-zidx = (52:66)+5;
+zidx = (52:71);
 %% show images to label
 ax = axes;
 for iz = 1:numel(zidx)
-    ax(iz)=subplot(3,5,iz);
-    imagesc(squeeze(ute(:,zidx(iz),:)));axis equal tight
+    ax(iz)=subplot(4,5,iz);
+    imagesc(squeeze(ute(:,zidx(iz),:)));axis xy equal tight
     hold on;
     title([num2str(zidx(iz))]);
 end
@@ -30,7 +30,7 @@ end
 %% draw pill regions manually
 for iz = 1:numel(zidx)
     figure('position',[0 0 2600 1300]);
-    imagesc(squeeze(ute(:,zidx(iz),:)));axis equal tight
+    imagesc(squeeze(ute(:,zidx(iz),:)));axis xy equal tight
     title(sprintf('%d / %d images from the bottom \n Draw upto %d ROIs. Press ESC to proceed.',iz, numel(zidx), nPills));
     pills_c = zeros(size(ute,1), size(ute,3));
     for ii = 1:nPills
@@ -48,8 +48,8 @@ end
 %% confirmation
 fig = figure('position',[0 0 1800 1000]);
 for iz = 1:numel(zidx)
-    subplot(3,5,iz);
-    imagesc(squeeze(ute(:,zidx(iz),:)));axis equal tight
+    subplot(4,5,iz);
+    imagesc(squeeze(ute(:,zidx(iz),:)));axis xy equal tight
     hold on;
     title([num2str(iz) '/' num2str(numel(zidx))]);
     contour(squeeze(pills(:,zidx(iz),:)),'Color','r');

@@ -1,4 +1,5 @@
 function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mrangle, autoTform, camMmPerPix)
+% INPUT:
 % image1, mrimg (T2w_resample.nii): MRI image including reference capsuls, projected to x-y plane (will be
 % supplied as .nii in future). Must be the same dimension to Atlas_anno_to_T2.nii,  CCF registered to individual MR (120x160 pixels)
 % image2, (OI_bead.jpg): image taken by camera that captures reference capsuls.
@@ -6,6 +7,10 @@ function DMD_pattern_prep(mr_bead, mr_brain, oriimg, image2, image3, image4, mra
 % image3, reference DMD image. MUST be 800x500 pixels (DMD_ref.jpg)
 % image4, image taken by camera during projection of image 3. Must be the
 % same dimension to image 2  (OI_ref.jpg)
+%
+% OUTPUT:
+% tform: converstion from T2 to OI spaces
+% tform2
 
 if nargin <8
     autoTform = 0; %MR-OI

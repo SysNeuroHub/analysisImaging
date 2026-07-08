@@ -1,4 +1,4 @@
-function DMDprojectionZone = getDMDprojectionZone(camImg, imgDir, latestImageFile, showFigure)
+function [DMDprojectionZone, cropped] = getDMDprojectionZone(camImg, imgDir, latestImageFile, showFigure)
 % DMDprojectionZone = getDMDprojectionZone(camImg, imgDir, latestImageFile)
 
 if nargin < 4

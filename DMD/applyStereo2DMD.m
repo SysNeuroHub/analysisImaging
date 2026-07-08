@@ -1,5 +1,5 @@
 function [TexImgwarpedtoDMD, TexImgwarped] = applyStereo2DMD(images, bregma, MmPerPixel_img, ...
-    mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir, autoTform)
+    mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir, autoTform, verbose)
 % TexImgwarpedtoDMD = applyStereo2DMD(images, bregma, MmPerPixel_img, ...
 %     mrangle, tform_T2OI, tform_OIDMD, OIsize, MmPerPixel_oi, MROIDMDsubjectDir)
 % transforms images defined in stereotaxic coordinates to DMD space
@@ -11,6 +11,9 @@ function [TexImgwarpedtoDMD, TexImgwarped] = applyStereo2DMD(images, bregma, MmP
 % Brain_template.nii
 % T2w_brain.nii
 
+if nargin < 11
+    verbose = 0;
+end
 if nargin < 10
     autoTform = 1;
 end
@@ -18,17 +21,14 @@ if nargin < 8
     MmPerPixel_oi = [];
 end
 
-verbose = 0;
 
-%OIsize = [1080 1080];  %[y x]
-%MmPerPixel_oi = 0.0104;
 DMDsize = [500 800]; %[y x]
 MmPerPixel_mr = 0.1; %[mm]
 usFactor = 5;
 path2Brain_template =  fullfile(MROIDMDsubjectDir,'Brain_template.nii');
 
 tform_T2OI_us = tform_T2OI;
-if isfield(tform_T2OI, 'Scale')
+if isprop(tform_T2OI, 'Scale')
     tform_T2OI_us.Scale = tform_T2OI.Scale/usFactor;
 end
 
@@ -83,15 +83,15 @@ for ii = 1:nImages
     end
 
     if verbose
-        subplot(1,3,2); imagesc(TexImgwarped(:,:,ii) );axis equal tight; 
+        subplot(1,3,2); imagesc(squeeze(TexImgwarped(:,:,ii)));axis equal tight; 
         title('T2 warped to OI'); 
     end
 
     %% project to DMD
-    TexImgwarpedtoDMD(:,:,ii) = imwarp(TexImgwarped(:,:,ii) ,tform_OIDMD,'linear', ...
+    TexImgwarpedtoDMD(:,:,ii) = imwarp(squeeze(TexImgwarped(:,:,ii)) ,tform_OIDMD,'linear', ...
         'OutputView',imref2d(DMDsize));
     if verbose
-        subplot(1,3,3); imagesc(TexImgwarpedtoDMD);axis equal tight; 
+        subplot(1,3,3); imagesc(squeeze(TexImgwarpedtoDMD(:,:,ii)));axis equal tight; 
         title('OI warped to DMD');
 
         fig = gcf;
