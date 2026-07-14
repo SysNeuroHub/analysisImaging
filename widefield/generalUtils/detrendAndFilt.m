@@ -1,6 +1,6 @@
 function fV = detrendAndFilt(V, Fs, highpassCutoff, heartbeatBandStop)
 % fV = detrendAndFilt(V, Fs, highpassCutoff, heartbeatBandStop)
-% removes baseline. 
+% removes baseline.
 % output will be dV rather than V
 
 if nargin < 3
@@ -10,9 +10,17 @@ if nargin < 4
     heartbeatBandStop = [9 14];
 end
 
-[b100s, a100s] = butter(2, highpassCutoff/(Fs/2), 'high');
-[bHeart, aHeart] = butter(2, heartbeatBandStop/(Fs/2), 'stop');
+dV = detrend(V', 'linear')'; %this will make the mean over time 0
 
-dV = detrend(V', 'linear')';
-fVHeart = filter(bHeart,aHeart,dV,[],2);
-fV = filter(b100s,a100s,fVHeart,[],2);
+if sum(~isinf(heartbeatBandStop))==2
+    [bHeart, aHeart] = butter(2, heartbeatBandStop/(Fs/2), 'stop');
+    fVHeart = filter(bHeart,aHeart,dV,[],2);
+else
+    fVHeart = dV;
+end
+if ~isinf(highpassCutoff)
+    [b100s, a100s] = butter(2, highpassCutoff/(Fs/2), 'high');
+    fV = filter(b100s,a100s,fVHeart,[],2);
+else
+    fV = fVHeart;
+end

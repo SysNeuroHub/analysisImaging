@@ -54,13 +54,13 @@ fprintf(1, ['loading ' suffix_hemo '\n'])
 try
     Up = readUfromNPY(fullfile(expRoot, ['svdSpatialComponents_' suffix_hemo '.npy']), nSV);
     mimgP = readNPY(fullfile(expRoot, ['meanImage_' suffix_hemo '.npy']));
-    %load(fullfile(expRoot, ['dataSummary_' suffix_hemo '.mat']));
-    %DSp = dataSummary;
+    load(fullfile(expRoot, ['dataSummary_' suffix_hemo '.mat']));
+    DSp = dataSummary;
 catch err
     Up = readUfromNPY(fullfile(expPath, ['svdSpatialComponents_' suffix_hemo '.npy']), nSV);
     mimgP = readNPY(fullfile(expPath, ['meanImage_' suffix_hemo '.npy']));
-    %load(fullfile(expPath, ['dataSummary_' suffix_hemo '.mat']));
-    %DSp = dataSummary;
+    load(fullfile(expPath, ['dataSummary_' suffix_hemo '.mat']));
+    DSp = dataSummary;
 end
 Vp = readVfromNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_hemo '.npy']), nSV);
 tp = readNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_hemo '.timestamps.npy']));
@@ -97,33 +97,21 @@ if strcmp(hemoFreq,'auto')
 end
 
 
-if detrendFilt
+%% detrend amber and red in original space
+[imageMeans_pc,base_p,param_p,diag_p] = bleachCorrectionRobustNorm(DSb.imageMeans);
+corrected_p = bleachCorrectionRobustNorm(svdFrameReconstruct(Up,Vp), param_p.beta); %too heavy
 
-     Vb = detrend(Vb', 'linear')'+mean(Vb, 2);
-     Vp = detrend(Vp', 'linear')'+mean(Vp, 2);
+%% re-SVD of amber and red
+    [Ub, Svb, Vb, totalVarb] = get_svdcomps(svdOps);
+    [Up, Svp, Vp, totalVarp] = get_svdcomps(svdOps);
 
-    %     highpassCutoff = 0.01;
-%     %11/6/20 cf AP_sparse_noise_retinotopy %this also removes heartbeat!
-%     %Vb = detrendAndFilt(Vb, Fs, highpassCutoff);
-%     %Vp = detrendAndFilt(Vp, Fs, highpassCutoff);
+% if detrendFilt
 % 
-%     %2/7/20 DS
-%     [b100s, a100s] = butter(2, highpassCutoff/(Fs/2), 'high');
-%     Vp = detrend(Vp', 'linear')';
-%     Vpc = [fliplr(Vp) Vp fliplr(Vp)];
-%     Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
-%     Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
-%     Vp = Vpc(:,numel(tp)+1:2*numel(tp));
-% 
-%     Vb = detrend(Vb', 'linear')';
-%     Vbc = [fliplr(Vb) Vb fliplr(Vb)];
-%     Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
-%     Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
-%     Vb = Vbc(:,numel(tb)+1:2*numel(tb));
-end
+%      Vb = detrend(Vb', 'linear')'+mean(Vb, 2);
+%      Vp = detrend(Vp', 'linear')'+mean(Vp, 2);
+% end
 
 % align blue/purple in time, apply correction
-%Vbs = SubSampleShift(Vb,1,2); tb = tp;
 Vbs = alignTimeStamp(Vb, tb, tp, 'interp'); %10/6/20 as in mergeST.m
 
 

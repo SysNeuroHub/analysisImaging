@@ -37,15 +37,19 @@ if nargin<6
     pixSpace = 3;
 end
 
-% first subtract out means so the filters don't go nuts
-zV = bsxfun(@minus, V, mean(V));
-zVaux = bsxfun(@minus, Vaux, mean(Vaux));
 
-% now filter for heart-frequency
-[b, a] = butter(2,FreqRange/(fS/2));
-fV = filter(b,a,zV);
-fVaux = filter(b,a,zVaux);
-
+if ~isempty(FreqRange)
+    % first subtract out means so the filters don't go nuts
+    zV = bsxfun(@minus, V, mean(V));
+    zVaux = bsxfun(@minus, Vaux, mean(Vaux));
+    % now filter for heart-frequency
+    [b, a] = butter(2,FreqRange/(fS/2));
+    fV = filter(b,a,zV);
+    fVaux = filter(b,a,zVaux);
+else
+    fV = V;
+    fVaux = Vaux;
+end
 % make the pixel subgrid and compute submatrices etc.
 ySize = size(U,1); xSize = size(U,2);
 Uflat = reshape(U, ySize*xSize,[]); % P x S
@@ -77,7 +81,7 @@ ScaleFactor = reshape(ScaleFactor, size(pixY))';
 if showFigs
     figure;
     imagesc(1:pixSpace:xSize, 1:pixSpace:ySize,ScaleFactor);
-    caxis([-1 1]*max(abs(ScaleFactor(:))));
+    caxis([-1 1]*prctile(abs(ScaleFactor(:)),99));
     colormap(colormap_blueblackred);
     axis equal tight
     colorbar
