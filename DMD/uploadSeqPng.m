@@ -30,7 +30,8 @@ end
 
 thisDate = expt.expDate(1:10);
 thisSeries = str2num(expt.expDate(12:end));
-destination =fullfile(fileparts(dat.expFilePath(expt.subject, thisDate, thisSeries, expt.expNum, 'Timeline', 'master')), 'DMD');
+destination =fullfile(fileparts(dat.expFilePath(expt.subject, thisDate, ...
+    thisSeries, expt.expNum, 'Timeline', 'master')), 'DMD');
 if ~exist(destination, 'dir')
     mkdir(destination);
 end
