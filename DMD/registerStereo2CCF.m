@@ -2,8 +2,10 @@ function [tform3, surfDepth, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel, .
     path2Brain_template, usFactor)
 % [tform3, surfDepth, Vusinfo] = registerStereo2CCF(bregma, MmPerPixel, ...
 %     path2Brain_template, usFactor)
-% computes 2D transformation from stereotaxi coordinate to CCF looked from
+% computes 2D transformation from stereotaxic coordinate to CCF looked from
 % above, with upsampling factor usFactor
+
+%this function only uses information of bregma, not lambda
 
 if isempty(usFactor)
     usFactor = 5;
@@ -19,9 +21,9 @@ mrsize_xy = [size(V,3), size(V,1)]; %[x y]
 
 
 bregmak_c = allenCCFbregma()*MmPerPixel_mr;
-bregmak = [bregmak_c(1) bregmak_c(3)]+0.5; %[y x]
+bregma_CCF = [bregmak_c(1) bregmak_c(3)]+0.5; %[y x]
 movingPoints = [bregma(2) bregma(1); bregma(2)+1/MmPerPixel bregma(1)]; %[x y]
-fixedPoints = [bregmak(2) bregmak(1); bregmak(2)+1/MmPerPixel_mr bregmak(1)]; %[x y]
+fixedPoints = [bregma_CCF(2) bregma_CCF(1); bregma_CCF(2)+1/MmPerPixel_mr bregma_CCF(1)]; %[x y]
 tform3 = fitgeotform2d(movingPoints, fixedPoints, 'similarity'); %once
 
 refDMD = imref2d(mrsize_xy);

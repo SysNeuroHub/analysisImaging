@@ -10,14 +10,14 @@ setPath_analysisImaging;
 
 close all;
 
-mouseName = 'apollo';
-thisDate = '2025-05-21'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'Gaius';
+thisDate = '2026-07-07'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
-expNums = [2];%[1:4];
+expNums = 1;%[1:4];
 
 nSV = 2000; %NG with 1000 components
-hemoFreq = [7 9];% [5 9];%
-pixSpace = 1; %6
+hemoFreq = [];%[5 14.5];% [5 9];%
+pixSpace = 8;%1; %6
 %6 for 0.5x 2x2 binning
 %19 for 0.8x 1x1 binning
 %24 for 2x 1x1 binning
@@ -32,7 +32,7 @@ for iexp = 1:length(expNums)
     expPath = fileparts(dat.expFilePath(mouseName, thisDate, thisSeries, expNums(iexp), 'widefield','master'));
     saveVpath = expPath;
     
-    quickHemoCorrect_binTest(expPath, saveVpath, nSV, hemoFreq, pixSpace);
+    quickHemoCorrect(expPath, saveVpath, nSV, hemoFreq, pixSpace);
     
     
 %     %% dFF

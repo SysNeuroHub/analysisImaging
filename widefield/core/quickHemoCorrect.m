@@ -54,13 +54,13 @@ fprintf(1, ['loading ' suffix_hemo '\n'])
 try
     Up = readUfromNPY(fullfile(expRoot, ['svdSpatialComponents_' suffix_hemo '.npy']), nSV);
     mimgP = readNPY(fullfile(expRoot, ['meanImage_' suffix_hemo '.npy']));
-    load(fullfile(expRoot, ['dataSummary_' suffix_hemo '.mat']));
-    DSp = dataSummary;
+    %load(fullfile(expRoot, ['dataSummary_' suffix_hemo '.mat']));
+    %DSp = dataSummary;
 catch err
     Up = readUfromNPY(fullfile(expPath, ['svdSpatialComponents_' suffix_hemo '.npy']), nSV);
     mimgP = readNPY(fullfile(expPath, ['meanImage_' suffix_hemo '.npy']));
-    load(fullfile(expPath, ['dataSummary_' suffix_hemo '.mat']));
-    DSp = dataSummary;
+    %load(fullfile(expPath, ['dataSummary_' suffix_hemo '.mat']));
+    %DSp = dataSummary;
 end
 Vp = readVfromNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_hemo '.npy']), nSV);
 tp = readNPY(fullfile(expPath, ['svdTemporalComponents_' suffix_hemo '.timestamps.npy']));
@@ -73,9 +73,10 @@ end
 
 Fs = 1/mean(diff(tb));
 
-yidx = 701:725;
-xidx = 301:325;
-roi = zeros(size(Ub,1), size(Ub,2), size(Ub,3));
+[nRows, nCols, nFrames] = size(Ub); 
+yidx = round(nRows/4):round(nRows*3/4);%701:725;
+xidx = round(nCols/4):round(nCols*3/4);%301:325;
+roi = zeros(size(Ub));
 roi(yidx,xidx,:) = 1;
 
 if strcmp(hemoFreq,'auto')
@@ -97,27 +98,29 @@ end
 
 
 if detrendFilt
-    highpassCutoff = 0.01;
-    %11/6/20 cf AP_sparse_noise_retinotopy %this also removes heartbeat!
-    %Vb = detrendAndFilt(Vb, Fs, highpassCutoff);
-    %Vp = detrendAndFilt(Vp, Fs, highpassCutoff);
 
-    %2/7/20 DS
-    [b100s, a100s] = butter(2, highpassCutoff/(Fs/2), 'high');
-    Vp = detrend(Vp', 'linear')';
-    Vpc = [fliplr(Vp) Vp fliplr(Vp)];
-    Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
-    Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
-    Vp = Vpc(:,numel(tp)+1:2*numel(tp));
+     Vb = detrend(Vb', 'linear')'+mean(Vb, 2);
+     Vp = detrend(Vp', 'linear')'+mean(Vp, 2);
 
-    Vb = detrend(Vb', 'linear')';
-    Vbc = [fliplr(Vb) Vb fliplr(Vb)];
-    Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
-    Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
-    Vb = Vbc(:,numel(tb)+1:2*numel(tb));
+    %     highpassCutoff = 0.01;
+%     %11/6/20 cf AP_sparse_noise_retinotopy %this also removes heartbeat!
+%     %Vb = detrendAndFilt(Vb, Fs, highpassCutoff);
+%     %Vp = detrendAndFilt(Vp, Fs, highpassCutoff);
+% 
+%     %2/7/20 DS
+%     [b100s, a100s] = butter(2, highpassCutoff/(Fs/2), 'high');
+%     Vp = detrend(Vp', 'linear')';
+%     Vpc = [fliplr(Vp) Vp fliplr(Vp)];
+%     Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
+%     Vpc = filter(b100s,a100s,fliplr(Vpc),[],2);
+%     Vp = Vpc(:,numel(tp)+1:2*numel(tp));
+% 
+%     Vb = detrend(Vb', 'linear')';
+%     Vbc = [fliplr(Vb) Vb fliplr(Vb)];
+%     Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
+%     Vbc = filter(b100s,a100s,fliplr(Vbc),[],2);
+%     Vb = Vbc(:,numel(tb)+1:2*numel(tb));
 end
-
-
 
 % align blue/purple in time, apply correction
 %Vbs = SubSampleShift(Vb,1,2); tb = tp;
@@ -172,7 +175,7 @@ imagesc(imresize(ScaleFactor, [size(Up,1), size(Up,2)]));
 hold on;
 % plot(xidx/pixSpace, yidx/pixSpace,'wo');
 contour(roi(:,:,1),[.5 .5],'w');
-clim([-1 1]*max(abs(ScaleFactor(:))));
+caxis([-1 1]*max(abs(ScaleFactor(:))));
 colormap(colormap_blueblackred);
 axis equal tight
 colorbar

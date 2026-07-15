@@ -5,22 +5,22 @@ addpath(genpath('C:\Users\dshi0006\git\analysisImaging'));
 %brainImage = dataSummary.meanImage;
 
 binarise = 1;
-th_coverage = 0.5; % minimu ratio of pixels that are actually on the cortex compared to the desired
-hemisphere = 'r';
+th_coverage = 0.5; % minimum ratio of pixels that are actually on the cortex compared to the desired
+hemisphere = 'l';
 refDir = '/home/daisuke/Documents/git/analysisImaging/DMD/references';
 refdate = '20260214';
 
-shape = 'patch'; %circle
+shape = 'circle';%'patch'; %
 
 %% camera image info
 load(fullfile(refDir, ['camImg_' refdate]),'camImg');
 
 %% stimulus position
-xfrombregma = [];%-4.5:0.25:-0.5; %[mm]
+xfrombregma = -4.5:1:-0.5; %[mm]
 if strcmp(hemisphere,'r')
     xfrombregma = sort(abs(xfrombregma));
 end
-yfrombregma = [];%-4:0.25:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
+yfrombregma = -4:1:3;%0;%[-3.6 -1.5 1.6];% %A>0, P<0
 
 if strcmp(shape,'circle')
     radiusmm = camImg.MmPerPixel*5; %[mm];
@@ -89,6 +89,8 @@ if nPatches > 0
     imageName = cell(1);
     position = [];
     imageStereo = [];
+    panelNumber = [];
+    panelLocation = [];
 
     % %% initial image = blank
     % fpatch=figure;
@@ -152,11 +154,54 @@ if nPatches > 0
                 imageName{patchNumber} = thisName;
                 position(patchNumber, :) = thisPosition;
 
+                panelNumber(patchNumber) = xx+numel(xfrombregma)*(yy-1);
+                panelLocation(patchNumber) = ...
+                    getPanelLocation([numel(yfrombregma) numel(xfrombregma)], panelNumber(patchNumber));
                 patchNumber = patchNumber + 1;
 
             end
         end
     end
+
+    %% blank stimulus must be at the end
+    fpatch=figure;
+    image(zeros(camImg.imageSize));%colormap(gray);
+    exportPng4DMD(fullfile(saveDir, 'stereo', 'tmp'), fpatch, binarise);
+    ltmp=logical(imread(fullfile(saveDir, 'stereo','tmp.png')));
+    thisName = [num2str(patchNumber) ];
+    exportPng4DMD(fullfile(saveDir, 'stereo', [thisName '_' saveName_s]), fpatch, binarise);
+    close(fpatch);
+
+    %% load
+    imageLoaded = imread(fullfile(saveDir, 'stereo', [thisName '_' saveName_s '.png']));
+
+    imageStereo = cat(3, imageStereo, imageLoaded);
+    imageName{patchNumber} = thisName;
+    position(patchNumber, :) = thisPosition;
+
+    if strcmp(hemisphere, 'r')
+        panelNumber(patchNumber) = numel(xfrombregma)*numel(yfrombregma); %top-right
+    elseif strcmp(hemisphere, 'l')
+        panelNumber(patchNumber) = numel(xfrombregma)*(numel(yfrombregma)-1)+1; %top-left
+    end
+    panelLocation(patchNumber) = ...
+        getPanelLocation([numel(yfrombregma) numel(xfrombregma)], panelNumber(patchNumber));
+    
+
+
+    %% show every stimuli in one figure
+    fig_allStim = figure('position',[0 0 1800 900]);
+    ax_all = axes;
+    for pp = 1:size(position,1)
+        ax_all(pp) = subplot(numel(yfrombregma),numel(xfrombregma),panelLocation(pp));
+        imagesc(imageStereo(:,:,pp)); 
+        ylabel(['image ID' num2str(pp)]);
+        title(['panelNumber' num2str(panelNumber(pp))]);
+        axis square tight off;
+    end
+    linkcaxes(ax_all);
+    screen2png(fullfile(saveDir, saveName_s),fig_allStim);
+    close(fig_allStim);
 
 elseif nPatches == 0
     fpatch=figure;
@@ -176,7 +221,8 @@ end
 
 
 %% save everything in one file
-save(fullfile(saveDir, saveName_s), 'imageStereo','camImg','position');
+save(fullfile(saveDir, saveName_s), 'imageStereo','camImg','position',...
+    'panelLocation','panelNumber');
 
 delete(fullfile(saveDir, 'stereo','tmp.png'));
 set(0, 'DefaultFigureVisible', 'on');

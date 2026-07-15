@@ -94,6 +94,7 @@ ops.objectiveType = num2str(magnification); %0.5 / 0.8
 load('C:\Documents\git\analysisImaging\DMD\references\camImg_20260214.mat');
 ops.pixelSizeUM = camImg.MmPerPixel*1000;
 ops.hasASCIIstamp = 0; %18/5/20
+ops.doDetrending = 1; %14/7/26
 
 for e = 1:length(expNums)
     expRefs{e} = dat.constructExpRef(mouseName, thisDate, thisSeries, expNums(e));    

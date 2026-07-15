@@ -151,10 +151,48 @@ if ops.doRegistration
 
 end
 
-%% do hemodynamic correction?
-% - don't do this here - it likely works just as well on SVD representation
-% (though that has not been explicitly tested). 
 
+%% do detrending 
+if ops.doDetrending
+    detrendOps = ops;
+    detrendOps.binning = 8;
+    % ntotframes
+    % NavgFramesSVD = 7500 from amberRedOps.mat
+    % Nframes
+    % RegFile
+    % mimg
+    
+    %% fit (beta, k) to imageMeans
+    [~, param_detrend_c] = bleachCorrectionStretchedExp(dataSummary.imageMeans);
+
+    %% load every ops.NavgFramesSVD frames
+    [Tensor, detrendOps] = readSubsampleTensor(detrendOps);
+    [nRows, nCols, nFrames_sub] = size(Tensor);
+    
+    %% spatial down sampling
+    Tensor_downsampled = imresize(Tensor, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]);
+    Tensor_downsampled = reshape(Tensor_downsampled, size(Tensor_downsampled,1)*size(Tensor_downsampled,2),[]);
+
+    %% fit k & scaleFac to down-sampled pixels and frames 
+    [~, param_detrend] = bleachCorrectionRobustNorm(Tensor_downsampled, param_detrend_c.beta);
+
+    %% convert fitting parameters to full spatio-temporal resolution
+    k2D = imresize(reshape(param_detrend.k, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
+    subFac =  ceil(sum(ops.Nframes))/nFrames_sub;
+    k2D = k2D./subFac.^param_detrend_c.beta;
+    beta2D = repmat(param_detrend_c.beta, [nRows, nCols]);
+    scaleFac2D = imresize(reshape(param_detrend.scaleFac,  [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
+    
+    param2D.k = k2D;
+    param2D.beta = beta2D;
+    param2D.scaleFac = scaleFac2D;
+
+    %% apply detrending to all pixels and frames
+    datPath = ops.vids(v).thisDatPath;
+    detrendPath = fullfile(ops.localSavePath, ['vid' num2str(v) 'detrend.dat']);
+    ops.vids(v).thisDetrendPath = detrendPath;
+    detrendDatFile(datPath, detrendpath, param2D, results(v).imageSize, results(v).nFrames, detrendOps);
+end
 
 
 %% perform SVD
@@ -176,7 +214,12 @@ for v = 1:length(ops.vids)
     
     svdOps.Ly = results(v).imageSize(1); svdOps.Lx = results(v).imageSize(2); % not actually used in SVD function, just locally here
 
-    if ops.doRegistration 
+    if ops.doDetrending
+        svdOps.yrange = 1:svdOps.Ly; 
+        svdOps.xrange = 1:svdOps.Lx; 
+        svdOps.RegFile = ops.vids(v).thisDetrendPath;
+
+    elseif ops.doRegistration
         %minDs = min(results(v).registrationDs, [], 1);
         %maxDs = max(results(v).registrationDs, [], 1);
 

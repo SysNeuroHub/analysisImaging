@@ -3,7 +3,7 @@
 
 
 
-subjectName = 'Confucious';
+subjectName = 'Gaius';
 if ispc
     MRdataServer = 'M:/';
 else
@@ -107,14 +107,29 @@ elseif strcmp(subjectName, 'Suntzu')
     image2 = image2-min(image2(:));
     image2 = image2/max(image2(:));
     autoTform = 1;
+elseif strcmp(subjectName, 'Gaius')
+    MRI_ID = 'MRA056_107_20260623';
+    rootDir = ['/mnt/dshi0006_market/MRI/record/20260623_150445_' MRI_ID '_1_14'];
+    nE_T2 = searchT2directory(rootDir);
+    nE_UTE = searchUTEdirectory(rootDir);
+    ute_nii = fullfile(rootDir, num2str(nE_UTE), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_UTE) '_1_1.nii']);
+    t2_nii = fullfile(rootDir, num2str(nE_T2), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_T2) '_1_1.nii']);
+    mrangle = [];
+    image2 = (double(readNPY('/mnt/dshi0006_market/Subjects/Gaius/2026-07-03_1/meanImage_amber.npy')));
+    autoTform = 0;
+elseif strcmp(subjectName, 'Tiberius')
+    MRI_ID = 'MRA056_108_20260623';
+    rootDir = ['/mnt/dshi0006_market/MRI/record/20260623_160530_' MRI_ID '_1_15'];
+    nE_T2 = searchT2directory(rootDir);
+    nE_UTE = searchUTEdirectory(rootDir);
+    ute_nii = fullfile(rootDir, num2str(nE_UTE), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_UTE) '_1_1.nii']);
+    t2_nii = fullfile(rootDir, num2str(nE_T2), 'pdata/1/nifti',[MRI_ID '_' num2str(nE_T2) '_1_1.nii']);
+    mrangle = [];
+    image2 = (double(readNPY('/mnt/dshi0006_market/Subjects/Tiberius/2026-07-03_1/meanImage_amber.npy')));
+    autoTform = 0;
 end
 
 %% load project DMD ref image captured by widefield camera
-% image4 = double(imread('star_1080x1080.tif')); %dimension must be same as image2
-% image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_1168x900.tif')); %dimension must be same as image2
-%image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900.tif')); %22/10/25
-% image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251027.tif')); %27/10/25
-%image4 = double(imread('~/Documents/git/analysisImaging/MROIDMD/matlab_functions/star_800x500_1168x900_20251028.tif')); %28/10/25
 image4_tmp = double(imread(fullfile(refDir, 'star',['star' refdate '.tif'])));
 image4_tmp = resizeCropFullImg(image4_tmp, camImg);
 image4 = image4_tmp/max(image4_tmp(:));
@@ -127,6 +142,7 @@ system(cmdStr);
 
 %% align UTE to T2 and to Allen space (optional)
 if exist(ute_nii, 'file')
+    copyfile(fullfile(MRIdir,'pattern_generation/UTE2T2Init.mat'), fullfile(MRIdir, subjectName,'UTE2T2Init.mat'));
     cmdStr = [fullfile(MRIdir,'pattern_generation/align_UTE_to_Allen.sh') ' ' ute_nii ' ' t2_nii ' ' fullfile(MRIdir, subjectName)];
     system(cmdStr);
 
@@ -134,7 +150,7 @@ if exist(ute_nii, 'file')
 else
     %% prepare pills in T2* space (pills_labels.nii)
     cmdStr = [fullfile(MRIdir,'pattern_generation/Find_register_pills_T2.sh') ' ' fullfile(MRIdir, subjectName)];% ' ' pill_in_allen ];
-    system(cmdStr); %calls FindPillsExp_Allen.py inside
+    system(cmdStr); %calls FindPillsExp_Allen.py inside and outputs pills_labels(_Allen).nii
 
     delete(fullfile(MRIdir, subjectName,'Allen_pills_mask.nii'));
 end
@@ -149,8 +165,10 @@ load_mr_bead = niftiread('pills_labels.nii')>0;
 load_mr_brain = niftiread('T2w_brain.nii');
 load_anno = niftiread('Atlas_anno_to_T2.nii');
 
+close all;
 %Atlas_reg_info = 
-DMD_pattern_prep(load_mr_bead, load_mr_brain, load_anno, image2, image3, image4, mrangle, autoTform, camImg.MmPerPixel);
+DMD_pattern_prep(load_mr_bead, load_mr_brain, load_anno, image2, image3, ...
+    image4, mrangle, autoTform, camImg.MmPerPixel);
 %save Atlas_reg_info.mat, containing:
 % 'ROI_info','proj_brain','TotalBrainImage','tform','tform2','mapconfwarpedtoDMD',...
 %     'mrwarpedtoDMD',"OIwarpedtoDMD",'borigwarpedtoDMD','mrimg_bead','mrimg_brain',...
@@ -173,21 +191,23 @@ if ~isempty(mrangle)
     mr_brain = imrotate3(mr_brain, mrangle(3), [0 0 1],'linear','crop'); %yaw
 end
 [mrimg_surf] = getSurfaceData(afterniftiread(mr_brain), 'last');
+mrimg_surf(isnan(mrimg_surf))=0;
 
-fixedRef  = imref2d(size(image2), camImg.MmPerPixel, camImg.MmPerPixel);
-movingRef = imref2d(size(mrimg_brain), 0.1, 0.1);
+% fixedRef  = imref2d(size(image2), camImg.MmPerPixel, camImg.MmPerPixel);
+movingRef = imref2d(size(mrimg_brain), 0.1*[-size(mrimg_brain,2)/2 size(mrimg_brain,2)/2], 0.1*[-size(mrimg_brain,1)/2 size(mrimg_brain,1)/2]);
+fixedRef  = imref2d(size(image2), camImg.MmPerPixel*[-size(image2,2)/2 size(image2,2)/2], camImg.MmPerPixel*[-size(image2,1)/2 size(image2,1)/2]);%camMmPerPix,camMmPerPix);  % example pixel sizes in mm
 
 if autoTform == 0
     beadwarped = imwarp(mrimg_bead,tform,'cubic','OutputView',imref2d(size(image2)));
     surfwarped = imwarp(mrimg_surf,tform,'cubic','OutputView',imref2d(size(image2)));
 else
-    beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef); %NG
-    surfwarped = imwarp(mrimg_surf,movingRef,tform,'cubic','OutputView',fixedRef); %NG
+    beadwarped = imwarp(mrimg_bead,movingRef,tform,'cubic','OutputView',fixedRef); 
+    surfwarped = imwarp(mrimg_surf,movingRef,tform,'cubic','OutputView',fixedRef); 
 end
 figure('position', [675         453        1440         413]);
 subplot(131);
 imagesc(image2);axis equal tight; hold on; grid on;
-clim(prctile(image2(:), [10 image2th]));
+%clim(prctile(image2(:), [10 image2th]));
 contour(surfwarped>0, 'g'); contour(beadwarped>.5,'g');
 title('widefield image,  G: brain in MR + beads in MR')
 subplot(132);
