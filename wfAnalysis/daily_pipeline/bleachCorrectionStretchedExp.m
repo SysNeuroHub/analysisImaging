@@ -1,4 +1,4 @@
-function [Icorr,param,diag] = bleachCorrectionRobustNorm(I,betaFixed)
+function [Icorr,param,diag] = bleachCorrectionStretchedExp(I,betaFixed)
 
 if nargin < 1
     error('Input matrix I is required.');
@@ -30,7 +30,7 @@ for ii=1:nTrace %parfor not working
 
     y = I(ii,:)';
 
-    scale = mean(y(1:min(20,nT)));
+    scale = median(y(1:min(20,nT)));
 
     if scale<=0 || ~isfinite(scale)
         continue
@@ -47,41 +47,21 @@ for ii=1:nTrace %parfor not working
 
 end
 
+
 param.k = k;
 param.beta = beta;
+param.scaleFac = [];
 
-
-
-%% Generate correction
-
-B = zeros(nTrace,nT);
-
-
-for ii=1:nT
-
-    B(:,ii)=exp(-k*(tFit(ii).^beta));
-
-end
-
-
-B = max(B,0.2);
-
-
-Icorr = I./B;
-
-
+%% Generate correction without scaling
+Icorr_unscaled = applyStretchedExp(I,param);
 
 % Preserve global mean
+param.scaleFac = mean(I(:),'omitnan') / mean(Icorr_unscaled(:),'omitnan');
 
-scaleFactor = mean(I(:),'omitnan') / ...
-              mean(Icorr(:),'omitnan');
-
-
-Icorr = Icorr*scaleFactor;
+%% Generate correction with scaling
+Icorr = applyStretchedExp(I,param);
 
 
-
-diag.scaleFactor = scaleFactor;
 diag.meanBefore = mean(I(:),'omitnan');
 diag.meanAfter = mean(Icorr(:),'omitnan');
 diag.meanSignal = mean(Icorr,1);
