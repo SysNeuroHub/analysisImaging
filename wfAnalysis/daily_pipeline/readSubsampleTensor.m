@@ -1,11 +1,10 @@
-function [mov, ops] = readSubsampleTensor(ops)
+function [mov, ops, t_subsample] = readSubsampleTensor(ops)
 %ops with the following fields
 % NavgFramesSVD
 % Nframes
 % RegFile
 % mimg
 % verbose
-% ntotframes
 
 % created from get_svdcomps
 
@@ -26,7 +25,7 @@ ops.NavgFramesSVD = floor(ntotframes/nt0);
 nimgbatch = nt0 * floor(1000/nt0);
 
 ix = 0;
-
+t_subsample = [];
 mov = zeros(Ly, Lx, ops.NavgFramesSVD, 'single');
 
 if ops.verbose
@@ -56,6 +55,11 @@ try
         mov(:,:,ix + (1:size(davg,3))) = davg;
 
         ix = ix + size(davg,3);
+        if isempty(t_subsample)
+            t_subsample = -nt0/2+nt0*(1:size(data,4));
+        else
+            t_subsample = [t_subsample t_subsample(end)-nt0/2+nt0*(1:size(data,4))];
+        end
     end
 catch me
     fclose(fid);

@@ -24,15 +24,15 @@ load('amberRedOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'Tiberius';%'susanoo';
-thisDate = '2026-07-10';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'Gaius';%'susanoo';
+thisDate = '2026-07-03';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
-expNums = 1;
+expNums = 1:3;
 makeROI = 0; %-1: all pixels, 1: create ROI, 0: reuse ROI
-    doRegistration = 0;
+doRegistration = 0;
 hwbinning = 2; %automatically retrieve this from thorcam header??
 magnification = .5; 
-seqFiles = {'5x8circle_r_Tiberius.seq'};
+seqFiles = {};
 
 % upload DMD png files to Market
 if ~isempty(seqFiles)

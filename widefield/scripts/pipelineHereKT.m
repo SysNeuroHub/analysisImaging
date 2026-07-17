@@ -16,8 +16,9 @@ function pipelineHereKT()
 
 close all;
 
-showFig = 1;
+showFig = 0;
 saveDat = 0; %if 1, save dat files into the Vault server, else delete them
+saveTempResults = 1;
 
 %serverDir = '\\ad.monash.edu\home\User006\dshi0006\Documents\tempDataServer'; %7/5/20
 %'\\lugaro.cortexlab.net\bigdrive\staging\';
@@ -74,9 +75,13 @@ for v = 1:length(ops.vids)
     loadDatOps.binning = ops.binning;
     loadDatOps.flipudVid = ops.vids(v).flipudVid;
     
-    dataSummary = loadRawToDat(loadDatOps);
+    % if ~exist(fullfile(ops.localSavePath, 'results.mat'), 'file')
+        dataSummary = loadRawToDat(loadDatOps);
+    % else
+    %     load(fullfile(ops.localSavePath, 'results.mat'), 'results');
+    %     dataSummary = results(v);
+    % end
 
-   
     if showFig
         %check how frameNumbersFromStamp & frameNumbersWithinRec are used from
         %here
@@ -97,8 +102,9 @@ for v = 1:length(ops.vids)
         results(v).(fn{f}) = dataSummary.(fn{f});
     end
     
-  %  save(fullfile(ops.localSavePath, 'results.mat'), 'results');
-  %  %TEMPORALLY DISABLED
+    if saveTempResults
+        save(fullfile(ops.localSavePath, 'results.mat'), 'results');
+    end
 end
 
 
@@ -154,34 +160,58 @@ end
 
 %% do detrending 
 if ops.doDetrending
+    for v = 1:length(ops.vids)
     detrendOps = ops;
-    detrendOps.binning = 8;
-    % ntotframes
+    detrendOps.binning = 16;
+    detrendOps.Nframes = results(v).nFrames;
     % NavgFramesSVD = 7500 from amberRedOps.mat
-    % Nframes
-    % RegFile
-    % mimg
-    
+    detrendOps.NavgFramesSVD   = min(ops.NavgFramesSVD, ceil(sum(detrendOps.Nframes)));
+    detrendOps.RegFile = ops.vids(v).thisDatPath;
+    detrendOps.mimg = results(v).meanImage;
+    detrendOps.constantBeta = 1;
+
     %% fit (beta, k) to imageMeans
-    [~, param_detrend_c] = bleachCorrectionStretchedExp(dataSummary.imageMeans);
+    if detrendOps.constantBeta
+        [~, param_detrend_c] = bleachCorrectionStretchedExp(results(v).imageMeans);
+    end
 
     %% load every ops.NavgFramesSVD frames
-    [Tensor, detrendOps] = readSubsampleTensor(detrendOps);
+    [Tensor, detrendOps, tidx_subsample] = readSubsampleTensor(detrendOps);
     [nRows, nCols, nFrames_sub] = size(Tensor);
     
     %% spatial down sampling
-    Tensor_downsampled = imresize(Tensor, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]);
+    Tensor_downsampled = imresize(Tensor, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]); %OMIT OUTSIDE ROI?
     Tensor_downsampled = reshape(Tensor_downsampled, size(Tensor_downsampled,1)*size(Tensor_downsampled,2),[]);
 
     %% fit k & scaleFac to down-sampled pixels and frames 
-    [~, param_detrend] = bleachCorrectionRobustNorm(Tensor_downsampled, param_detrend_c.beta);
+    if detrendOps.constantBeta
+        [~, param_downsampled] = bleachCorrectionStretchedExp(Tensor_downsampled, param_detrend_c.beta);%indisginguishable to original
+    else
+        [~, param_downsampled] = bleachCorrectionStretchedExp(Tensor_downsampled);%under correction
+    end
+    % idx = 607;
+    % % [test0, param_detrend] = bleachCorrectionStretchedExp(Tensor_downsampled(idx,:), param_detrend_c.beta, tidx_subsample); %never ends
+    % [test, param_detrend] =
+    % bleachCorrectionStretchedExp(Tensor_downsampled(idx,:), param_detrend_c.beta);%indisginguishable to original
+    % [test1, param_detrend1] = bleachCorrectionStretchedExp(Tensor_downsampled(idx,:)); %under correction
+    % % test2 = applyStretchedExp(Tensor_downsampled(idx,:),param_detrend_c, tidx_subsample); %over correction
+    % test2 = detrend(Tensor_downsampled(idx,:),'linear')+mean(Tensor_downsampled(idx,:));
+    % 
+    % plot(Tensor_downsampled(idx,:)); hold on;
+    % plot(test); plot(test1); plot(test2);
+    % legend('original','stretchexp fix beta','stretchexp','linear')
+
 
     %% convert fitting parameters to full spatio-temporal resolution
-    k2D = imresize(reshape(param_detrend.k, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
-    subFac =  ceil(sum(ops.Nframes))/nFrames_sub;
+    subFac =  ceil(sum(detrendOps.Nframes))/nFrames_sub;
+    k2D = imresize(reshape(param_downsampled.k, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
     k2D = k2D./subFac.^param_detrend_c.beta;
-    beta2D = repmat(param_detrend_c.beta, [nRows, nCols]);
-    scaleFac2D = imresize(reshape(param_detrend.scaleFac,  [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
+    if detrendOps.constantBeta
+        beta2D = repmat(param_detrend_c.beta, [nRows, nCols]);
+    else
+        beta2D = imresize(reshape(param_downsampled.beta, [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
+    end
+    scaleFac2D = imresize(reshape(param_downsampled.scaleFac,  [round(nRows/detrendOps.binning) round(nCols/detrendOps.binning)]), [nRows, nCols]);
     
     param2D.k = k2D;
     param2D.beta = beta2D;
@@ -191,7 +221,8 @@ if ops.doDetrending
     datPath = ops.vids(v).thisDatPath;
     detrendPath = fullfile(ops.localSavePath, ['vid' num2str(v) 'detrend.dat']);
     ops.vids(v).thisDetrendPath = detrendPath;
-    detrendDatFile(datPath, detrendpath, param2D, results(v).imageSize, results(v).nFrames, detrendOps);
+    detrendDatFile(datPath, detrendPath, param2D, results(v).imageSize, results(v).nFrames, detrendOps);
+    end
 end
 
 
@@ -334,6 +365,14 @@ for v = 1:length(ops.vids)
              continue;
         else
             delete(ops.vids(v).thisRegPath);
+        end
+    end
+      if isfield(ops.vids(v), 'thisDetrendPath') && exist(ops.vids(v).thisDetrendPath) ...
+            && ~strcmp(ops.vids(v).thisDatPath, ops.vids(v).fileBase)
+        if saveDat
+             continue;
+        else
+            delete(ops.vids(v).thisDetrendPath);
         end
     end
 end
