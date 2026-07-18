@@ -25,6 +25,7 @@ TexVol = zeros(volSize, 'like', surfData);
 iy = (1:rows)' * ones(1,cols);
 ix = ones(rows,1) * (1:cols);
 %linIdx = sub2ind(volSize, ix(:), round(surfDepth(:)), iy(:));
+surfDepth(isnan(surfDepth(:))) = min(surfDepth(:));
 linIdx = sub2ind(volSize, iy(:), ix(:), round(surfDepth(:)));
 
 % flatten everything
