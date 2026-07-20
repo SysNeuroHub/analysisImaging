@@ -19,7 +19,7 @@ function [Ub, Vcorr, tb, mimgB] = quickHemoCorrect(expPath, savePath, nSV, ...
 %   tb: time stamp of blue channel (identical to before hemodynamic correction)
 %   mimgB: mean image of blue channel (identical to before hemodynamic correction)
 
-detrendFilt = 1; %11/6/20 if true apply detrend&low cut fltering to Vb & Vp
+detrendFilt = 0; %11/6/20 if true apply detrend&low cut fltering to Vb & Vp
 
 if nargin < 4
     hemoFreq = [10 13]; % frequency to look for hemo signals, can also be heartbeat [9,13]

@@ -37,12 +37,12 @@ if nargin<6
     pixSpace = 3;
 end
 
+% first subtract out means so the filters don't go nuts
+zV = bsxfun(@minus, V, mean(V));
+zVaux = bsxfun(@minus, Vaux, mean(Vaux));
 
 if ~isempty(FreqRange)
-    % first subtract out means so the filters don't go nuts
-    zV = bsxfun(@minus, V, mean(V));
-    zVaux = bsxfun(@minus, Vaux, mean(Vaux));
-    % now filter for heart-frequency
+     % now filter for heart-frequency
     [b, a] = butter(2,FreqRange/(fS/2));
     fV = filter(b,a,zV);
     fVaux = filter(b,a,zVaux);

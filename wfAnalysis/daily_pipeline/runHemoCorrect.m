@@ -10,8 +10,8 @@ setPath_analysisImaging;
 
 close all;
 
-mouseName = 'Gaius';
-thisDate = '2026-07-07'; %[datestr(now,'yyyy-mm-dd')];  
+mouseName = 'Tiberius';
+thisDate = '2026-07-10'; %[datestr(now,'yyyy-mm-dd')];  
 thisSeries = 1;
 expNums = 1;%[1:4];
 
