@@ -18,7 +18,7 @@ B = zeros(nTrace,nT);
 
 for ii=1:nT
 
-    B(:,ii)=exp(-k*(frameNumbers(ii).^beta));
+    B(:,ii)=exp(-k.*(frameNumbers(ii).^beta));
 
 end
 
@@ -29,5 +29,5 @@ B = max(B,0.2);
 Icorr = I./B;
 
 if isfield(param,'scaleFac') && ~isempty(param.scaleFac)
-    Icorr = Icorr.*param.scaleFac;
+    Icorr = Icorr.*repmat(param.scaleFac,[1 size(Icorr,2)]);
 end

@@ -65,14 +65,19 @@ roi = ~roiOutside;
 timeStampPath = fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.timestamps.npy']);
 
 corrPath = fullfile(vPath, 'svdTemporalComponents_corr.npy');
-if exist(corrPath, 'file') && useCorrected
-    disp(['loading ' corrPath]);
-    %fprintf(1, 'loading corrected temporal components\n');
-    V = readVfromNPY(corrPath, nSV);
-    t = readNPY(fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.timestamps.npy']));
-    Fs = 1/mean(diff(t));
+if useCorrected
 
+    if ~exist(corrPath, 'file')
+        error(['NOT FOUND: ' corrPath]);
+    else
+        disp(['loading ' corrPath]);
+        %fprintf(1, 'loading corrected temporal components\n');
+        V = readVfromNPY(corrPath, nSV);
+        t = readNPY(fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.timestamps.npy']));
+        Fs = 1/mean(diff(t));
+    end
 else
+    
     disp(['loading svdTemporalComponents_' movieSuffix '.npy']);
     V = readVfromNPY(fullfile(expPath, ['svdTemporalComponents_' movieSuffix '.npy']), nSV);
     if exist(timeStampPath, 'file')

@@ -24,27 +24,32 @@ load('amberRedOps.mat');
 %load('bluePurpleOps.mat'); 
 % For purple only
 % load('C:\Users\Experiment\Documents\MATLAB\purpleOps.mat')
-mouseName = 'Gaius';%'susanoo';
-thisDate = '2026-07-03';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
-thisSeries = 3;
-expNums = [];
-seqFiles = {};
-makeROI = 0;
+mouseName = 'Tiberius';%'susanoo';
+thisDate = '2026-07-10';%'2024-11-22'; %[datestr(now,'yyyy-mm-dd')];  
+thisSeries = 1;
+expNums = 1;
+makeROI = 0; %-1: all pixels, 1: create ROI, 0: reuse ROI
 doRegistration = 0;
 hwbinning = 2; %automatically retrieve this from thorcam header??
 magnification = .5; 
+seqFiles = {};
 
-%% upload DMD png files to Market
-if ~isempty(seqfiles)
-    expt.subject = mouseName;
-    expt.expDate = [thisDate '_' thisSeries];
-    expt.expNum = expNums(iexp);
-
+% upload DMD png files to Market
+if ~isempty(seqFiles)
     seqDir = 'D:\PolyScan\DMD\20250617_Daisuke_Shimaoka\Most Recent Settings';
 
-    uploadSeqPng(seqFiles{iexp}, expt);
+    for iexp = 1:numel(expNums)
+        expt.subject = mouseName;
+        expt.expDate = [thisDate '_' num2str(thisSeries)];
+        expt.expNum = expNums(iexp);
+        try
+        seqFileFullpath = fullfile(seqDir, seqFiles{iexp});
+        uploadSeqPng(seqFileFullpath, expt);
+        catch err
+            disp(err);
+        end
+    end
 end
-
 
 if ispc
     cd('C:\Documents\git\analysisImaging\wfAnalysis\daily_pipeline');

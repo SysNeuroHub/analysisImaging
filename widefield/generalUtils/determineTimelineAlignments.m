@@ -9,7 +9,7 @@ function [numExps, nFrPerExp, allT, existExps, alignmentWorked] ...
 % use just those expRefs. If neither of these results in the correct number
 % of timestamps for movie frames that you have, the alignment has failed
 % and no timestamps will be stored.
-% 
+%
 % Inputs:
 %   ops should contain:
 %       mouseName: str
@@ -38,68 +38,75 @@ end
 nExp = 1;
 nFrPerExp = [];
 
-thisDateStr = ops.thisDate(1:10); %8/5/20
-thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
-rootFolder = fileparts(dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, nExp, 'main', TLdir)); %8/5/20
-d = dir(rootFolder);
-numExps = length(d)-2;
-if numExps<1
-    if ops.verbose
-        fprintf(1, '    no experiments found at %s\n', rootFolder);
-    end
-    numExps = 0;
-    allT = {};
-    existExps = [];
-    alignmentWorked = false;
-else
-    
-    if isfield(ops, 'inclExpList') && ~isempty(ops.inclExpList)
-        expNums = ops.inclExpList;
-    else
-        expNums = cellfun(@str2num,{d(3:end).name});
-    end
-    
-    if isfield(ops, 'expRefs') && ~isempty(ops.expRefs)
-        expRefs = ops.expRefs;
-    else
-        expRefs = {};
-        for e = 1:length(expNums)
-            thisDate = ops.thisDate(1:10);
-            thisSeries = ops.thisDate(12:end);
-            expRefs{e} = dat.constructExpRef(ops.mouseName, thisDate, thisSeries, expNums(e));
-        end
-    end
-    
-    existExps = {};
-    for e = 1:length(expRefs)
-        timelinePath = dat.expFilePath(expRefs{e}, 'timeline', TLdir);
-        if exist(timelinePath)
-            load(timelinePath)
-            strobeTimes = getStrobeTimes(Timeline, ops.rigName);
-            theseStrobeNumbers = 1:numel(strobeTimes);
-%             theseStrobeNumbers = sum(nFrPerExp)+1:sum(nFrPerExp)+numel(strobeTimes);
-            inclStrobes = mod(theseStrobeNumbers, ops.frameMod(1))==ops.frameMod(2); 
-            nFrPerExp(e) = numel(strobeTimes(inclStrobes));
-            allT{e} = strobeTimes(inclStrobes);
-            existExps{end+1} = expRefs{e};            
-        end
-    end
-    
-    if sum(nFrPerExp)==nFrInV
+try
+
+    thisDateStr = ops.thisDate(1:10); %8/5/20
+    thisSeriesNum = str2num(ops.thisDate(12:end)); %8/5/20
+    rootFolder = fileparts(dat.expPath(ops.mouseName, thisDateStr, thisSeriesNum, nExp, 'main', TLdir)); %8/5/20
+    d = dir(rootFolder);
+    numExps = length(d)-2;
+    if numExps<1
         if ops.verbose
-            fprintf(1, '  Alignments correct! \n');
+            fprintf(1, '    no experiments found at %s\n', rootFolder);
         end
-        alignmentWorked = true;
-        numExps = length(existExps);
-        return;
-    else         
-        if ops.verbose
-            fprintf(1, '  Incorrect number of frames in the movie relative to the number of strobes detected. Will save data as one V.\n');
-        end
-        alignmentWorked  = false;
         numExps = 0;
         allT = {};
         existExps = [];
+        alignmentWorked = false;
+    else
+
+        if isfield(ops, 'inclExpList') && ~isempty(ops.inclExpList)
+            expNums = ops.inclExpList;
+        else
+            expNums = cellfun(@str2num,{d(3:end).name});
+        end
+
+        if isfield(ops, 'expRefs') && ~isempty(ops.expRefs)
+            expRefs = ops.expRefs;
+        else
+            expRefs = {};
+            for e = 1:length(expNums)
+                thisDate = ops.thisDate(1:10);
+                thisSeries = ops.thisDate(12:end);
+                expRefs{e} = dat.constructExpRef(ops.mouseName, thisDate, thisSeries, expNums(e));
+            end
+        end
+
+        existExps = {};
+        for e = 1:length(expRefs)
+            timelinePath = dat.expFilePath(expRefs{e}, 'timeline', TLdir);
+            if exist(timelinePath)
+                load(timelinePath)
+                strobeTimes = getStrobeTimes(Timeline, ops.rigName);
+                theseStrobeNumbers = 1:numel(strobeTimes);
+                %             theseStrobeNumbers = sum(nFrPerExp)+1:sum(nFrPerExp)+numel(strobeTimes);
+                inclStrobes = mod(theseStrobeNumbers, ops.frameMod(1))==ops.frameMod(2);
+                nFrPerExp(e) = numel(strobeTimes(inclStrobes));
+                allT{e} = strobeTimes(inclStrobes);
+                existExps{end+1} = expRefs{e};
+            end
+        end
+
+        if sum(nFrPerExp)==nFrInV
+            if ops.verbose
+                fprintf(1, '  Alignments correct! \n');
+            end
+            alignmentWorked = true;
+            numExps = length(existExps);
+            return;
+        else
+            if ops.verbose
+                fprintf(1, '  Incorrect number of frames in the movie relative to the number of strobes detected. Will save data as one V.\n');
+            end
+            alignmentWorked  = false;
+            numExps = 0;
+            allT = {};
+            existExps = [];
+        end
+
     end
-        
+
+catch err
+    numExps=[]; allT=[]; existExps=[];
+    alignmentWorked = false;
 end

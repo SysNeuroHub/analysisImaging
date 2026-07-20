@@ -65,7 +65,7 @@ if nargin < 2
 end
 
 
-
+verbose = 0;
 
 %% Load timeline
 
@@ -195,7 +195,9 @@ else
         else
             tdiff = 0; %17/9/20
         end
-        disp(['Repeat:' num2str(iStart) ', time difference between measured photodiode and signal from vs is ' num2str(tdiff) '[s]']);
+        if verbose
+            disp(['Repeat:' num2str(iStart) ', time difference between measured photodiode and signal from vs is ' num2str(tdiff) '[s]']);
+        end
         %     syncSquare_white_on_t_adj = syncSquare_white_on_t + tdiff;
         %     syncSquare_white_on_adj = tltime
         tdiffIdx = round(tdiff*srate);

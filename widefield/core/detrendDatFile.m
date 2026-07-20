@@ -17,6 +17,9 @@ try
         imstack = single(imstack);
         imstack = reshape(imstack, imageSize(1)*imageSize(2), []);
         frameNumbers = (1+(b-1)*batchSize):min(b*batchSize, nFr);
+        if numel(frameNumbers)>size(imstack,2)
+            frameNumbers = frameNumbers(1:size(imstack,2));
+        end
         detrendFrames = applyStretchedExp(imstack, param1D, frameNumbers);
         detrendFrames = reshape(detrendFrames, imageSize(1), imageSize(2), []);
 
